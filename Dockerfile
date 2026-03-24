@@ -20,7 +20,7 @@ RUN make build
 # ============================================================
 FROM alpine:3.23
 
-RUN apk add --no-cache ca-certificates tzdata curl
+RUN apk add --no-cache ca-certificates tzdata
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
@@ -36,8 +36,11 @@ RUN addgroup -g 1000 picoclaw && \
 # Switch to non-root user
 USER picoclaw
 
-# Run onboard to create initial directories and config
-RUN /usr/local/bin/picoclaw onboard
+# Pre-create the config directory so volume mounts land correctly
+RUN mkdir -p /home/picoclaw/.picoclaw/workspace \
+             /home/picoclaw/.picoclaw/sessions \
+             /home/picoclaw/.picoclaw/memory \
+             /home/picoclaw/.picoclaw/skills
 
 ENTRYPOINT ["picoclaw"]
 CMD ["gateway"]

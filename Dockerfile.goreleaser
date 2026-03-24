@@ -1,10 +1,20 @@
-FROM alpine:3.21
+FROM alpine:3.23
 
 ARG TARGETPLATFORM
 
 RUN apk add --no-cache ca-certificates tzdata
 
+RUN addgroup -g 1000 picoclaw && \
+    adduser -D -u 1000 -G picoclaw picoclaw
+
 COPY $TARGETPLATFORM/picoclaw /usr/local/bin/picoclaw
+
+USER picoclaw
+
+RUN mkdir -p /home/picoclaw/.picoclaw/workspace \
+             /home/picoclaw/.picoclaw/sessions \
+             /home/picoclaw/.picoclaw/memory \
+             /home/picoclaw/.picoclaw/skills
 
 ENTRYPOINT ["picoclaw"]
 CMD ["gateway"]

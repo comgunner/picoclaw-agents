@@ -32,15 +32,21 @@ services:
     restart: unless-stopped
     profiles:
       - gateway
+    ports:
+      - "18790:18790"
     # Uncomment to access host network; leave commented unless needed.
     #extra_hosts:
     #  - "host.docker.internal:host-gateway"
     volumes:
-      # Configuration file
+      # Configuration file (read-only)
       - ./config/config.json:/home/picoclaw/.picoclaw/config.json:ro
-      # Persistent workspace (sessions, memory, logs)
+      # Persistent data: workspace skills/templates, sessions, memory
       - picoclaw-workspace:/home/picoclaw/.picoclaw/workspace
+      - picoclaw-sessions:/home/picoclaw/.picoclaw/sessions
+      - picoclaw-memory:/home/picoclaw/.picoclaw/memory
     command: ["gateway"]
 
 volumes:
   picoclaw-workspace:
+  picoclaw-sessions:
+  picoclaw-memory:
