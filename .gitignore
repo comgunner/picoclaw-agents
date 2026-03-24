@@ -119,6 +119,16 @@ ralph/
 .ralph/
 tasks/
 
+# Workspace personal files (agent identity, soul, user profile)
+workspace/USER.md
+workspace/SOUL.md
+workspace/IDENTITY.md
+workspace/AGENTS.md
+
+# Local runtime/notes files
+agent.txt
+n8n.txt
+
 # Python
 __pycache__/
 *.pyc
