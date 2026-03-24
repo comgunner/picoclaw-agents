@@ -1,0 +1,467 @@
+{
+  "agents": {
+    "defaults": {
+      "max_tokens": 8192,
+      "max_tool_iterations": 20,
+      "model": "antigravity-gemini-3-flash",
+      "provider": "",
+      "restrict_to_workspace": true,
+      "workspace": "~/.picoclaw/workspace"
+    },
+    "list": [
+      {
+        "default": true,
+        "id": "project_manager",
+        "model": "antigravity-gemini-3-flash",
+        "name": "Project Manager",
+        "subagents": {
+          "allow_agents": [
+            "*",
+            "general_worker"
+          ],
+          "max_children_per_agent": 5,
+          "max_spawn_depth": 3
+        }
+      },
+      {
+        "id": "senior_dev",
+        "model": "antigravity-gemini-3-flash",
+        "name": "Senior Developer",
+        "subagents": {
+          "allow_agents": [
+            "qa_specialist",
+            "junior_fixer"
+          ],
+          "max_spawn_depth": 2
+        }
+      },
+      {
+        "id": "qa_specialist",
+        "model": "antigravity-gemini-3-flash",
+        "name": "QA Specialist (GitHub Ops)",
+        "subagents": {}
+      },
+      {
+        "id": "junior_fixer",
+        "model": "antigravity-gemini-3-flash",
+        "name": "Junior Code Fixer",
+        "subagents": {}
+      },
+      {
+        "id": "general_worker",
+        "model": "antigravity-gemini-3-flash",
+        "name": "General Worker",
+        "subagents": {}
+      },
+      {
+        "id": "script_writer",
+        "model": "antigravity-gemini-3-flash",
+        "name": "Script Writer",
+        "subagents": {}
+      },
+      {
+        "id": "image_creator",
+        "model": "antigravity-gemini-3-flash",
+        "name": "Image Creator",
+        "subagents": {}
+      },
+      {
+        "id": "social_manager",
+        "model": "antigravity-gemini-3-flash",
+        "name": "Social Media Manager",
+        "subagents": {}
+      }
+    ]
+  },
+  "channels": {
+    "dingtalk": {
+      "allow_from": [],
+      "client_id": "YOUR_CLIENT_ID",
+      "client_secret": "YOUR_CLIENT_SECRET",
+      "enabled": false
+    },
+    "discord": {
+      "allow_from": [],
+      "enabled": false,
+      "mention_only": false,
+      "token": "YOUR_DISCORD_BOT_TOKEN"
+    },
+    "feishu": {
+      "allow_from": [],
+      "app_id": "",
+      "app_secret": "",
+      "enabled": false,
+      "encrypt_key": "",
+      "verification_token": ""
+    },
+    "line": {
+      "allow_from": [],
+      "channel_access_token": "YOUR_LINE_CHANNEL_ACCESS_TOKEN",
+      "channel_secret": "YOUR_LINE_CHANNEL_SECRET",
+      "enabled": false,
+      "webhook_host": "0.0.0.0",
+      "webhook_path": "/webhook/line",
+      "webhook_port": 18791
+    },
+    "maixcam": {
+      "allow_from": [],
+      "enabled": false,
+      "host": "0.0.0.0",
+      "port": 18790
+    },
+    "onebot": {
+      "access_token": "",
+      "allow_from": [],
+      "enabled": false,
+      "group_trigger_prefix": [],
+      "reconnect_interval": 5,
+      "ws_url": "ws://127.0.0.1:3001"
+    },
+    "qq": {
+      "allow_from": [],
+      "app_id": "YOUR_QQ_APP_ID",
+      "app_secret": "YOUR_QQ_APP_SECRET",
+      "enabled": false
+    },
+    "slack": {
+      "allow_from": [],
+      "app_token": "xapp-YOUR-APP-TOKEN",
+      "bot_token": "xoxb-YOUR-BOT-TOKEN",
+      "enabled": false
+    },
+    "telegram": {
+      "allow_from": [
+        "YOUR_USER_ID"
+      ],
+      "enabled": false,
+      "proxy": "",
+      "token": "YOUR_TELEGRAM_BOT_TOKEN"
+    },
+    "wecom": {
+      "allow_from": [],
+      "enabled": false,
+      "encoding_aes_key": "YOUR_43_CHAR_ENCODING_AES_KEY",
+      "reply_timeout": 5,
+      "token": "YOUR_TOKEN",
+      "webhook_host": "0.0.0.0",
+      "webhook_path": "/webhook/wecom",
+      "webhook_port": 18793,
+      "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY"
+    },
+    "wecom_app": {
+      "agent_id": 1000002,
+      "allow_from": [],
+      "corp_id": "YOUR_CORP_ID",
+      "corp_secret": "YOUR_CORP_SECRET",
+      "enabled": false,
+      "encoding_aes_key": "YOUR_43_CHAR_ENCODING_AES_KEY",
+      "reply_timeout": 5,
+      "token": "YOUR_TOKEN",
+      "webhook_host": "0.0.0.0",
+      "webhook_path": "/webhook/wecom-app",
+      "webhook_port": 18792
+    },
+    "whatsapp": {
+      "allow_from": [],
+      "bridge_url": "ws://localhost:3001",
+      "enabled": false
+    }
+  },
+  "context_management": {
+    "auto_compact_enabled": true,
+    "compact_threshold": 0.75,
+    "critical_threshold": 0.9,
+    "min_completion_tokens": 512,
+    "preserve_messages": 20
+  },
+  "devices": {
+    "enabled": false,
+    "monitor_usb": true
+  },
+  "gateway": {
+    "host": "127.0.0.1",
+    "port": 18790
+  },
+  "heartbeat": {
+    "enabled": true,
+    "interval": 30
+  },
+  "model_list": [
+    {
+      "api_base": "https://api.z.ai/api/paas/v4",
+      "api_key": "",
+      "model": "zhipu/glm-4.5-flash",
+      "model_name": "glm-4.5-flash"
+    },
+    {
+      "api_base": "https://api.openai.com/v1",
+      "api_key": "",
+      "model": "openai/gpt-5.2",
+      "model_name": "gpt-5.2"
+    },
+    {
+      "api_base": "https://api.anthropic.com/v1",
+      "api_key": "",
+      "model": "anthropic/claude-sonnet-4.6",
+      "model_name": "claude-sonnet-4.6"
+    },
+    {
+      "api_base": "https://api.deepseek.com/v1",
+      "api_key": "",
+      "model": "deepseek/deepseek-chat",
+      "model_name": "deepseek-chat"
+    },
+    {
+      "api_base": "https://generativelanguage.googleapis.com/v1beta/openai/",
+      "api_key": "",
+      "model": "gemini/gemini-2.0-flash-exp",
+      "model_name": "gemini-2.0-flash"
+    },
+    {
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "",
+      "model": "qwen/qwen-plus",
+      "model_name": "qwen-plus"
+    },
+    {
+      "api_base": "https://api.moonshot.cn/v1",
+      "api_key": "",
+      "model": "moonshot/moonshot-v1-8k",
+      "model_name": "moonshot-v1-8k"
+    },
+    {
+      "api_base": "https://api.groq.com/openai/v1",
+      "api_key": "",
+      "model": "groq/llama-3.3-70b-versatile",
+      "model_name": "llama-3.3-70b"
+    },
+    {
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": "",
+      "model": "openrouter/auto",
+      "model_name": "openrouter-auto"
+    },
+    {
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": "",
+      "model": "openrouter/openai/gpt-5.2",
+      "model_name": "openrouter-gpt-5.2"
+    },
+    {
+      "api_base": "https://integrate.api.nvidia.com/v1",
+      "api_key": "",
+      "model": "nvidia/nemotron-4-340b-instruct",
+      "model_name": "nemotron-4-340b"
+    },
+    {
+      "api_base": "https://api.cerebras.ai/v1",
+      "api_key": "",
+      "model": "cerebras/llama-3.3-70b",
+      "model_name": "cerebras-llama-3.3-70b"
+    },
+    {
+      "api_base": "https://ark.cn-beijing.volces.com/api/v3",
+      "api_key": "",
+      "model": "volcengine/doubao-pro-32k",
+      "model_name": "doubao-pro"
+    },
+    {
+      "api_base": "https://api.shengsuanyun.com/v1",
+      "api_key": "",
+      "model": "shengsuanyun/deepseek-v3",
+      "model_name": "deepseek-v3"
+    },
+    {
+      "api_key": "",
+      "model": "gemini/gemini-2.5-flash",
+      "model_name": "gemini-2.5-flash"
+    },
+    {
+      "api_key": "",
+      "model": "gemini/gemini-2.5-flash-image",
+      "model_name": "gemini-2.5-flash-image"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/gemini-3.1-pro-high",
+      "model_name": "gemini-3.1-pro-high"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/gemini-3-flash",
+      "model_name": "antigravity-gemini-3-flash"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/gemini-2.5-pro",
+      "model_name": "gemini-2.5-pro"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/claude-sonnet-4-6",
+      "model_name": "claude-sonnet-4-6"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/claude-opus-4-6-thinking",
+      "model_name": "claude-opus-4-6-thinking"
+    },
+    {
+      "api_base": "http://localhost:4321",
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "github-copilot/gpt-5.2",
+      "model_name": "copilot-gpt-5.2"
+    },
+    {
+      "api_base": "https://api.mistral.ai/v1",
+      "api_key": "",
+      "model": "mistral/mistral-small-latest",
+      "model_name": "mistral-small"
+    },
+    {
+      "api_base": "http://localhost:8000/v1",
+      "api_key": "",
+      "model": "vllm/custom-model",
+      "model_name": "local-model"
+    },
+    {
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama",
+      "model": "qwen2.5:0.5b",
+      "model_name": "qwen2.5:0.5b"
+    },
+    {
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama",
+      "model": "qwen2.5-coder:0.5b",
+      "model_name": "qwen2.5-coder:0.5b"
+    },
+    {
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama",
+      "model": "llama3.2:1b",
+      "model_name": "llama3.2:1b"
+    },
+
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/gemini-3-flash",
+      "model_name": "gemini-3-flash"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/gemini-3-pro-high",
+      "model_name": "gemini-3-pro-high"
+    },
+    {
+      "api_key": "",
+      "auth_method": "oauth",
+      "model": "antigravity/gemini-3-flash-preview",
+      "model_name": "gemini-3-flash-preview"
+    }
+  ],
+  "session": {
+    "dm_scope": "per-channel-peer"
+  },
+  "tools": {
+    "binance": {
+      "api_key": "",
+      "secret_key": ""
+    },
+    "cron": {
+      "exec_timeout_minutes": 5
+    },
+    "exec": {
+      "custom_deny_patterns": [],
+      "enable_deny_patterns": false
+    },
+    "image_gen": {
+      "aspect_ratio": "4:5",
+      "gemini_api_key": "",
+      "gemini_image_model_name": "gemini-2.5-flash-image",
+      "gemini_text_model_name": "gemini-2.5-flash",
+      "ideogram_api_key": "",
+      "ideogram_api_url": "https://api.ideogram.ai/v1/ideogram-v3/generate",
+      "ideogram_aspect_ratio": "4x5",
+      "ideogram_negative_prompt": "text, watermark, signature, blurry, low quality, oversaturated",
+      "ideogram_num_images": 1,
+      "ideogram_rendering_speed": "TURBO",
+      "ideogram_style_type": "REALISTIC",
+      "image_gen_script_path": "",
+      "image_script_path": "",
+      "output_dir": "./workspace/image_gen",
+      "provider": "gemini"
+    },
+    "notion": {
+      "api_key": ""
+    },
+    "skills": {
+      "max_concurrent_searches": 2,
+      "registries": {
+        "clawhub": {
+          "auth_token": "",
+          "base_url": "https://clawhub.ai",
+          "download_path": "/api/v1/download",
+          "enabled": true,
+          "max_response_size": 0,
+          "max_zip_size": 0,
+          "search_path": "/api/v1/search",
+          "skills_path": "/api/v1/skills",
+          "timeout": 0
+        }
+      },
+      "search_cache": {
+        "max_size": 50,
+        "ttl_seconds": 300
+      }
+    },
+    "social_media": {
+      "discord": {
+        "webhook_url": ""
+      },
+      "facebook": {
+        "app_id": "",
+        "app_secret": "",
+        "default_page_id": "",
+        "default_page_token": "",
+        "user_token": ""
+      },
+      "x": {
+        "access_token": "",
+        "access_token_secret": "",
+        "api_key": "",
+        "api_secret": ""
+      }
+    },
+    "web": {
+      "brave": {
+        "api_key": "YOUR_BRAVE_API_KEY",
+        "enabled": false,
+        "max_results": 5
+      },
+      "duckduckgo": {
+        "enabled": true,
+        "max_results": 5
+      },
+      "perplexity": {
+        "api_key": "pplx-xxx",
+        "enabled": false,
+        "max_results": 5
+      },
+      "tavily": {
+        "api_key": "",
+        "base_url": "",
+        "enabled": false,
+        "max_results": 0
+      }
+    }
+  }
+}

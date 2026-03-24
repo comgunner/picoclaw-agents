@@ -1,0 +1,31 @@
+flowchart LR
+  subgraph CLI
+    CLI["cmd/picoclaw (cobra)"]
+  end
+  subgraph Core
+    Agents["pkg/agents, pkg/agent"]
+    Bus["pkg/bus"]
+    Tools["pkg/tools"]
+    Providers["pkg/providers"]
+    Config["pkg/config"]
+  end
+  subgraph Channels
+    Channels["pkg/channels/*"]
+  end
+  subgraph Infra
+    Health["pkg/health"]
+    Tasklock["pkg/tasklock"]
+    Security["pkg/security"]
+  end
+  CLI --> Agents
+  Channels --> Bus
+  Agents --> Bus
+  Bus --> Agents
+  Agents --> Providers
+  Agents --> Tools
+  Providers --> External["External Model APIs (OpenAI, Anthropic, Claude, etc.)"]
+  Tools --> ExternalServices["External Services (Notion, Social APIs, Binance, etc.)"]
+  Config --> CLI
+  Config --> Channels
+  Config --> Providers
+  Infra --> Agents

@@ -1,0 +1,137 @@
+# Binaries & Build Artifacts
+bin/
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/picoclaw
+/picoclaw-test
+cmd/**/workspace
+
+# PicoClaw Specific
+.picoclaw/
+sessions/
+*.session
+*.db
+dupl_report.json
+
+# --- SECRETS & CREDENTIALS (CRITICAL) ---
+.env
+.env.*
+!.env.example
+config/config.json
+config/*.json
+!config/*.example.json
+!config/config.example*.json
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+openssl.cnf
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pub
+auth.json
+*.auth
+tokens.json
+
+# Generic patterns for files likely to contain secrets
+*secret*.json
+*secret*.yaml
+*secret*.yml
+*secret*.txt
+*key*.json
+*key*.yaml
+*key*.yml
+*key*.txt
+
+# Exclude source code files from generic secret patterns
+!*.go
+!*.py
+!*.js
+!*.ts
+!*.c
+!*.h
+!*.cpp
+
+# API Tools, Styles & Collections
+*.http
+*.rest
+*.postman_collection.json
+*.postman_environment.json
+*.insomnia.json
+api-config.json
+swagger.json
+openapi.json
+.netrc
+.npmrc
+
+# ----------------------------------------
+
+# Databases (Local)
+*.sqlite
+*.sqlite3
+history.db
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Enforced Sensitive Files (Step 1)
+.env
+*.log
+__pycache__/
+venv/
+node_modules/
+*.db
+*.session
+
+
+# AI & Workspace
+.qwen/
+.claude/
+IA_WORK_BKP/
+local_work/
+ralph/
+.ralph/
+tasks/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+.env/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage.txt
+coverage.html
+.nyc_output/

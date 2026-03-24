@@ -1,0 +1,132 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/.picoclaw/workspace_context_demo",
+      "restrict_to_workspace": true,
+      "max_tokens": 32768,
+      "max_tool_iterations": 30
+    }
+  },
+  "context_management": {
+    "compact_threshold": 0.75,
+    "critical_threshold": 0.9,
+    "min_completion_tokens": 512,
+    "preserve_messages": 15,
+    "auto_compact_enabled": true
+  },
+  "model_list": [
+    {
+      "model_name": "deepseek-reasoner",
+      "model": "deepseek/deepseek-reasoner",
+      "api_base": "https://api.deepseek.com/v1",
+      "api_key": "YOUR_DEEPSEEK_API_KEY_HERE"
+    },
+    {
+      "model_name": "deepseek-chat",
+      "model": "deepseek/deepseek-chat",
+      "api_base": "https://api.deepseek.com/v1",
+      "api_key": "YOUR_DEEPSEEK_API_KEY_HERE"
+    },
+    {
+      "model_name": "gemini-2.5-flash",
+      "model": "gemini/gemini-2.5-flash",
+      "api_key": ""
+    },
+    {
+      "model_name": "gemini-2.5-flash-image",
+      "model": "gemini/gemini-2.5-flash-image",
+      "api_key": ""
+    },
+    {
+      "model_name": "qwen2.5:0.5b",
+      "model": "qwen2.5:0.5b",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    },
+    {
+      "model_name": "qwen2.5-coder:0.5b",
+      "model": "qwen2.5-coder:0.5b",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    },
+    {
+      "model_name": "llama3.2:1b",
+      "model": "llama3.2:1b",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "tools": {
+    "web": {
+      "duckduckgo": {
+        "enabled": true,
+        "max_results": 5
+      }
+    },
+    "cron": {
+      "exec_timeout_minutes": 5
+    },
+    "exec": {
+      "enable_deny_patterns": true,
+      "custom_deny_patterns": []
+    },
+    "binance": {
+      "api_key": "",
+      "secret_key": ""
+    },
+    "social_media": {
+      "facebook": {
+        "default_page_id": "",
+        "default_page_token": "",
+        "app_id": "",
+        "app_secret": "",
+        "user_token": ""
+      },
+      "x": {
+        "api_key": "",
+        "api_secret": "",
+        "access_token": "",
+        "access_token_secret": ""
+      },
+      "discord": {
+        "webhook_url": ""
+      }
+    },
+    "notion": {
+      "api_key": ""
+    },
+    "image_gen": {
+      "provider": "gemini",
+      "gemini_api_key": "YOUR_GEMINI_API_KEY",
+      "gemini_text_model_name": "gemini-2.5-flash",
+      "gemini_image_model_name": "gemini-2.5-flash-image",
+      "ideogram_api_key": "",
+      "ideogram_api_url": "https://api.ideogram.ai/v1/ideogram-v3/generate",
+      "ideogram_aspect_ratio": "4x5",
+      "ideogram_rendering_speed": "TURBO",
+      "ideogram_style_type": "REALISTIC",
+      "ideogram_num_images": 1,
+      "ideogram_negative_prompt": "text, watermark, signature, blurry, low quality, oversaturated",
+      "aspect_ratio": "4:5",
+      "output_dir": "./workspace/image_gen",
+      "image_script_path": "",
+      "image_gen_script_path": ""
+    },
+    "skills": {
+      "registries": {
+        "clawhub": {
+          "enabled": true,
+          "base_url": "https://clawhub.ai",
+          "search_path": "/api/v1/search",
+          "skills_path": "/api/v1/skills",
+          "download_path": "/api/v1/download"
+        }
+      },
+      "max_concurrent_searches": 2,
+      "search_cache": {
+        "max_size": 50,
+        "ttl_seconds": 300
+      }
+    }
+  }
+}

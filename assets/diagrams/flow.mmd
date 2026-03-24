@@ -1,0 +1,15 @@
+sequenceDiagram
+  participant Channel as Channel (webhook/polling)
+  participant Bus as Message Bus
+  participant Agent as Agent Loop
+  participant Provider as Model Provider
+  participant Tool as Tools/Workflows
+
+  Channel->>Bus: Evento entrante (webhook / update)
+  Bus->>Agent: Despacha mensaje al agente correspondiente
+  Agent->>Provider: Solicita inferencia (API/CLI)
+  Provider-->>Agent: Devuelve resultado de inferencia
+  Agent->>Tool: Llama herramientas (image-gen, posteo social, cron)
+  Tool-->>Agent: Resultado o confirmación
+  Agent->>Bus: Publica respuesta / acción
+  Bus->>Channel: Entrega la respuesta al usuario
