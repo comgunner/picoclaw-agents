@@ -42,7 +42,7 @@ repos:
         language: system
         types: [go]
         pass_filenames: false
-        args: ["./...", "-short"]
+        args: ["./...", "-short", "-timeout", "120s"]
 
   # 5. Validación de documentación
   - repo: https://github.com/pre-commit/pre-commit-hooks
