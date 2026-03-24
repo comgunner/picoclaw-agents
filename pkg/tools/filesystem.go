@@ -39,7 +39,15 @@ func isPathBlacklisted(p string) bool {
 // validatePath ensures the given path is within the workspace if restrict is true.
 func validatePath(path, workspace string, restrict bool) (string, error) {
 	if workspace == "" {
-		return path, fmt.Errorf("workspace is not defined")
+		if restrict {
+			return "", fmt.Errorf("workspace is not defined")
+		}
+		// No restriction — just return the absolute path as-is
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return "", fmt.Errorf("failed to resolve file path: %w", err)
+		}
+		return absPath, nil
 	}
 
 	absWorkspace, err := filepath.Abs(workspace)

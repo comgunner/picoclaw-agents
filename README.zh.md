@@ -193,7 +193,23 @@ picoclaw onboard --openrouter  # 使用 OpenRouter 模板 (openrouter/auto)
 picoclaw onboard --glm         # 使用 GLM-4.5-Flash 模板 (zhipu.ai)
 picoclaw onboard --qwen        # 使用通义千问模板 (阿里云国际版)
 picoclaw onboard --qwen_zh     # 使用通义千问模板 (阿里云国内版)
+picoclaw onboard --gemini      # 使用 Gemini 模板 (gemini-2.5-flash)
 ```
+
+> [!TIP]
+> **没有 API 余额？** 使用 `picoclaw onboard --free` 即可立即开始使用 OpenRouter 的免费模型。只需在 [openrouter.ai](https://openrouter.ai) 创建免费账号并添加密钥 — 无需充值。
+
+#### 🆓 免费模型
+
+`--free` 选项配置三个 OpenRouter 免费模型，支持自动故障转移：
+
+| 优先级 | 模型 | 上下文 | 说明 |
+|--------|------|--------|------|
+| 主要 | `openrouter/free` | 动态 | 自动选择当前最优免费模型 |
+| 备用 1 | `stepfun/step-3.5-flash` | 256K | 适合长上下文任务 |
+| 备用 2 | `deepseek/deepseek-v3.2-20251201` | 64K | 快速可靠的兜底模型 |
+
+三个模型均通过 [OpenRouter](https://openrouter.ai) 路由 — 一个 API 密钥即可覆盖全部。
 
 **2. 配置** (`~/.picoclaw/config.json`)
 

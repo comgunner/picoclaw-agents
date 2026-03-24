@@ -47,6 +47,8 @@ func onboard(template string) {
 		cfg = config.OpenAIDefaultConfig()
 	case "gemini":
 		cfg = config.GeminiDefaultConfig()
+	case "free":
+		cfg = config.OpenRouterFreeDefaultConfig()
 	default:
 		cfg = config.TemplateDefaultConfig()
 	}
@@ -83,6 +85,10 @@ func onboard(template string) {
 	case "gemini":
 		fmt.Println("     - Platform: https://aistudio.google.com/")
 		fmt.Println("     - Keys:     https://aistudio.google.com/app/apikey")
+	case "free":
+		fmt.Println("     - Platform: https://openrouter.ai/")
+		fmt.Println("     - Keys:     https://openrouter.ai/settings/keys")
+		fmt.Println("     - Note:     Free tier models — no balance required, just sign up")
 	default:
 		fmt.Println("     Recommended:")
 		fmt.Println("     - OpenRouter: https://openrouter.ai/keys (access 100+ models)")

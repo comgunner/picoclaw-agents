@@ -298,7 +298,7 @@ func TestShellTool_InvalidPattern(t *testing.T) {
 	if tool != nil {
 		t.Errorf("Expected nil tool on initialization failure, got %v", tool)
 	}
-	if !strings.Contains(err.Error(), "invalid custom deny pattern") {
+	if !strings.Contains(err.Error(), "invalid deny pattern") {
 		t.Errorf("Expected error message to mention invalid pattern, got: %v", err)
 	}
 }

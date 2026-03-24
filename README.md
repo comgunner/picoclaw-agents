@@ -206,13 +206,32 @@ Use the `onboard` command to initialize your workspace with a pre-configured tem
 # Default (Empty/Manual configuration)
 picoclaw onboard
 
+# 🆓 Zero-cost setup — no API balance required:
+picoclaw onboard --free        # Free tier (OpenRouter free models)
+
 # Pre-configured templates:
 picoclaw onboard --openai      # Use OpenAI template (o3-mini)
 picoclaw onboard --openrouter  # Use OpenRouter template (openrouter/auto)
 picoclaw onboard --glm         # Use GLM-4.5-Flash template (zhipu.ai)
 picoclaw onboard --qwen        # Use Qwen template (Alibaba Cloud Intl)
 picoclaw onboard --qwen_zh     # Use Qwen template (Alibaba Cloud China)
+picoclaw onboard --gemini      # Use Gemini template (gemini-2.5-flash)
 ```
+
+> [!TIP]
+> **No API key balance?** Use `picoclaw onboard --free` to get started instantly with OpenRouter's free-tier models. Just create a free account at [openrouter.ai](https://openrouter.ai) and add your key — no credits needed.
+
+#### 🆓 Free Tier Models
+
+The `--free` flag configures three OpenRouter free-tier models with automatic fallback:
+
+| Priority | Model | Context | Notes |
+|----------|-------|---------|-------|
+| Primary | `openrouter/free` | varies | Auto-selects best available free model |
+| Fallback 1 | `stepfun/step-3.5-flash` | 256K | High-context tasks |
+| Fallback 2 | `deepseek/deepseek-v3.2-20251201` | 64K | Fast, reliable fallback |
+
+All three are routed through [OpenRouter](https://openrouter.ai) — a single API key covers all of them.
 
 **2. Configure** (`~/.picoclaw/config.json`)
 

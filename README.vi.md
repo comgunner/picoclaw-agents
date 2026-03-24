@@ -193,7 +193,23 @@ picoclaw onboard --openrouter  # Sử dụng bản mẫu OpenRouter (openrouter/
 picoclaw onboard --glm         # Sử dụng bản mẫu GLM-4.5-Flash (zhipu.ai)
 picoclaw onboard --qwen        # Sử dụng bản mẫu Qwen (Alibaba Cloud quốc tế)
 picoclaw onboard --qwen_zh     # Sử dụng bản mẫu Qwen (Alibaba Cloud nội địa Trung Quốc)
+picoclaw onboard --gemini      # Sử dụng bản mẫu Gemini (gemini-2.5-flash)
 ```
+
+> [!TIP]
+> **Không có số dư API?** Dùng `picoclaw onboard --free` để bắt đầu ngay với các mô hình miễn phí của OpenRouter. Chỉ cần tạo tài khoản tại [openrouter.ai](https://openrouter.ai) và thêm khóa — không cần nạp tiền.
+
+#### 🆓 Mô Hình Miễn Phí
+
+Tùy chọn `--free` cấu hình ba mô hình miễn phí của OpenRouter với tự động chuyển dự phòng:
+
+| Ưu tiên | Mô hình | Ngữ cảnh | Ghi chú |
+|---------|---------|----------|---------|
+| Chính | `openrouter/free` | biến đổi | Tự động chọn mô hình miễn phí tốt nhất |
+| Dự phòng 1 | `stepfun/step-3.5-flash` | 256K | Tác vụ ngữ cảnh dài |
+| Dự phòng 2 | `deepseek/deepseek-v3.2-20251201` | 64K | Dự phòng nhanh và ổn định |
+
+Cả ba đều được định tuyến qua [OpenRouter](https://openrouter.ai) — một khóa API duy nhất phủ toàn bộ.
 
 **2. Cấu hình** (`~/.picoclaw/config.json`)
 

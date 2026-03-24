@@ -193,7 +193,23 @@ picoclaw onboard --openrouter  # OpenRouter テンプレートを使用 (openrou
 picoclaw onboard --glm         # GLM-4.5-Flash テンプレートを使用 (zhipu.ai)
 picoclaw onboard --qwen        # Qwen テンプレートを使用 (Alibaba Cloud Intl)
 picoclaw onboard --qwen_zh     # Qwen テンプレートを使用 (Alibaba Cloud China)
+picoclaw onboard --gemini      # Gemini テンプレートを使用 (gemini-2.5-flash)
 ```
+
+> [!TIP]
+> **APIの残高がない場合** `picoclaw onboard --free` を使用して、OpenRouterの無料モデルですぐに始められます。[openrouter.ai](https://openrouter.ai) で無料アカウントを作成してキーを追加するだけ — クレジット不要。
+
+#### 🆓 無料ティアモデル
+
+`--free` オプションは、自動フォールバック付きで3つのOpenRouter無料モデルを設定します：
+
+| 優先度 | モデル | コンテキスト | 備考 |
+|--------|--------|-------------|------|
+| プライマリ | `openrouter/free` | 可変 | 利用可能な最良の無料モデルを自動選択 |
+| フォールバック 1 | `stepfun/step-3.5-flash` | 256K | 長いコンテキストのタスク向け |
+| フォールバック 2 | `deepseek/deepseek-v3.2-20251201` | 64K | 高速で信頼性の高いフォールバック |
+
+3つすべて [OpenRouter](https://openrouter.ai) 経由でルーティング — 1つのAPIキーですべてをカバー。
 
 **2. 構成** (`~/.picoclaw/config.json`)
 

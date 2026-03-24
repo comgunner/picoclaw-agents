@@ -1,0 +1,57 @@
+# Pre-commit hooks for PicoClaw
+# Install: pre-commit install
+# Run: pre-commit run --all-files
+
+repos:
+  # 1. Detección de secretos (CRÍTICO)
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - --baseline
+          - .secrets.baseline
+          - --exclude-files
+          - '(^|/)config\.example\.json$'
+          - --exclude-lines
+          - 'YOUR_.*_TOKEN|sk-[EXAMPLE]+'
+
+  # 2. Linting de Go
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v2.10.1
+    hooks:
+      - id: golangci-lint
+        args: [--fix, --timeout=5m]
+
+  # 3. Formateo de código
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt
+        entry: gofmt
+        language: system
+        types: [go]
+        args: ["-w"]
+
+  # 4. Validación de tests
+  - repo: local
+    hooks:
+      - id: go-test
+        name: go-test
+        entry: go test
+        language: system
+        types: [go]
+        pass_filenames: false
+        args: ["./...", "-short"]
+
+  # 5. Validación de documentación
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-merge-conflict

@@ -1349,6 +1349,43 @@ func OpenRouterDefaultConfig() *Config {
 	return cfg
 }
 
+// OpenRouterFreeDefaultConfig returns a configuration template that uses only
+// OpenRouter free-tier models — no API balance required.
+// Primary: openrouter/free (auto-selects best available free model)
+// Fallback 1: stepfun/step-3.5-flash (256K context window)
+// Fallback 2: deepseek/deepseek-v3.2-20251201 (fast, reliable fallback)
+func OpenRouterFreeDefaultConfig() *Config {
+	cfg := TemplateDefaultConfig()
+	cfg.Agents.Defaults.Model = "openrouter-free"
+	for i := range cfg.Agents.List {
+		cfg.Agents.List[i].Model = &AgentModelConfig{
+			Primary:   "openrouter-free",
+			Fallbacks: []string{"stepfun-flash", "deepseek-v3-free"},
+		}
+	}
+	cfg.ModelList = []ModelConfig{
+		{
+			ModelName: "openrouter-free",
+			Model:     "openrouter/free",
+			APIBase:   "https://openrouter.ai/api/v1",
+			APIKey:    "",
+		},
+		{
+			ModelName: "stepfun-flash",
+			Model:     "stepfun/step-3.5-flash",
+			APIBase:   "https://openrouter.ai/api/v1",
+			APIKey:    "",
+		},
+		{
+			ModelName: "deepseek-v3-free",
+			Model:     "deepseek/deepseek-v3.2-20251201",
+			APIBase:   "https://openrouter.ai/api/v1",
+			APIKey:    "",
+		},
+	}
+	return cfg
+}
+
 // GeminiDefaultConfig returns a configuration template optimized for Gemini models.
 func GeminiDefaultConfig() *Config {
 	cfg := TemplateDefaultConfig()

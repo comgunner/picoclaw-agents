@@ -96,8 +96,14 @@ func (t *MemoryStoreTool) Execute(ctx context.Context, args map[string]any) *Too
 	case "set":
 		key, _ := args["key"].(string)
 		value := args["value"]
-		ttlSeconds, _ := args["ttl_seconds"].(float64)
-		return t.set(key, value, int(ttlSeconds))
+		var ttlSeconds int
+		switch v := args["ttl_seconds"].(type) {
+		case float64:
+			ttlSeconds = int(v)
+		case int:
+			ttlSeconds = v
+		}
+		return t.set(key, value, ttlSeconds)
 	case "get":
 		key, _ := args["key"].(string)
 		return t.get(key)
@@ -288,10 +294,8 @@ func (t *MemoryStoreTool) count() *ToolResult {
 }
 
 // saveToDisk persists the store to disk.
+// saveToDisk must be called with storeMu already held by the caller.
 func (t *MemoryStoreTool) saveToDisk() error {
-	t.storeMu.RLock()
-	defer t.storeMu.RUnlock()
-
 	data, err := json.MarshalIndent(t.store, "", "  ")
 	if err != nil {
 		return err

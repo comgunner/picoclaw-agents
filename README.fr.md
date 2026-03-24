@@ -193,7 +193,23 @@ picoclaw onboard --openrouter  # Utiliser le modèle OpenRouter (openrouter/auto
 picoclaw onboard --glm         # Utiliser le modèle GLM-4.5-Flash (zhipu.ai)
 picoclaw onboard --qwen        # Utiliser le modèle Qwen (Alibaba Cloud Intl)
 picoclaw onboard --qwen_zh     # Utiliser le modèle Qwen (Alibaba Cloud China)
+picoclaw onboard --gemini      # Utiliser le modèle Gemini (gemini-2.5-flash)
 ```
+
+> [!TIP]
+> **Pas de solde API ?** Utilisez `picoclaw onboard --free` pour démarrer immédiatement avec les modèles gratuits d'OpenRouter. Créez simplement un compte sur [openrouter.ai](https://openrouter.ai) et ajoutez votre clé — aucun crédit requis.
+
+#### 🆓 Niveau Gratuit
+
+L'option `--free` configure trois modèles gratuits OpenRouter avec basculement automatique :
+
+| Priorité | Modèle | Contexte | Notes |
+|----------|--------|----------|-------|
+| Principal | `openrouter/free` | variable | Sélectionne automatiquement le meilleur modèle gratuit disponible |
+| Repli 1 | `stepfun/step-3.5-flash` | 256K | Tâches à contexte long |
+| Repli 2 | `deepseek/deepseek-v3.2-20251201` | 64K | Repli rapide et fiable |
+
+Les trois sont acheminés via [OpenRouter](https://openrouter.ai) — une seule clé API les couvre tous.
 
 **2. Configurer** (`~/.picoclaw/config.json`)
 

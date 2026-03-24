@@ -203,13 +203,32 @@ Usa el comando `onboard` para inicializar tu espacio de trabajo con una plantill
 # Por defecto (Configuración vacía/manual)
 picoclaw onboard
 
+# 🆓 Configuración gratuita — no requiere saldo en la API:
+picoclaw onboard --free        # Nivel gratuito (modelos gratuitos de OpenRouter)
+
 # Plantillas preconfiguradas:
 picoclaw onboard --openai      # Usar plantilla de OpenAI (o3-mini)
 picoclaw onboard --openrouter  # Usar plantilla de OpenRouter (openrouter/auto)
 picoclaw onboard --glm         # Usar plantilla de GLM-4.5-Flash (zhipu.ai)
 picoclaw onboard --qwen        # Usar plantilla de Qwen (Alibaba Cloud Intl)
 picoclaw onboard --qwen_zh     # Usar plantilla de Qwen (Alibaba Cloud China)
+picoclaw onboard --gemini      # Usar plantilla de Gemini (gemini-2.5-flash)
 ```
+
+> [!TIP]
+> **¿Sin saldo en la API?** Usa `picoclaw onboard --free` para comenzar de inmediato con los modelos gratuitos de OpenRouter. Solo crea una cuenta en [openrouter.ai](https://openrouter.ai) y agrega tu clave — no necesitas créditos.
+
+#### 🆓 Modelos Gratuitos
+
+La opción `--free` configura tres modelos gratuitos de OpenRouter con respaldo automático:
+
+| Prioridad | Modelo | Contexto | Notas |
+|-----------|--------|----------|-------|
+| Principal | `openrouter/free` | variable | Selecciona automáticamente el mejor modelo gratuito disponible |
+| Respaldo 1 | `stepfun/step-3.5-flash` | 256K | Tareas con contexto largo |
+| Respaldo 2 | `deepseek/deepseek-v3.2-20251201` | 64K | Respaldo rápido y confiable |
+
+Los tres se enrutan a través de [OpenRouter](https://openrouter.ai) — una sola clave API los cubre todos.
 
 **2. Configurar** (`~/.picoclaw/config.json`)
 
