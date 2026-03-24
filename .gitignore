@@ -9,6 +9,7 @@ dist/
 *.test
 *.out
 /picoclaw
+picoclaw
 /picoclaw-test
 cmd/**/workspace
 
@@ -107,6 +108,9 @@ node_modules/
 
 
 # AI & Workspace
+QWEN.md
+GEMINI.md
+CLAUDE.md
 .qwen/
 .claude/
 IA_WORK_BKP/
@@ -135,3 +139,5 @@ yarn-error.log*
 coverage.txt
 coverage.html
 .nyc_output/
+dupl_report.json
+dupl_report.json
