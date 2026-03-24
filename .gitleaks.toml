@@ -1,0 +1,71 @@
+title = "PicoClaw Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Key"
+regex = '''sk-[a-zA-Z0-9]{20,}'''
+tags = ["key", "API", "OpenAI"]
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API Key"
+regex = '''sk-ant-[a-zA-Z0-9\-_]{20,}'''
+tags = ["key", "API", "Anthropic"]
+
+[[rules]]
+id = "groq-api-key"
+description = "Groq API Key"
+regex = '''gsk_[a-zA-Z0-9]{50,}'''
+tags = ["key", "API", "Groq"]
+
+[[rules]]
+id = "openrouter-api-key"
+description = "OpenRouter API Key"
+regex = '''sk-or-[a-zA-Z0-9\-_]{30,}'''
+tags = ["key", "API", "OpenRouter"]
+
+[[rules]]
+id = "google-ai-studio-key"
+description = "Google AI Studio Key"
+regex = '''AIza[a-zA-Z0-9\-_]{35}'''
+tags = ["key", "API", "Google"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Token"
+regex = '''gh[pousr]_[a-zA-Z0-9]{36}'''
+tags = ["key", "API", "GitHub"]
+
+[[rules]]
+id = "telegram-bot-token"
+description = "Telegram Bot Token"
+regex = '''[0-9]{8,10}:[a-zA-Z0-9_\-]{35,}'''
+tags = ["key", "API", "Telegram"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+tags = ["key", "private"]
+
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]+'''
+tags = ["token", "JWT"]
+
+[allowlist]
+description = "Allowlisted files"
+files = [
+    '''config\.example\.json''',
+    '''_test\.go$''',
+    '''docs/ANTIGRAVITY_AUTH.*\.md$''',
+    '''docs/channels/.*\.md$''',
+    '''local_work/.*\.md$'''
+]
+paths = [
+    '''local_work/.*'''
+]
