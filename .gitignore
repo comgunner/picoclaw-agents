@@ -119,11 +119,11 @@ ralph/
 .ralph/
 tasks/
 
-# Workspace personal files (agent identity, soul, user profile)
-workspace/USER.md
-workspace/SOUL.md
-workspace/IDENTITY.md
-workspace/AGENTS.md
+# Workspace personal files — tracked intentionally
+!workspace/USER.md
+!workspace/SOUL.md
+!workspace/IDENTITY.md
+!workspace/AGENTS.md
 
 # Local runtime/notes files
 agent.txt
