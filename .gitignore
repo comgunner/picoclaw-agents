@@ -129,6 +129,11 @@ tasks/
 agent.txt
 n8n.txt
 
+# Local scripts and backups
+docs_backup_*/
+update_log_*.txt
+update_docs_binary_name.sh
+
 # Python
 __pycache__/
 *.pyc
