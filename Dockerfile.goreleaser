@@ -7,7 +7,7 @@ RUN apk add --no-cache ca-certificates tzdata
 RUN addgroup -g 1000 picoclaw && \
     adduser -D -u 1000 -G picoclaw picoclaw
 
-COPY $TARGETPLATFORM/picoclaw /usr/local/bin/picoclaw
+COPY $TARGETPLATFORM/picoclaw-agents /usr/local/bin/picoclaw-agents
 
 USER picoclaw
 
@@ -16,5 +16,5 @@ RUN mkdir -p /home/picoclaw/.picoclaw/workspace \
              /home/picoclaw/.picoclaw/memory \
              /home/picoclaw/.picoclaw/skills
 
-ENTRYPOINT ["picoclaw"]
+ENTRYPOINT ["picoclaw-agents"]
 CMD ["gateway"]

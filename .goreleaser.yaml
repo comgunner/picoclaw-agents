@@ -33,7 +33,7 @@ builds:
       - arm
     goarm:
       - "7"
-    binary: picoclaw
+    binary: picoclaw-agents
     main: ./cmd/picoclaw
     ignore:
       - goos: windows
