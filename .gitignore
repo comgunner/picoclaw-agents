@@ -2,6 +2,7 @@
 bin/
 build/
 dist/
+release_assets/
 *.exe
 *.dll
 *.so
