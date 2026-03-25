@@ -108,7 +108,84 @@ PicoClaw peut être déployé sur presque n'importe quel appareil Linux, des sim
 
 ### Installer avec un binaire précompilé
 
-Téléchargez le micrologiciel pour votre plateforme depuis la page des [releases](https://github.com/comgunner/picoclaw-agents/releases).
+#### 🍎 macOS (Apple Silicon - M1/M2/M3)
+
+**Téléchargement et installation directs :**
+
+```bash
+# Télécharger la dernière version
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Darwin_arm64.tar.gz
+
+# Extraire
+tar -xzf picoclaw-agents_Darwin_arm64.tar.gz
+
+# Rendre exécutable
+chmod +x picoclaw-agents
+
+# Déplacer vers PATH (optionnel)
+sudo mv picoclaw-agents /usr/local/bin/
+
+# Vérifier l'installation
+picoclaw-agents --version
+```
+
+#### 🍎 macOS (Intel - x86_64)
+
+```bash
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Darwin_x86_64.tar.gz
+tar -xzf picoclaw-agents_Darwin_x86_64.tar.gz
+chmod +x picoclaw-agents
+sudo mv picoclaw-agents /usr/local/bin/
+```
+
+#### 🪟 Windows (x86_64)
+
+**PowerShell (Admin) :**
+
+```powershell
+# Télécharger la dernière version
+Invoke-WebRequest -Uri "https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Windows_x86_64.zip" -OutFile "picoclaw-agents.zip"
+
+# Extraire
+Expand-Archive -Path "picoclaw-agents.zip" -DestinationPath "$env:USERPROFILE\picoclaw-agents"
+
+# Ajouter au PATH (optionnel - nécessite admin)
+$env:Path += ";$env:USERPROFILE\picoclaw-agents"
+[Environment]::SetEnvironmentVariable("Path", $env:Path, "User")
+
+# Vérifier
+picoclaw-agents --version
+```
+
+#### 🐧 Linux
+
+```bash
+# ARM64 (Raspberry Pi 4, AWS Graviton, etc.)
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Linux_arm64.tar.gz
+tar -xzf picoclaw-agents_Linux_arm64.tar.gz
+chmod +x picoclaw-agents
+sudo mv picoclaw-agents /usr/local/bin/
+
+# x86_64 (Intel/AMD)
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Linux_x86_64.tar.gz
+tar -xzf picoclaw-agents_Linux_x86_64.tar.gz
+chmod +x picoclaw-agents
+sudo mv picoclaw-agents /usr/local/bin/
+```
+
+#### 📦 Toutes les plateformes
+
+Téléchargez le micrologiciel pour votre plateforme depuis la [page des releases](https://github.com/comgunner/picoclaw-agents/releases).
+
+| Plateforme | Architecture | Fichier |
+|------------|--------------|---------|
+| macOS | Apple Silicon (M1/M2/M3) | `picoclaw-agents_Darwin_arm64.tar.gz` |
+| macOS | Intel (x86_64) | `picoclaw-agents_Darwin_x86_64.tar.gz` |
+| Linux | ARM64 | `picoclaw-agents_Linux_arm64.tar.gz` |
+| Linux | x86_64 | `picoclaw-agents_Linux_x86_64.tar.gz` |
+| Linux | ARMv7 | `picoclaw-agents_Linux_armv7.tar.gz` |
+| Windows | x86_64 | `picoclaw-agents_Windows_x86_64.zip` |
+| Windows | ARM64 | `picoclaw-agents_Windows_arm64.zip` |
 
 ### Installer à partir des sources (dernières fonctionnalités, recommandé pour le développement)
 

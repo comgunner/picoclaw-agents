@@ -106,9 +106,86 @@ PicoClaw có thể được triển khai trên hầu hết mọi thiết bị Li
 
 ## 📦 Cài đặt
 
-### Cài đặt bằng tệp thực thi biên dịch sẵn
+### Cài đặt với binary đã biên dịch trước
 
-Tải xuống firmware cho nền tảng của bạn từ trang [releases](https://github.com/comgunner/picoclaw-agents/releases).
+#### 🍎 macOS (Apple Silicon - M1/M2/M3)
+
+**Tải xuống và cài đặt trực tiếp:**
+
+```bash
+# Tải xuống phiên bản mới nhất
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Darwin_arm64.tar.gz
+
+# Giải nén
+tar -xzf picoclaw-agents_Darwin_arm64.tar.gz
+
+# Làm cho có thể thực thi
+chmod +x picoclaw-agents
+
+# Di chuyển vào PATH (tùy chọn)
+sudo mv picoclaw-agents /usr/local/bin/
+
+# Xác minh cài đặt
+picoclaw-agents --version
+```
+
+#### 🍎 macOS (Intel - x86_64)
+
+```bash
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Darwin_x86_64.tar.gz
+tar -xzf picoclaw-agents_Darwin_x86_64.tar.gz
+chmod +x picoclaw-agents
+sudo mv picoclaw-agents /usr/local/bin/
+```
+
+#### 🪟 Windows (x86_64)
+
+**PowerShell (Quản trị viên):**
+
+```powershell
+# Tải xuống phiên bản mới nhất
+Invoke-WebRequest -Uri "https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Windows_x86_64.zip" -OutFile "picoclaw-agents.zip"
+
+# Giải nén
+Expand-Archive -Path "picoclaw-agents.zip" -DestinationPath "$env:USERPROFILE\picoclaw-agents"
+
+# Thêm vào PATH (tùy chọn - yêu cầu quản trị viên)
+$env:Path += ";$env:USERPROFILE\picoclaw-agents"
+[Environment]::SetEnvironmentVariable("Path", $env:Path, "User")
+
+# Xác minh
+picoclaw-agents --version
+```
+
+#### 🐧 Linux
+
+```bash
+# ARM64 (Raspberry Pi 4, AWS Graviton, v.v.)
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Linux_arm64.tar.gz
+tar -xzf picoclaw-agents_Linux_arm64.tar.gz
+chmod +x picoclaw-agents
+sudo mv picoclaw-agents /usr/local/bin/
+
+# x86_64 (Intel/AMD)
+curl -LO https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents_Linux_x86_64.tar.gz
+tar -xzf picoclaw-agents_Linux_x86_64.tar.gz
+chmod +x picoclaw-agents
+sudo mv picoclaw-agents /usr/local/bin/
+```
+
+#### 📦 Tất cả nền tảng
+
+Tải xuống firmware cho nền tảng của bạn từ [trang releases](https://github.com/comgunner/picoclaw-agents/releases).
+
+| Nền tảng | Kiến trúc | Tệp |
+|----------|-----------|------|
+| macOS | Apple Silicon (M1/M2/M3) | `picoclaw-agents_Darwin_arm64.tar.gz` |
+| macOS | Intel (x86_64) | `picoclaw-agents_Darwin_x86_64.tar.gz` |
+| Linux | ARM64 | `picoclaw-agents_Linux_arm64.tar.gz` |
+| Linux | x86_64 | `picoclaw-agents_Linux_x86_64.tar.gz` |
+| Linux | ARMv7 | `picoclaw-agents_Linux_armv7.tar.gz` |
+| Windows | x86_64 | `picoclaw-agents_Windows_x86_64.zip` |
+| Windows | ARM64 | `picoclaw-agents_Windows_arm64.zip` |
 
 ### Cài đặt từ mã nguồn (các tính năng mới nhất, khuyến nghị cho phát triển)
 
