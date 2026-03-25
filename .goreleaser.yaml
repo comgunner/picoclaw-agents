@@ -11,6 +11,7 @@ builds:
   - id: picoclaw
     env:
       - CGO_ENABLED=0
+      - GOMAXPROCS=2
     tags:
       - stdjson
     ldflags:
@@ -31,7 +32,8 @@ builds:
       - loong64
       - arm
     goarm:
-      - "7"             
+      - "7"
+    binary: picoclaw
     main: ./cmd/picoclaw
     ignore:
       - goos: windows

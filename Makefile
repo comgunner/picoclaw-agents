@@ -87,6 +87,10 @@ build: generate
 	@echo "Build complete: $(BINARY_PATH)"
 	@ln -sf $(BINARY_NAME)-$(PLATFORM)-$(ARCH) $(BUILD_DIR)/$(BINARY_NAME)
 
+## dist: Build all platforms via goreleaser (parallelism limited to 2)
+dist: generate
+	@goreleaser build --snapshot --clean --parallelism 2
+
 ## build-all: Build picoclaw for all platforms
 build-all: generate
 	@echo "Building for multiple platforms..."
