@@ -15,11 +15,12 @@ import (
 	"sort"
 	"time"
 
-	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/process"
+
+	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
 // SystemDiagnosticsTool provides real-time system status information.
@@ -89,7 +90,9 @@ func (t *SystemDiagnosticsTool) Execute(ctx context.Context, args map[string]any
 	case "all":
 		return t.getAllDiagnostics()
 	default:
-		return ErrorResult(fmt.Sprintf("unknown metric: %s. Valid options: cpu, ram, disk, processes, logs, all", metric))
+		return ErrorResult(
+			fmt.Sprintf("unknown metric: %s. Valid options: cpu, ram, disk, processes, logs, all", metric),
+		)
 	}
 }
 
@@ -103,6 +106,15 @@ func (t *SystemDiagnosticsTool) getCPUUsage() *ToolResult {
 				"error": err.Error(),
 			})
 		return ErrorResult(fmt.Sprintf("failed to get CPU usage: %v", err))
+	}
+
+	// Handle empty result (can happen on some systems like macOS ARM64)
+	if len(percent) == 0 {
+		logger.WarnCF("tool", "CPU percent returned empty slice",
+			map[string]any{
+				"tool": "system_diagnostics",
+			})
+		return SilentResult("CPU Usage: unavailable (system does not provide CPU metrics)")
 	}
 
 	result := map[string]any{
@@ -202,7 +214,7 @@ func (t *SystemDiagnosticsTool) getProcesses(limit int) *ToolResult {
 		cpuPercent, _ := p.CPUPercent()
 		memPercent, _ := p.MemoryPercent()
 		statuses, _ := p.Status()
-		
+
 		var status string
 		if len(statuses) > 0 {
 			status = statuses[0]
@@ -250,11 +262,25 @@ func (t *SystemDiagnosticsTool) getAllDiagnostics() *ToolResult {
 	cpuPercent, _ := cpu.Percent(time.Second, false)
 	vmStat, _ := mem.VirtualMemory()
 
-	result := map[string]any{
-		"cpu": map[string]any{
+	// Handle empty CPU result (can happen on some systems like macOS ARM64)
+	var cpuData map[string]any
+	var cpuStr string
+	if len(cpuPercent) > 0 {
+		cpuData = map[string]any{
 			"percent": cpuPercent[0],
 			"cores":   runtime.NumCPU(),
-		},
+		}
+		cpuStr = fmt.Sprintf("%.2f%%", cpuPercent[0])
+	} else {
+		cpuData = map[string]any{
+			"percent": "unavailable",
+			"cores":   runtime.NumCPU(),
+		}
+		cpuStr = "unavailable"
+	}
+
+	result := map[string]any{
+		"cpu": cpuData,
 		"ram": map[string]any{
 			"total_mb":     vmStat.Total / 1024 / 1024,
 			"used_mb":      vmStat.Used / 1024 / 1024,
@@ -264,6 +290,6 @@ func (t *SystemDiagnosticsTool) getAllDiagnostics() *ToolResult {
 	}
 
 	_ = result // For future structured output
-	return SilentResult(fmt.Sprintf("System diagnostics: CPU %.2f%%, RAM %.1f%% used",
-		cpuPercent[0], vmStat.UsedPercent))
+	return SilentResult(fmt.Sprintf("System diagnostics: CPU %s, RAM %.1f%% used",
+		cpuStr, vmStat.UsedPercent))
 }
