@@ -12,9 +12,9 @@ PicoClaw soporta **3 proveedores** con autenticación integrada:
 
 | Proveedor            | Comando                                                                            | Método de Auth                           | Modelo default que activa                           |
 | -------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------- |
-| `google-antigravity` | `./picoclaw auth antigravity`<br>o `--provider google-antigravity`                 | OAuth 2.0 + PKCE (browser)               | `gemini-flash` → `antigravity/gemini-3-flash`       |
-| `openai`             | `./picoclaw auth login --provider openai`<br>Agregar `--device-code` para headless | OAuth 2.0 + PKCE (browser o device code) | `gpt-5.2` → `openai/gpt-5.2`                        |
-| `anthropic`          | `./picoclaw auth login --provider anthropic`                                       | Pegar API key manualmente (sin OAuth)    | `claude-sonnet-4.6` → `anthropic/claude-sonnet-4.6` |
+| `google-antigravity` | `./picoclaw-agents auth antigravity`<br>o `--provider google-antigravity`                 | OAuth 2.0 + PKCE (browser)               | `gemini-flash` → `antigravity/gemini-3-flash`       |
+| `openai`             | `./picoclaw-agents auth login --provider openai`<br>Agregar `--device-code` para headless | OAuth 2.0 + PKCE (browser o device code) | `gpt-5.2` → `openai/gpt-5.2`                        |
+| `anthropic`          | `./picoclaw-agents auth login --provider anthropic`                                       | Pegar API key manualmente (sin OAuth)    | `claude-sonnet-4.6` → `anthropic/claude-sonnet-4.6` |
 
 > [!NOTE]
 > `anthropic` usa una **API key estática** (se obtiene en [console.anthropic.com](https://console.anthropic.com)). No tiene `refresh_token` ni expira automáticamente. Los otros dos proveedores usan OAuth con auto-refresh.
@@ -23,25 +23,25 @@ PicoClaw soporta **3 proveedores** con autenticación integrada:
 
 ```bash
 # Google Antigravity (recomendado — gratuito con Google One AI Premium)
-./picoclaw auth antigravity
+./picoclaw-agents auth antigravity
 
 # OpenAI (requiere cuenta OpenAI con suscripción ChatGPT)
-./picoclaw auth login --provider openai
+./picoclaw-agents auth login --provider openai
 
 # OpenAI headless (VPS/servidor sin navegador)
-./picoclaw auth login --provider openai --device-code
+./picoclaw-agents auth login --provider openai --device-code
 
 # Anthropic (requiere API key de console.anthropic.com)
-./picoclaw auth login --provider anthropic
+./picoclaw-agents auth login --provider anthropic
 
 # Ver estado de todos los proveedores autenticados
-./picoclaw auth status
+./picoclaw-agents auth status
 
 # Cerrar sesión de un proveedor específico
-./picoclaw auth logout --provider google-antigravity
+./picoclaw-agents auth logout --provider google-antigravity
 
 # Cerrar sesión de todos los proveedores
-./picoclaw auth logout
+./picoclaw-agents auth logout
 ```
 
 ---
@@ -696,7 +696,7 @@ Algunos modelos pueden aparecer en la lista de modelos disponibles pero devolver
 
 ## "Token expirado" (403 PERMISSION_DENIED)
 - El sistema ahora intenta auto-refresh incluso para tokens ya expirados.
-- Si el auto-refresh falla, re-autentíquese: `./picoclaw auth antigravity`
+- Si el auto-refresh falla, re-autentíquese: `./picoclaw-agents auth antigravity`
 
 ## "Gemini for Google Cloud no está habilitado"
 - Habilite la API en su Google Cloud Console

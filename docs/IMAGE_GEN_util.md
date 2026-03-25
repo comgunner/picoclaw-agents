@@ -85,7 +85,7 @@ Generates **TEXT FOR SOCIAL MEDIA POSTS** (Facebook, Twitter, Discord).
 
 **Example:**
 ```bash
-./picoclaw agent -m "Use text_script_create with topic='Artificial Intelligence', category='news'"
+./picoclaw-agents agent -m "Use text_script_create with topic='Artificial Intelligence', category='news'"
 ```
 
 **Output:** Facebook post text (max 1200 chars, viral style)
@@ -109,7 +109,7 @@ Generates **STATIC IMAGES** from text prompt.
 
 **Example:**
 ```bash
-./picoclaw agent -m "Use image_gen_create with prompt='Cinematic sunset over mountains'"
+./picoclaw-agents agent -m "Use image_gen_create with prompt='Cinematic sunset over mountains'"
 ```
 
 **Output:** Static JPG image
@@ -134,7 +134,7 @@ Creates post text + generates image based on topic.
 
 **Example:**
 ```bash
-./picoclaw agent -m "Use script_to_image_workflow with topic='Dragon story'"
+./picoclaw-agents agent -m "Use script_to_image_workflow with topic='Dragon story'"
 ```
 
 **Output:** Post text + Static image
@@ -167,22 +167,22 @@ Generates post text based on an image.
 
 ```bash
 # Generate TEXT FOR FACEBOOK POST
-./picoclaw agent -m "Use text_script_create with topic='Artificial Intelligence', category='news'"
+./picoclaw-agents agent -m "Use text_script_create with topic='Artificial Intelligence', category='news'"
 
 # Generate STATIC IMAGE
-./picoclaw agent -m "Use image_gen_create with prompt='Cinematic sunset over mountains'"
+./picoclaw-agents agent -m "Use image_gen_create with prompt='Cinematic sunset over mountains'"
 
 # Generate with aspect ratio
-./picoclaw agent -m "Use image_gen_create with prompt='Product photo', aspect_ratio='16:9'"
+./picoclaw-agents agent -m "Use image_gen_create with prompt='Product photo', aspect_ratio='16:9'"
 
 # Create POST TEXT + IMAGE
-./picoclaw agent -m "Use script_to_image_workflow with topic='Dragon story'"
+./picoclaw-agents agent -m "Use script_to_image_workflow with topic='Dragon story'"
 
 # Post-generation workflow
-./picoclaw agent -m "Use image_gen_workflow with image_path='./workspace/image_gen/20260301_abc/20260301_abc.-imagen.jpg'"
+./picoclaw-agents agent -m "Use image_gen_workflow with image_path='./workspace/image_gen/20260301_abc/20260301_abc.-imagen.jpg'"
 
 # Generate post text from image
-./picoclaw agent -m "Use community_from_image with image_path='./workspace/image_gen/test.jpg', platform='facebook'"
+./picoclaw-agents agent -m "Use community_from_image with image_path='./workspace/image_gen/test.jpg', platform='facebook'"
 ```
 
 ---
@@ -205,8 +205,8 @@ When you generate an image, PicoClaw will respond with the image and **interacti
 - `🔄 Regenerate`: Attempts to generate a different version.
 
 **Multi-agent delegation (Recommended):**
-- "@picoclaw subagent task='Create a horror story script and its image'"
-- "@picoclaw spawn task='Generate astronomy content and publish it'"
+- "@picoclaw-agents subagent task='Create a horror story script and its image'"
+- "@picoclaw-agents spawn task='Generate astronomy content and publish it'"
 
 ---
 
@@ -289,27 +289,27 @@ You can use your own prompts:
 
 ```bash
 # Step 1: Generate POST TEXT
-./picoclaw agent -m "Use text_script_create with topic='AI revolution'"
+./picoclaw-agents agent -m "Use text_script_create with topic='AI revolution'"
 
 # Step 2: Generate IMAGE
-./picoclaw agent -m "Use image_gen_create with prompt='Futuristic robot'"
+./picoclaw-agents agent -m "Use image_gen_create with prompt='Futuristic robot'"
 
 # Step 3: Publish to Facebook
-./picoclaw agent -m "Publish text and image to Facebook"
+./picoclaw-agents agent -m "Publish text and image to Facebook"
 ```
 
 ### Workflow 2: Direct Generation
 
 ```bash
 # All in one
-./picoclaw agent -m "Generate product image and post to Twitter with text"
+./picoclaw-agents agent -m "Generate product image and post to Twitter with text"
 ```
 
 ### Workflow 3: Multi-Agent Delegation (v3.4.1+)
 
 ```bash
 # Delegate full workflow to subagent
-./picoclaw agent -m "spawn task='Generate image about AI, create Twitter post, and publish it' label='ai_campaign'"
+./picoclaw-agents agent -m "spawn task='Generate image about AI, create Twitter post, and publish it' label='ai_campaign'"
 
 # The subagent will:
 # 1. Generate image with image_gen_create

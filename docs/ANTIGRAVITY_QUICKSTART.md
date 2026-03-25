@@ -11,15 +11,15 @@
 
 ```bash
 # Recommended command (works in all cases)
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 
 # Alternative short name (also works)
-./picoclaw auth login --provider antigravity
+./picoclaw-agents auth login --provider antigravity
 ```
 
 > [!IMPORTANT]
-> ❌ **DO NOT use:** `./picoclaw auth antigravity` (this command does NOT exist)  
-> ✅ **Always use:** `./picoclaw auth login --provider google-antigravity`
+> ❌ **DO NOT use:** `./picoclaw-agents auth antigravity` (this command does NOT exist)  
+> ✅ **Always use:** `./picoclaw-agents auth login --provider google-antigravity`
 
 ---
 
@@ -38,10 +38,10 @@
 
 ```bash
 # Check auth status
-./picoclaw auth status
+./picoclaw-agents auth status
 
 # View available models
-./picoclaw auth models
+./picoclaw-agents auth models
 ```
 
 Expected output:
@@ -64,13 +64,13 @@ Available Antigravity Models:
 
 ```bash
 # Run the gateway (for chat channels like Telegram, Discord)
-./picoclaw gateway
+./picoclaw-agents gateway
 
 # Or run a one-shot query
-./picoclaw agent -m "Hello, how are you?"
+./picoclaw-agents agent -m "Hello, how are you?"
 
 # Use a specific Antigravity model
-./picoclaw agent -m "Write a poem" --model antigravity/gemini-3-flash
+./picoclaw-agents agent -m "Write a poem" --model antigravity/gemini-3-flash
 ```
 
 ---
@@ -79,10 +79,10 @@ Available Antigravity Models:
 
 | Command | Description |
 |---------|-------------|
-| `./picoclaw auth login --provider google-antigravity` | Login with Antigravity |
-| `./picoclaw auth status` | Check authentication status |
-| `./picoclaw auth models` | List available models |
-| `./picoclaw auth logout --provider google-antigravity` | Logout from Antigravity |
+| `./picoclaw-agents auth login --provider google-antigravity` | Login with Antigravity |
+| `./picoclaw-agents auth status` | Check authentication status |
+| `./picoclaw-agents auth models` | List available models |
+| `./picoclaw-agents auth logout --provider google-antigravity` | Logout from Antigravity |
 
 ---
 
@@ -131,18 +131,18 @@ After successful login, your `~/.picoclaw/config.json` is automatically updated:
 
 **Solution:**
 ```bash
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 ```
 
 ---
 
 ### ❌ "unrecognized command: antigravity"
 
-**Cause:** `./picoclaw auth antigravity` is **NOT a valid command**.
+**Cause:** `./picoclaw-agents auth antigravity` is **NOT a valid command**.
 
 **Solution:**
 ```bash
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 ```
 
 ---
@@ -154,7 +154,7 @@ After successful login, your `~/.picoclaw/config.json` is automatically updated:
 **Solution:**
 ```bash
 # Re-authenticate
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 ```
 
 ---
@@ -205,4 +205,4 @@ After successful login, your `~/.picoclaw/config.json` is automatically updated:
 
 ---
 
-**Ready to start?** Run `./picoclaw auth login --provider google-antigravity` now! 🚀
+**Ready to start?** Run `./picoclaw-agents auth login --provider google-antigravity` now! 🚀

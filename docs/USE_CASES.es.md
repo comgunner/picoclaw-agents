@@ -105,7 +105,7 @@ Con v3.4.1, el **Global Tracker** asegura consistencia perfecta en flujos de tra
 
 1. **Usuario solicita contenido**:
    ```
-   @picoclaw spawn task='Genera imagen sobre IA y crea post para Twitter'
+   @picoclaw-agents spawn task='Genera imagen sobre IA y crea post para Twitter'
    ```
 
 2. **Subagente trabaja**:

@@ -23,13 +23,13 @@ All notable changes to the PicoClaw project will be documented in this file.
 - **Gemini/Antigravity Schema Fix**: Added `sanitizeSchemaForGemini()` to handle JSON Schema types incompatible with Google AI Platform. Replaces `"type": "any"` and invalid types with `"type": "object"`.
 
 ### 🐛 Bug Fixes
-- **Model Naming (MP-02)**: Fixed auto-generated config from `picoclaw auth login --provider google-antigravity` using incorrect model name `"gemini-flash"`. Now generates `"antigravity-gemini-3-flash"` consistently.
+- **Model Naming (MP-02)**: Fixed auto-generated config from `picoclaw-agents auth login --provider google-antigravity` using incorrect model name `"gemini-flash"`. Now generates `"antigravity-gemini-3-flash"` consistently.
 - **Tool Response Parsing**: Improved tool response parsing in Antigravity provider with better JSON handling and name resolution from call IDs.
 - **TokenBudget Deadlock (Problema 9)**: Fixed agent blocking indefinitely when token budget exceeded 80%. Implemented Hard Limit (100%) in `CanAfford` and Soft Limit (80%) in `Charge` for preventive GC. Agent now self-recovers automatically.
 - **Rehydration Diagnostic Loop (Problema 10)**: Fixed agent entering a prolonged tool-calling diagnostic loop after crash recovery. Added explicit suppressor in rehydration message to prevent LLM from invoking internal diagnostic tools before confirming availability to the user. Heartbeat stranded locks are now silently discarded instead of triggering full recovery flow.
 
 ### ✨ New Features
-- **Clean Command (LP-02)**: New `picoclaw clean` command to remove old or corrupt session files. Supports `--all`, `--older-than <duration>`, and `--dry-run` flags.
+- **Clean Command (LP-02)**: New `picoclaw-agents clean` command to remove old or corrupt session files. Supports `--all`, `--older-than <duration>`, and `--dry-run` flags.
 - **Native Tools Logging (LP-01)**: Added explicit startup log when the 5 native tools register (`system_diagnostics`, `config_manager`, `resource_monitor`, `memory_store`, `version_control`).
 
 ### 🧪 Tests
@@ -43,7 +43,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### ⚠️ Upgrade Notes
 - If you logged in with `google-antigravity` before this release, update your `model_name` in `~/.picoclaw/config.json` from `"gemini-flash"` to `"antigravity-gemini-3-flash"`.
-- Sessions created before the schema fix may be corrupt. Run `picoclaw clean --all` to clear them.
+- Sessions created before the schema fix may be corrupt. Run `picoclaw-agents clean --all` to clear them.
 
 ---
 

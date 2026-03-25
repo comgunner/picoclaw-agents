@@ -106,7 +106,7 @@ With v3.4.1, the **Global Tracker** ensures perfect consistency across multi-age
 
 1. **User requests content**:
    ```
-   @picoclaw spawn task='Generate image about AI and create Twitter post'
+   @picoclaw-agents spawn task='Generate image about AI and create Twitter post'
    ```
 
 2. **Subagent works**:

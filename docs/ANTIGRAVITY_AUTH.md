@@ -15,22 +15,22 @@
 
 ```bash
 # Recommended: Use google-antigravity provider
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 
 # Alternative: Short name also works
-./picoclaw auth login --provider antigravity
+./picoclaw-agents auth login --provider antigravity
 ```
 
 ### Check Auth Status
 
 ```bash
-./picoclaw auth status
+./picoclaw-agents auth status
 ```
 
 ### View Available Models
 
 ```bash
-./picoclaw auth models
+./picoclaw-agents auth models
 ```
 
 ---
@@ -41,9 +41,9 @@ PicoClaw supports **3 providers** with built-in authentication:
 
 | Provider             | Command                                                                       | Auth Method                               | Sets Default Model                                  |
 | -------------------- | ----------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| `google-antigravity` | `./picoclaw auth login --provider google-antigravity`                         | OAuth 2.0 + PKCE (browser)                | `gemini-flash` → `antigravity/gemini-3-flash`       |
-| `openai`             | `./picoclaw auth login --provider openai`<br>Add `--device-code` for headless | OAuth 2.0 + PKCE (browser or device code) | `gpt-5.2` → `openai/gpt-5.2`                        |
-| `anthropic`          | `./picoclaw auth login --provider anthropic`                                  | Paste API key manually (no OAuth)         | `claude-sonnet-4.6` → `anthropic/claude-sonnet-4.6` |
+| `google-antigravity` | `./picoclaw-agents auth login --provider google-antigravity`                         | OAuth 2.0 + PKCE (browser)                | `gemini-flash` → `antigravity/gemini-3-flash`       |
+| `openai`             | `./picoclaw-agents auth login --provider openai`<br>Add `--device-code` for headless | OAuth 2.0 + PKCE (browser or device code) | `gpt-5.2` → `openai/gpt-5.2`                        |
+| `anthropic`          | `./picoclaw-agents auth login --provider anthropic`                                  | Paste API key manually (no OAuth)         | `claude-sonnet-4.6` → `anthropic/claude-sonnet-4.6` |
 
 > [!NOTE]
 > `anthropic` uses a **static API key** (paste from [console.anthropic.com](https://console.anthropic.com)). It has no `refresh_token` and never expires automatically. The other two providers use OAuth with auto-refresh.
@@ -52,29 +52,29 @@ PicoClaw supports **3 providers** with built-in authentication:
 
 ```bash
 # Google Antigravity (recommended — free with Google One AI Premium)
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 
 # OpenAI (requires OpenAI account with ChatGPT subscription)
-./picoclaw auth login --provider openai
+./picoclaw-agents auth login --provider openai
 
 # OpenAI headless (VPS/server without browser)
-./picoclaw auth login --provider openai --device-code
+./picoclaw-agents auth login --provider openai --device-code
 
 # Anthropic (requires API key from console.anthropic.com)
-./picoclaw auth login --provider anthropic
+./picoclaw-agents auth login --provider anthropic
 
 # Check status of all authenticated providers
-./picoclaw auth status
+./picoclaw-agents auth status
 
 # Logout from a specific provider
-./picoclaw auth logout --provider google-antigravity
+./picoclaw-agents auth logout --provider google-antigravity
 
 # Logout from all providers
-./picoclaw auth logout
+./picoclaw-agents auth logout
 ```
 
 > [!IMPORTANT]
-> The command `./picoclaw auth antigravity` is **NOT valid**. Always use `./picoclaw auth login --provider google-antigravity`.
+> The command `./picoclaw-agents auth antigravity` is **NOT valid**. Always use `./picoclaw-agents auth login --provider google-antigravity`.
 
 ---
 
@@ -875,20 +875,20 @@ Some models might show up in the available models list but return an empty respo
 
 ### ❌ "required flag(s) 'provider' not set"
 
-**Cause:** You ran `./picoclaw auth login` without specifying a provider.
+**Cause:** You ran `./picoclaw-agents auth login` without specifying a provider.
 
 **Solution:**
 ```bash
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 ```
 
 ### ❌ "unrecognized command: antigravity"
 
-**Cause:** You ran `./picoclaw auth antigravity` which is **not a valid command**.
+**Cause:** You ran `./picoclaw-agents auth antigravity` which is **not a valid command**.
 
 **Solution:**
 ```bash
-./picoclaw auth login --provider google-antigravity
+./picoclaw-agents auth login --provider google-antigravity
 ```
 
 ### ❌ "Token expired" (403 PERMISSION_DENIED)
@@ -898,11 +898,11 @@ Some models might show up in the available models list but return an empty respo
 **Solution:**
 1. Try refreshing manually:
    ```bash
-   ./picoclaw auth status
+   ./picoclaw-agents auth status
    ```
 2. If still expired, re-authenticate:
    ```bash
-   ./picoclaw auth login --provider google-antigravity
+   ./picoclaw-agents auth login --provider google-antigravity
    ```
 
 ### ❌ "Gemini for Google Cloud is not enabled"
@@ -924,7 +924,7 @@ Some models might show up in the available models list but return an empty respo
 2. Check that the project has the necessary APIs enabled
 3. Re-run authentication:
    ```bash
-   ./picoclaw auth login --provider google-antigravity
+   ./picoclaw-agents auth login --provider google-antigravity
    ```
 
 ### ❌ Models not appearing in list
@@ -934,12 +934,12 @@ Some models might show up in the available models list but return an empty respo
 **Solution:**
 1. Check auth status:
    ```bash
-   ./picoclaw auth status
+   ./picoclaw-agents auth status
    ```
 2. Verify credential file exists: `~/.picoclaw/auth/credentials.json`
 3. Re-authenticate if needed:
    ```bash
-   ./picoclaw auth login --provider google-antigravity
+   ./picoclaw-agents auth login --provider google-antigravity
    ```
 
 ### ❌ Browser doesn't open automatically

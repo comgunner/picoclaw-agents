@@ -61,36 +61,36 @@ Update page XYZ status to "Completed"
 ### Create page in database
 
 ```bash
-./picoclaw agent -m "Use notion_create_page with database_id='abc123', properties={'Name': {'title': [{'text': {'content': 'My Page'}}]}}"
+./picoclaw-agents agent -m "Use notion_create_page with database_id='abc123', properties={'Name': {'title': [{'text': {'content': 'My Page'}}]}}"
 ```
 
 ### Query database
 
 ```bash
-./picoclaw agent -m "Use notion_query_database with data_source_id='xyz789'"
+./picoclaw-agents agent -m "Use notion_query_database with data_source_id='xyz789'"
 ```
 
 ### Query with filter
 
 ```bash
-./picoclaw agent -m "Use notion_query_database with data_source_id='xyz789', filter={'property': 'Status', 'select': {'equals': 'Active'}}"
+./picoclaw-agents agent -m "Use notion_query_database with data_source_id='xyz789', filter={'property': 'Status', 'select': {'equals': 'Active'}}"
 ```
 
 ### Search pages
 
 ```bash
-./picoclaw agent -m "Use notion_search with query='project'"
+./picoclaw-agents agent -m "Use notion_search with query='project'"
 ```
 
 ### Update page
 
 ```bash
-./picoclaw agent -m "Use notion_update_page with page_id='page123', properties={'Status': {'select': {'name': 'Done'}}}"
+./picoclaw-agents agent -m "Use notion_update_page with page_id='page123', properties={'Status': {'select': {'name': 'Done'}}}"
 ```
 
 ## Telegram Usage
 
-With `picoclaw gateway` running, send these messages to the bot:
+With `picoclaw-agents gateway` running, send these messages to the bot:
 
 ### Create page
 
@@ -142,7 +142,7 @@ Each database has two IDs:
 ## Complete Example: Create Task Page
 
 ```bash
-./picoclaw agent -m "Use notion_create_page with:
+./picoclaw-agents agent -m "Use notion_create_page with:
   database_id='your_database_id',
   properties={
     'Name': {'title': [{'text': {'content': 'Review code'}}]},

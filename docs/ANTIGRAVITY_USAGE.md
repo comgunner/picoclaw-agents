@@ -6,9 +6,9 @@ This guide explains how to set up and use the **Antigravity** (Google Cloud Code
 
 | Provider             | Command                                                             | Auth Method                                                | Default Model                                       |
 | -------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
-| `google-antigravity` | `./picoclaw auth antigravity`<br>or `--provider google-antigravity` | OAuth 2.0 + PKCE (browser)                                 | `gemini-flash` (`antigravity/gemini-3-flash`)       |
-| `openai`             | `./picoclaw auth login --provider openai`                           | OAuth 2.0 + PKCE (browser)<br>`--device-code` for headless | `gpt-5.2` (`openai/gpt-5.2`)                        |
-| `anthropic`          | `./picoclaw auth login --provider anthropic`                        | Paste API key (no OAuth)                                   | `claude-sonnet-4.6` (`anthropic/claude-sonnet-4.6`) |
+| `google-antigravity` | `./picoclaw-agents auth antigravity`<br>or `--provider google-antigravity` | OAuth 2.0 + PKCE (browser)                                 | `gemini-flash` (`antigravity/gemini-3-flash`)       |
+| `openai`             | `./picoclaw-agents auth login --provider openai`                           | OAuth 2.0 + PKCE (browser)<br>`--device-code` for headless | `gpt-5.2` (`openai/gpt-5.2`)                        |
+| `anthropic`          | `./picoclaw-agents auth login --provider anthropic`                        | Paste API key (no OAuth)                                   | `claude-sonnet-4.6` (`anthropic/claude-sonnet-4.6`) |
 
 > [!NOTE]
 > `anthropic` uses a **static API key** from [console.anthropic.com](https://console.anthropic.com) — no browser login, no token expiry. `openai` and `google-antigravity` use OAuth with auto-refresh.
@@ -27,7 +27,7 @@ This guide explains how to set up and use the **Antigravity** (Google Cloud Code
 To authenticate with Antigravity, run:
 
 ```bash
-./picoclaw auth antigravity
+./picoclaw-agents auth antigravity
 ```
 
 This opens a browser window for Google OAuth. After login, PicoClaw stores credentials in `~/.picoclaw/auth.json`.
@@ -49,7 +49,7 @@ The `access_token` expires in **1 hour** (Google OAuth standard). PicoClaw now h
 2. **On every request**: retries with refresh_token even if token already expired (not just pre-expiry)
 3. **`auth models` command**: also recovers from expired tokens automatically
 
-Manual re-auth (`./picoclaw auth antigravity`) is only needed if:
+Manual re-auth (`./picoclaw-agents auth antigravity`) is only needed if:
 - You revoked access from `myaccount.google.com > Security > Apps with access`
 - You changed your Google password
 - The refresh_token itself has been inactive for 6+ months
@@ -58,7 +58,7 @@ Manual re-auth (`./picoclaw auth antigravity`) is only needed if:
 
 ### List Available Models
 ```bash
-./picoclaw auth models
+./picoclaw-agents auth models
 ```
 
 ### Validated Working Models (as of 2026-03-04)
@@ -108,12 +108,12 @@ If you are not using Antigravity Auth (OAuth) and prefer to use a direct API key
 ### Switch Models
 ```bash
 # Using models verified by Antigravity Auth (OAuth)
-./picoclaw agent -m "Hello" --model claude-opus-4-6-thinking
-./picoclaw agent -m "Hello" --model antigravity-gemini-3-flash
+./picoclaw-agents agent -m "Hello" --model claude-opus-4-6-thinking
+./picoclaw-agents agent -m "Hello" --model antigravity-gemini-3-flash
 
 # Using standard models via public API (Google AI Studio Key)
-./picoclaw agent -m "Hello" --model gemini-2.5-flash
-./picoclaw agent -m "Hello" --model gemini-3-pro-preview
+./picoclaw-agents agent -m "Hello" --model gemini-2.5-flash
+./picoclaw-agents agent -m "Hello" --model gemini-3-pro-preview
 ```
 
 ## 3. Configuration
@@ -125,7 +125,7 @@ The main `config.example.json` file uses **deepseek-chat** as the default model 
 ```bash
 cp config/config.example.json ~/.picoclaw/config.json
 # Add your DeepSeek API key in config.json
-./picoclaw agent -m "Hello"
+./picoclaw-agents agent -m "Hello"
 ```
 
 ### Antigravity Configuration
@@ -134,8 +134,8 @@ The `config.example_antigravity.json` file is a ready-to-use config where all ag
 
 ```bash
 cp config/config.example_antigravity.json ~/.picoclaw/config.json
-./picoclaw auth antigravity
-./picoclaw agent -m "Hello"
+./picoclaw-agents auth antigravity
+./picoclaw-agents agent -m "Hello"
 ```
 
 ### model_list Entries for Antigravity
@@ -229,13 +229,13 @@ If you are deploying via Coolify or Docker:
     ```bash
     scp ~/.picoclaw/auth.json user@your-server:~/.picoclaw/
     ```
-2.  *Alternatively*, run `./picoclaw auth antigravity` directly on the server using the headless flow.
+2.  *Alternatively*, run `./picoclaw-agents auth antigravity` directly on the server using the headless flow.
 
 ## 5. Troubleshooting
 
 | Error                                                     | Cause                              | Fix                                                                            |
 | --------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------ |
-| `403 PERMISSION_DENIED / ACCESS_TOKEN_SCOPE_INSUFFICIENT` | Token expired or revoked           | Run `./picoclaw auth antigravity` again                                        |
+| `403 PERMISSION_DENIED / ACCESS_TOKEN_SCOPE_INSUFFICIENT` | Token expired or revoked           | Run `./picoclaw-agents auth antigravity` again                                        |
 | `404 NOT_FOUND`                                           | Model alias not resolved correctly | Verify `model_list` entry has correct `model` field and `auth_method: "oauth"` |
 | `401 invalid_api_key`                                     | Wrong provider used for model      | Check `model` field has `antigravity/` prefix, not an OpenAI-style key         |
 | `429 Rate Limit`                                          | Quota hit                          | PicoClaw shows reset time; wait or switch to another model                     |

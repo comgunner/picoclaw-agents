@@ -89,10 +89,10 @@ Dê uma segunda vida ao seu telefone de dez anos atrás! Transforme-o em um Assi
 
 ```bash
 # Nota: Substitua v0.1.1 pela versão mais recente da página de Releases
-wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-linux-arm64
-chmod +x picoclaw-linux-arm64
+wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-agents_Linux_arm64
+chmod +x picoclaw-agents_Linux_arm64
 pkg install proot
-termux-chroot ./picoclaw-linux-arm64 onboard
+termux-chroot ./picoclaw-agents_Linux_arm64 onboard
 ```
 
 E então siga as instruções na seção "Início Rápido" para completar a configuração!
@@ -115,7 +115,7 @@ Baixe o firmware para sua plataforma a partir da página de [releases](https://g
 ```bash
 git clone https://github.com/comgunner/picoclaw-agents.git
 
-cd picoclaw
+cd picoclaw-agents
 make deps
 
 # Compilar, não precisa instalar
@@ -135,7 +135,7 @@ Você também pode executar o PicoClaw usando Docker Compose sem instalar nada l
 ```bash
 # 1. Clone este repositório
 git clone https://github.com/comgunner/picoclaw-agents.git
-cd picoclaw
+cd picoclaw-agents
 
 # 2. Configure suas chaves de API
 cp config/config.example.json config/config.json
@@ -159,10 +159,10 @@ docker compose --profile gateway down
 
 ```bash
 # Fazer uma pergunta
-docker compose run --rm picoclaw-agent -m "Quanto é 2+2?"
+docker compose run --rm picoclaw-agents-agent -m "Quanto é 2+2?"
 
 # Modo interativo
-docker compose run --rm picoclaw-agent
+docker compose run --rm picoclaw-agents-agent
 ```
 
 ### Recompilar
@@ -185,19 +185,19 @@ Use o comando `onboard` para inicializar seu espaço de trabalho com um modelo p
 
 ```bash
 # Padrão (Configuração manual/vazia)
-picoclaw onboard
+picoclaw-agents onboard
 
 # Modelos pré-configurados:
-picoclaw onboard --openai      # Usar modelo da OpenAI (o3-mini)
-picoclaw onboard --openrouter  # Usar modelo do OpenRouter (openrouter/auto)
-picoclaw onboard --glm         # Usar modelo do GLM-4.5-Flash (zhipu.ai)
-picoclaw onboard --qwen        # Usar modelo do Qwen (Alibaba Cloud Intl)
-picoclaw onboard --qwen_zh     # Usar modelo do Qwen (Alibaba Cloud China)
-picoclaw onboard --gemini      # Usar modelo Gemini (gemini-2.5-flash)
+picoclaw-agents onboard --openai      # Usar modelo da OpenAI (o3-mini)
+picoclaw-agents onboard --openrouter  # Usar modelo do OpenRouter (openrouter/auto)
+picoclaw-agents onboard --glm         # Usar modelo do GLM-4.5-Flash (zhipu.ai)
+picoclaw-agents onboard --qwen        # Usar modelo do Qwen (Alibaba Cloud Intl)
+picoclaw-agents onboard --qwen_zh     # Usar modelo do Qwen (Alibaba Cloud China)
+picoclaw-agents onboard --gemini      # Usar modelo Gemini (gemini-2.5-flash)
 ```
 
 > [!TIP]
-> **Sem saldo na API?** Use `picoclaw onboard --free` para começar imediatamente com os modelos gratuitos do OpenRouter. Basta criar uma conta em [openrouter.ai](https://openrouter.ai) e adicionar sua chave — sem necessidade de créditos.
+> **Sem saldo na API?** Use `picoclaw-agents onboard --free` para começar imediatamente com os modelos gratuitos do OpenRouter. Basta criar uma conta em [openrouter.ai](https://openrouter.ai) e adicionar sua chave — sem necessidade de créditos.
 
 #### 🆓 Modelos Gratuitos
 
@@ -289,7 +289,7 @@ Para tarefas pesadas de codificação, desempenho e lógica são fundamentais. R
 **4. Conversar**
 
 ```bash
-picoclaw agent -m "Quanto é 2+2?"
+picoclaw-agents agent -m "Quanto é 2+2?"
 ```
 
 É isso! Você tem um assistente de IA funcionando em 2 minutos.
@@ -298,7 +298,7 @@ picoclaw agent -m "Quanto é 2+2?"
 
 ## 💬 Apps de Chat
 
-Fale com seu picoclaw através do Telegram, Discord, DingTalk, LINE ou WeCom
+Fale com seu picoclaw-agents através do Telegram, Discord, DingTalk, LINE ou WeCom
 
 | Canal        | Configuração                       |
 | ------------ | ---------------------------------- |
@@ -337,7 +337,7 @@ Fale com seu picoclaw através do Telegram, Discord, DingTalk, LINE ou WeCom
 **3. Execute**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 </details>
@@ -389,7 +389,7 @@ Defina `"mention_only": true` para que o bot responda apenas quando for menciona
 **6. Execute**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 </details>
@@ -422,7 +422,7 @@ picoclaw gateway
 **3. Execute**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 </details>
@@ -456,7 +456,7 @@ picoclaw gateway
 **3. Execute**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 </details>
 
@@ -501,7 +501,7 @@ Em seguida, defina a URL do Webhook no LINE Developers Console como `https://seu
 **4. Execute**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 > Em chats de grupo, o bot responde apenas quando mencionado com @. As respostas citam a mensagem original.
@@ -583,7 +583,7 @@ Consulte o [Guia de Configuração de App do WeCom](docs/wecom-app-configuration
 **4. Execute**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 > **Nota**: O App do WeCom exige a abertura da porta 18792 para chamadas de webhook. Use um proxy reverso para HTTPS.
@@ -916,7 +916,7 @@ Este design também permite **suporte multi-agente** com seleção flexível de 
 }
 ```
 
-> Execute `picoclaw auth login --provider anthropic` para colar o seu token da API.
+> Execute `picoclaw-agents auth login --provider anthropic` para colar o seu token da API.
 
 **Ollama (local)**
 
@@ -1048,7 +1048,7 @@ Isso mantém o tempo de execução leve, tornando a adição de novos backends c
 **3. Execute**
 
 ```bash
-picoclaw agent -m "Olá"
+picoclaw-agents agent -m "Olá"
 ```
 
 </details>
@@ -1129,13 +1129,13 @@ picoclaw agent -m "Olá"
 
 | Comando                   | Descrição                      |
 | ------------------------- | ------------------------------ |
-| `picoclaw onboard`        | Inicializar config e workspace |
-| `picoclaw agent -m "..."` | Conversar com o agente         |
-| `picoclaw agent`          | Modo chat interativo           |
-| `picoclaw gateway`        | Iniciar o gateway              |
-| `picoclaw status`         | Mostrar estado                 |
-| `picoclaw cron list`      | Listar todos os jobs agendados |
-| `picoclaw cron add ...`   | Adicionar um job agendado      |
+| `picoclaw-agents onboard`        | Inicializar config e workspace |
+| `picoclaw-agents agent -m "..."` | Conversar com o agente         |
+| `picoclaw-agents agent`          | Modo chat interativo           |
+| `picoclaw-agents gateway`        | Iniciar o gateway              |
+| `picoclaw-agents status`         | Mostrar estado                 |
+| `picoclaw-agents cron list`      | Listar todos os jobs agendados |
+| `picoclaw-agents cron add ...`   | Adicionar um job agendado      |
 
 ### Tarefas Agendadas / Lembretes
 
@@ -1170,8 +1170,8 @@ Configure as chaves em `~/.picoclaw/config.json`:
 Exemplos de uso:
 
 ```bash
-picoclaw agent -m "Use binance_get_ticker_price with symbol BTCUSDT and return only the numeric price."
-picoclaw agent -m "Use binance_get_spot_balance and show my non-zero balances."
+picoclaw-agents agent -m "Use binance_get_ticker_price with symbol BTCUSDT and return only the numeric price."
+picoclaw-agents agent -m "Use binance_get_spot_balance and show my non-zero balances."
 ```
 
 Comportamento sem API keys:
@@ -1182,17 +1182,17 @@ Comportamento sem API keys:
 Modo de servidor MCP opcional (para clientes MCP):
 
 ```bash
-picoclaw util binance-mcp-server
+picoclaw-agents util binance-mcp-server
 ```
 
-Exemplo de configuração `mcp_servers` (use o caminho absoluto do `picoclaw` gerado pela instalação/onboard):
+Exemplo de configuração `mcp_servers` (use o caminho absoluto do `picoclaw-agents` gerado pela instalação/onboard):
 
 ```json
 {
   "mcp_servers": {
     "binance": {
       "enabled": true,
-      "command": "/caminho/absoluto/para/picoclaw",
+      "command": "/caminho/absoluto/para/picoclaw-agents",
       "args": ["util", "binance-mcp-server"]
     }
   }
@@ -1242,7 +1242,7 @@ Alguns provedores (como o Zhipu) têm filtragem de conteúdo. Tente reformular s
 
 ### O bot do Telegram diz \"Conflict: terminated by other getUpdates\"
 
-Isso acontece quando outra instância do bot está sendo executada. Certifique-se de que apenas um `picoclaw gateway` esteja em execução por vez.
+Isso acontece quando outra instância do bot está sendo executada. Certifique-se de que apenas um `picoclaw-agents gateway` esteja em execução por vez.
 
 ---
 

@@ -44,19 +44,19 @@ Quick operational guide for PicoClaw social media tools.
 
 ```bash
 # Facebook text-only
-./picoclaw agent -m "Use facebook_post with message='Hello from PicoClaw'"
+./picoclaw-agents agent -m "Use facebook_post with message='Hello from PicoClaw'"
 
 # Facebook image post
-./picoclaw agent -m "Use facebook_post with message='Launch update', image_path='/tmp/post.jpg'"
+./picoclaw-agents agent -m "Use facebook_post with message='Launch update', image_path='/tmp/post.jpg'"
 
 # Facebook image post + comment
-./picoclaw agent -m "Use facebook_post with message='Main update', image_path='/tmp/post.jpg', comment='Extra context'"
+./picoclaw-agents agent -m "Use facebook_post with message='Main update', image_path='/tmp/post.jpg', comment='Extra context'"
 
 # X text-only
-./picoclaw agent -m "Use x_post_tweet with message='Hello X'"
+./picoclaw-agents agent -m "Use x_post_tweet with message='Hello X'"
 
 # Discord text-only
-./picoclaw agent -m "Use discord_post with message='Hello Discord'"
+./picoclaw-agents agent -m "Use discord_post with message='Hello Discord'"
 ```
 
 ## Telegram / Discord Channel Prompts

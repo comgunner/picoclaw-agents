@@ -9,13 +9,13 @@ La herramienta `facebook_post` en PicoClaw soporta **tanto publicaciones con ima
 ### Opción 1: Sin parámetro `image_path`
 
 ```bash
-./picoclaw agent -m "Usa facebook_post con message='¡Hola Mundo! Este es un post solo de texto'"
+./picoclaw-agents agent -m "Usa facebook_post con message='¡Hola Mundo! Este es un post solo de texto'"
 ```
 
 ### Opción 2: Explícitamente vacío
 
 ```bash
-./picoclaw agent -m "Usa facebook_post con message='Hola desde PicoClaw', image_path=''"
+./picoclaw-agents agent -m "Usa facebook_post con message='Hola desde PicoClaw', image_path=''"
 ```
 
 ### Opción 3: Desde Telegram
@@ -109,25 +109,25 @@ Para publicar en Facebook (texto o imagen), necesitas:
 ### Solo Texto
 
 ```bash
-./picoclaw agent -m "Publica en Facebook: '¡Nuevo artículo disponible! Leanlo en nuestro blog'"
+./picoclaw-agents agent -m "Publica en Facebook: '¡Nuevo artículo disponible! Leanlo en nuestro blog'"
 ```
 
 ### Texto + Imagen
 
 ```bash
-./picoclaw agent -m "Publica en Facebook la imagen /tmp/foto.jpg con mensaje '¡Gran anuncio!'"
+./picoclaw-agents agent -m "Publica en Facebook la imagen /tmp/foto.jpg con mensaje '¡Gran anuncio!'"
 ```
 
 ### Texto + Comentario (sin imagen)
 
 ```bash
-./picoclaw agent -m "Usa facebook_post con message='Post principal', comment='Comentario adicional'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Post principal', comment='Comentario adicional'"
 ```
 
 ### Multi-página (texto)
 
 ```bash
-./picoclaw agent -m "
+./picoclaw-agents agent -m "
   Publica 'Anuncio importante' en estas páginas:
   - page_id='123456789012345', page_token='EAAB...'
   - page_id='987654321098765', page_token='EAAB...'
@@ -176,7 +176,7 @@ Para verificar que tu configuración es correcta:
 
 ```bash
 # Test solo texto
-./picoclaw agent -m "Usa facebook_post con message='Test de texto desde PicoClaw'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Test de texto desde PicoClaw'"
 
 # Debería responder:
 # "Publicación en Facebook exitosa. Post ID: 123456789012345_987654321098765"

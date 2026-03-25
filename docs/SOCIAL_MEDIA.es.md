@@ -308,36 +308,36 @@ export DISCORD_WEBHOOK_URL="tu_webhook_url"
 
 ```bash
 # Facebook solo texto
-./picoclaw agent -m "Usa facebook_post con message='¡Hola desde PicoClaw!'"
+./picoclaw-agents agent -m "Usa facebook_post con message='¡Hola desde PicoClaw!'"
 
 # Facebook imagen + texto
-./picoclaw agent -m "Usa facebook_post con message='Actualización de lanzamiento', image_path='/tmp/post.jpg'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Actualización de lanzamiento', image_path='/tmp/post.jpg'"
 
 # Facebook imagen + texto + comentario
-./picoclaw agent -m "Usa facebook_post con message='Actualización principal', image_path='/tmp/post.jpg', comment='Detalles extra'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Actualización principal', image_path='/tmp/post.jpg', comment='Detalles extra'"
 
 # Facebook multi-página
-./picoclaw agent -m "Usa facebook_post con page_id='123456789', page_token='EAAB...', message='Actualización específica de página'"
+./picoclaw-agents agent -m "Usa facebook_post con page_id='123456789', page_token='EAAB...', message='Actualización específica de página'"
 
 # X solo texto
-./picoclaw agent -m "Usa x_post_tweet con message='Hola X'"
+./picoclaw-agents agent -m "Usa x_post_tweet con message='Hola X'"
 
 # X con imagen
-./picoclaw agent -m "Usa x_post_tweet con message='Mirá esto', image_path='/tmp/photo.jpg'"
+./picoclaw-agents agent -m "Usa x_post_tweet con message='Mirá esto', image_path='/tmp/photo.jpg'"
 
 # Discord solo texto
-./picoclaw agent -m "Usa discord_post con message='Hola Discord'"
+./picoclaw-agents agent -m "Usa discord_post con message='Hola Discord'"
 
 # Discord con imagen
-./picoclaw agent -m "Usa discord_post con message='Mirá esta imagen', image_path='/tmp/photo.jpg'"
+./picoclaw-agents agent -m "Usa discord_post con message='Mirá esta imagen', image_path='/tmp/photo.jpg'"
 
 # Publicar en múltiples plataformas
-./picoclaw agent -m "Publica '¡Gran anuncio!' en Facebook, Twitter y Discord"
+./picoclaw-agents agent -m "Publica '¡Gran anuncio!' en Facebook, Twitter y Discord"
 ```
 
 ### Uso en Telegram
 
-Envía mensajes directamente a tu bot (con `picoclaw gateway` activo):
+Envía mensajes directamente a tu bot (con `picoclaw-agents gateway` activo):
 
 ```text
 # Posts simples
@@ -372,26 +372,26 @@ Publica en todas las redes: "¡Anuncio importante!"
 
 ```bash
 # Generar imagen y publicar
-./picoclaw agent -m "Genera imagen de producto nuevo y publica en Facebook con texto atractivo"
+./picoclaw-agents agent -m "Genera imagen de producto nuevo y publica en Facebook con texto atractivo"
 
 # Flujo completo
-./picoclaw agent -m "Usa script_to_image_workflow con topic='Lanzamiento de producto', luego publica en Twitter"
+./picoclaw-agents agent -m "Usa script_to_image_workflow con topic='Lanzamiento de producto', luego publica en Twitter"
 
 # Integración con community manager
-./picoclaw agent -m "Genera imagen, crea borrador con community_manager para Discord, luego publica"
+./picoclaw-agents agent -m "Genera imagen, crea borrador con community_manager para Discord, luego publica"
 ```
 
 ### Ejemplos de Community Manager
 
 ```bash
 # Crear borrador desde contenido técnico
-./picoclaw agent -m "Usa community_manager_create_draft con raw_data='Nuevos endpoints de API lanzados', platform='discord'"
+./picoclaw-agents agent -m "Usa community_manager_create_draft con raw_data='Nuevos endpoints de API lanzados', platform='discord'"
 
 # Generar texto desde imagen
-./picoclaw agent -m "Usa community_from_image con image_path='./workspace/image_gen/abc/abc.-imagen.jpg', platform='twitter'"
+./picoclaw-agents agent -m "Usa community_from_image con image_path='./workspace/image_gen/abc/abc.-imagen.jpg', platform='twitter'"
 
 # Flujo completo
-./picoclaw agent -m "Genera imagen, crea post atractivo con community_manager, publica en Facebook"
+./picoclaw-agents agent -m "Genera imagen, crea post atractivo con community_manager, publica en Facebook"
 ```
 
 ## Notas
@@ -447,7 +447,7 @@ Con v3.4.1, puedes delegar flujos completos de redes sociales a subagentes:
 
 ```bash
 # Delegar flujo completo a subagente
-./picoclaw agent -m "spawn task='Genera imagen sobre IA, crea post para Twitter y publícalo' label='campana_social'"
+./picoclaw-agents agent -m "spawn task='Genera imagen sobre IA, crea post para Twitter y publícalo' label='campana_social'"
 
 # El subagente hará:
 # 1. Genera imagen con image_gen_create

@@ -100,7 +100,7 @@ Genera **TEXTO PARA POSTS DE REDES SOCIALES** (Facebook, Twitter, Discord).
 
 **Ejemplo de uso:**
 ```bash
-./picoclaw agent -m "Usa text_script_create con topic='Inteligencia Artificial', category='noticia'"
+./picoclaw-agents agent -m "Usa text_script_create con topic='Inteligencia Artificial', category='noticia'"
 ```
 
 **Output:** Texto para post de Facebook (máx 1200 caracteres, estilo viral)
@@ -124,7 +124,7 @@ Genera **IMÁGENES ESTÁTICAS** desde un prompt de texto.
 
 **Ejemplo de uso:**
 ```bash
-./picoclaw agent -m "Usa image_gen_create con prompt='Atardecer cinematográfico en montañas'"
+./picoclaw-agents agent -m "Usa image_gen_create con prompt='Atardecer cinematográfico en montañas'"
 ```
 
 **Output:** Imagen JPG estática
@@ -152,10 +152,10 @@ Muestra el flujo completo para crear **texto para post + generar imagen** basada
 **Ejemplo de uso:**
 ```bash
 # Formato recomendado: espacios entre parámetros
-./picoclaw agent -m "Usa script_to_image_workflow topic='Historia de dragones' category=historia"
+./picoclaw-agents agent -m "Usa script_to_image_workflow topic='Historia de dragones' category=historia"
 
 # También funciona con 'con' (un solo parámetro)
-./picoclaw agent -m "Usa script_to_image_workflow con topic='Historia de dragones'"
+./picoclaw-agents agent -m "Usa script_to_image_workflow con topic='Historia de dragones'"
 ```
 
 **Output:** 
@@ -165,13 +165,13 @@ Muestra el flujo completo para crear **texto para post + generar imagen** basada
 ```bash
 # Paso 1: El agente te dirá que ejecute text_script_create
 # Si no lo hace automáticamente, pídeselo:
-./picoclaw agent -m "Ejecuta el paso 1: genera el script"
+./picoclaw-agents agent -m "Ejecuta el paso 1: genera el script"
 
 # Paso 2: Después de generar el script, pide la imagen:
-./picoclaw agent -m "Ahora genera la imagen con image_gen_create"
+./picoclaw-agents agent -m "Ahora genera la imagen con image_gen_create"
 
 # Paso 3: Opciones de publicación:
-./picoclaw agent -m "Muestra opciones para la imagen generada"
+./picoclaw-agents agent -m "Muestra opciones para la imagen generada"
 ```
 
 **Nota:** Los archivos se guardan en la misma carpeta: `./workspace/image_gen/{ID}/`
@@ -179,7 +179,7 @@ Muestra el flujo completo para crear **texto para post + generar imagen** basada
 **Workflow automático alternativo:**
 Si quieres ejecutar todo en una sola petición, describe lo que quieres directamente:
 ```bash
-./picoclaw agent -m "Genera un script sobre dragones y luego crea una imagen basada en ese tema"
+./picoclaw-agents agent -m "Genera un script sobre dragones y luego crea una imagen basada en ese tema"
 ```
 
 ---
@@ -195,13 +195,13 @@ Crea borrador de post para redes sociales. **Soporta múltiples plataformas en u
 
 **Ejemplo de uso (una plataforma):**
 ```bash
-./picoclaw agent -m "Usa community_manager_create_draft raw_data='Contenido del post' platform=twitter"
+./picoclaw-agents agent -m "Usa community_manager_create_draft raw_data='Contenido del post' platform=twitter"
 ```
 
 **Ejemplo de uso (múltiples plataformas - RECOMENDADO):**
 ```bash
 # IMPORTANTE: Usar comillas para la lista de plataformas
-./picoclaw agent -m "Usa community_manager_create_draft raw_data='Contenido del post' platform='discord,twitter,facebook'"
+./picoclaw-agents agent -m "Usa community_manager_create_draft raw_data='Contenido del post' platform='discord,twitter,facebook'"
 ```
 
 **Output:** 
@@ -231,29 +231,29 @@ Genera texto para post basado en una imagen.
 
 ```bash
 # Generar TEXTO PARA POST de Facebook
-./picoclaw agent -m "Usa text_script_create topic='Inteligencia Artificial' category=noticia"
+./picoclaw-agents agent -m "Usa text_script_create topic='Inteligencia Artificial' category=noticia"
 
 # Generar variantes para múltiples plataformas (RECOMENDADO)
 # IMPORTANTE: Usar comillas para la lista de plataformas
-./picoclaw agent -m "Usa community_manager_create_draft raw_data='La IA está revolucionando el mundo' platform='discord,twitter,facebook'"
+./picoclaw-agents agent -m "Usa community_manager_create_draft raw_data='La IA está revolucionando el mundo' platform='discord,twitter,facebook'"
 
 # Generar para una sola plataforma
-./picoclaw agent -m "Usa community_manager_create_draft raw_data='Contenido específico' platform=twitter"
+./picoclaw-agents agent -m "Usa community_manager_create_draft raw_data='Contenido específico' platform=twitter"
 
 # Generar IMAGEN ESTÁTICA
-./picoclaw agent -m "Usa image_gen_create prompt='Atardecer cinematográfico en montañas'"
+./picoclaw-agents agent -m "Usa image_gen_create prompt='Atardecer cinematográfico en montañas'"
 
 # Generar con aspect ratio
-./picoclaw agent -m "Usa image_gen_create prompt='Foto de producto' aspect_ratio=16:9"
+./picoclaw-agents agent -m "Usa image_gen_create prompt='Foto de producto' aspect_ratio=16:9"
 
 # Crear TEXTO POST + IMAGEN (workflow completo)
-./picoclaw agent -m "Usa script_to_image_workflow topic='Historia de dragones' category=historia"
+./picoclaw-agents agent -m "Usa script_to_image_workflow topic='Historia de dragones' category=historia"
 
 # Workflow post-generación
-./picoclaw agent -m "Usa image_gen_workflow image_path='./workspace/image_gen/20260301_abc/20260301_abc.-imagen.jpg'"
+./picoclaw-agents agent -m "Usa image_gen_workflow image_path='./workspace/image_gen/20260301_abc/20260301_abc.-imagen.jpg'"
 
 # Generar texto para post desde imagen
-./picoclaw agent -m "Usa community_from_image image_path='./workspace/image_gen/test.jpg' platform=facebook"
+./picoclaw-agents agent -m "Usa community_from_image image_path='./workspace/image_gen/test.jpg' platform=facebook"
 ```
 
 ---
@@ -286,8 +286,8 @@ Cuando generas una imagen, PicoClaw te responderá con la imagen y **botones int
 - `🔄 Regenerar`: Intenta generar una versión diferente.
 
 **Uso de subagentes (Recomendado):**
-- "@picoclaw subagent task='Crea un guion de terror y su imagen'"
-- "@picoclaw spawn task='Genera contenido sobre astronomía y publícalo'"
+- "@picoclaw-agents subagent task='Crea un guion de terror y su imagen'"
+- "@picoclaw-agents spawn task='Genera contenido sobre astronomía y publícalo'"
 
 ---
 
@@ -385,12 +385,12 @@ Puedes usar tus propios prompts:
 330: 
 331: **1. Crear contenido completo:**
 332: ```bash
-333: ./picoclaw agent -m "Usa spawn task='Escribe una historia de dragones, genera su imagen y dame opciones de publicación' label='dragones_full'"
+333: ./picoclaw-agents agent -m "Usa spawn task='Escribe una historia de dragones, genera su imagen y dame opciones de publicación' label='dragones_full'"
 334: ```
 335: 
 336: **2. Crear y publicar directamente:**
 337: ```bash
-338: ./picoclaw agent -m "Usa spawn task='Crea un post sobre IA, genera la imagen y publícalo en Discord' label='ia_post'"
+338: ./picoclaw-agents agent -m "Usa spawn task='Crea un post sobre IA, genera la imagen y publícalo en Discord' label='ia_post'"
 339: ```
 340: 
 341: **Ventajas:**
@@ -406,27 +406,27 @@ Puedes usar tus propios prompts:
 
 ```bash
 # Paso 1: Generar TEXTO PARA POST
-./picoclaw agent -m "Usa text_script_create con topic='Revolución de la IA'"
+./picoclaw-agents agent -m "Usa text_script_create con topic='Revolución de la IA'"
 
 # Paso 2: Generar IMAGEN
-./picoclaw agent -m "Usa image_gen_create con prompt='Robot futurista'"
+./picoclaw-agents agent -m "Usa image_gen_create con prompt='Robot futurista'"
 
 # Paso 3: Publicar en Facebook
-./picoclaw agent -m "Publica el texto y la imagen en Facebook"
+./picoclaw-agents agent -m "Publica el texto y la imagen en Facebook"
 ```
 
 ### Workflow 2: Generación Directa
 
 ```bash
 # Todo en uno
-./picoclaw agent -m "Genera imagen de producto y publica en Twitter con texto"
+./picoclaw-agents agent -m "Genera imagen de producto y publica en Twitter con texto"
 ```
 
 ### Workflow 3: Delegación Multi-Agente (v3.4.1+)
 
 ```bash
 # Delegar flujo completo a subagente
-./picoclaw agent -m "spawn task='Genera imagen sobre IA, crea post para Twitter y publícalo' label='campana_ia'"
+./picoclaw-agents agent -m "spawn task='Genera imagen sobre IA, crea post para Twitter y publícalo' label='campana_ia'"
 
 # El subagente hará:
 # 1. Genera imagen con image_gen_create

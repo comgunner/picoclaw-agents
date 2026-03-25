@@ -44,19 +44,19 @@ Guia operativa rapida para herramientas de redes sociales en PicoClaw.
 
 ```bash
 # Facebook solo texto
-./picoclaw agent -m "Usa facebook_post con message='Hola desde PicoClaw'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Hola desde PicoClaw'"
 
 # Facebook imagen + texto
-./picoclaw agent -m "Usa facebook_post con message='Actualizacion', image_path='/tmp/post.jpg'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Actualizacion', image_path='/tmp/post.jpg'"
 
 # Facebook imagen + texto + comentario
-./picoclaw agent -m "Usa facebook_post con message='Post principal', image_path='/tmp/post.jpg', comment='Contexto adicional'"
+./picoclaw-agents agent -m "Usa facebook_post con message='Post principal', image_path='/tmp/post.jpg', comment='Contexto adicional'"
 
 # X solo texto
-./picoclaw agent -m "Usa x_post_tweet con message='Hola X'"
+./picoclaw-agents agent -m "Usa x_post_tweet con message='Hola X'"
 
 # Discord solo texto
-./picoclaw agent -m "Usa discord_post con message='Hola Discord'"
+./picoclaw-agents agent -m "Usa discord_post con message='Hola Discord'"
 ```
 
 ## Gestión de Lotes (Bundles)

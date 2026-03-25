@@ -85,7 +85,7 @@ queue(action="list")
 Estos comandos funcionan de forma idéntica en:
 1. **Telegram**: A través del menú de comandos (el icono `/`).
 2. **Discord**: Como comandos de aplicación (Slash Commands nativos).
-3. **Terminal (CLI)**: Escribiéndolos directamente en el modo interactivo (`./picoclaw agent -m ""`).
+3. **Terminal (CLI)**: Escribiéndolos directamente en el modo interactivo (`./picoclaw-agents agent -m ""`).
 
 ---
 

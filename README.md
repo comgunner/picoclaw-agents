@@ -33,7 +33,7 @@
 
 ## 📢 News
 
-2026-03-12 🎉 **PicoClaw v3.4.4 - Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
+2026-03-12 🎉 **PicoClaw v3.4.4 - Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw-agents clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 2026-03-03 🎉 **PicoClaw v3.4.2 - Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md) and [local_work/crear_skill_interna.md](local_work/crear_skill_interna.md) for developer guide.
 
@@ -108,10 +108,10 @@ Give your decade-old phone a second life! Turn it into a smart AI Assistant with
 
 ```bash
 # Note: Replace v0.1.1 with the latest version from the Releases page
-wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-linux-arm64
-chmod +x picoclaw-linux-arm64
+wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-agents_Linux_arm64
+chmod +x picoclaw-agents_Linux_arm64
 pkg install proot
-termux-chroot ./picoclaw-linux-arm64 onboard
+termux-chroot ./picoclaw-agents_Linux_arm64 onboard
 ```
 
 And then follow the instructions in the "Quick Start" section to complete the configuration!
@@ -134,7 +134,7 @@ Download the firmware for your platform from the [release](https://github.com/co
 ```bash
 git clone https://github.com/comgunner/picoclaw-agents.git
 
-cd picoclaw
+cd picoclaw-agents
 make deps
 
 # Build, no need to install
@@ -154,7 +154,7 @@ You can also run PicoClaw using Docker Compose without installing anything local
 ```bash
 # 1. Clone this repo
 git clone https://github.com/comgunner/picoclaw-agents.git
-cd picoclaw
+cd picoclaw-agents
 
 # 2. Set your API keys
 cp config/config.example.json config/config.json
@@ -178,10 +178,10 @@ docker compose --profile gateway down
 
 ```bash
 # Ask a question
-docker compose run --rm picoclaw-agent -m "What is 2+2?"
+docker compose run --rm picoclaw-agents-agent -m "What is 2+2?"
 
 # Interactive mode
-docker compose run --rm picoclaw-agent
+docker compose run --rm picoclaw-agents-agent
 ```
 
 ### Rebuild
@@ -204,22 +204,22 @@ Use the `onboard` command to initialize your workspace with a pre-configured tem
 
 ```bash
 # Default (Empty/Manual configuration)
-picoclaw onboard
+picoclaw-agents onboard
 
 # 🆓 Zero-cost setup — no API balance required:
-picoclaw onboard --free        # Free tier (OpenRouter free models)
+picoclaw-agents onboard --free        # Free tier (OpenRouter free models)
 
 # Pre-configured templates:
-picoclaw onboard --openai      # Use OpenAI template (o3-mini)
-picoclaw onboard --openrouter  # Use OpenRouter template (openrouter/auto)
-picoclaw onboard --glm         # Use GLM-4.5-Flash template (zhipu.ai)
-picoclaw onboard --qwen        # Use Qwen template (Alibaba Cloud Intl)
-picoclaw onboard --qwen_zh     # Use Qwen template (Alibaba Cloud China)
-picoclaw onboard --gemini      # Use Gemini template (gemini-2.5-flash)
+picoclaw-agents onboard --openai      # Use OpenAI template (o3-mini)
+picoclaw-agents onboard --openrouter  # Use OpenRouter template (openrouter/auto)
+picoclaw-agents onboard --glm         # Use GLM-4.5-Flash template (zhipu.ai)
+picoclaw-agents onboard --qwen        # Use Qwen template (Alibaba Cloud Intl)
+picoclaw-agents onboard --qwen_zh     # Use Qwen template (Alibaba Cloud China)
+picoclaw-agents onboard --gemini      # Use Gemini template (gemini-2.5-flash)
 ```
 
 > [!TIP]
-> **No API key balance?** Use `picoclaw onboard --free` to get started instantly with OpenRouter's free-tier models. Just create a free account at [openrouter.ai](https://openrouter.ai) and add your key — no credits needed.
+> **No API key balance?** Use `picoclaw-agents onboard --free` to get started instantly with OpenRouter's free-tier models. Just create a free account at [openrouter.ai](https://openrouter.ai) and add your key — no credits needed.
 
 #### 🆓 Free Tier Models
 
@@ -311,7 +311,7 @@ For heavy coding tasks, performance and logic are key. We recommend standardizin
 **4. Chat**
 
 ```bash
-picoclaw agent -m "What is 2+2?"
+picoclaw-agents agent -m "What is 2+2?"
 ```
 
 That's it! You have a working AI assistant in 2 minutes.
@@ -320,7 +320,7 @@ That's it! You have a working AI assistant in 2 minutes.
 
 ## 💬 Chat Apps
 
-Talk to your picoclaw through Telegram, Discord, DingTalk, LINE, or WeCom
+Talk to your picoclaw-agents through Telegram, Discord, DingTalk, LINE, or WeCom
 
 | Channel      | Setup                              |
 | ------------ | ---------------------------------- |
@@ -359,7 +359,7 @@ Talk to your picoclaw through Telegram, Discord, DingTalk, LINE, or WeCom
 **3. Run**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 </details>
@@ -411,7 +411,7 @@ Set `"mention_only": true` to make the bot respond only when @-mentioned. Useful
 **6. Run**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 </details>
@@ -444,7 +444,7 @@ picoclaw gateway
 **3. Run**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 </details>
@@ -478,7 +478,7 @@ picoclaw gateway
 **3. Run**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 </details>
 
@@ -523,7 +523,7 @@ Then set the Webhook URL in LINE Developers Console to `https://your-domain/webh
 **4. Run**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 > In group chats, the bot responds only when @mentioned. Replies quote the original message.
@@ -605,7 +605,7 @@ See [WeCom App Configuration Guide](docs/wecom-app-configuration.md) for detaile
 **4. Run**
 
 ```bash
-picoclaw gateway
+picoclaw-agents gateway
 ```
 
 > **Note**: WeCom App requires opening port 18792 for webhook callbacks. Use a reverse proxy for HTTPS.
@@ -837,7 +837,7 @@ The subagent has access to tools (message, web_search, etc.) and can communicate
 | `qwen`                     | LLM (Qwen direct)                       | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) |
 | `groq`                     | LLM + **Voice transcription** (Whisper) | [console.groq.com](https://console.groq.com)                         |
 | `cerebras`                 | LLM (Cerebras direct)                   | [cerebras.ai](https://cerebras.ai)                                   |
-| `antigravity`              | LLM (Google Antigravity / OAuth)        | `picoclaw auth login --provider google-antigravity`                  |
+| `antigravity`              | LLM (Google Antigravity / OAuth)        | `picoclaw-agents auth login --provider google-antigravity`           |
 
 ### Model Configuration (model_list)
 
@@ -946,7 +946,7 @@ This design also enables **multi-agent support** with flexible provider selectio
 }
 ```
 
-> Run `picoclaw auth login --provider anthropic` to paste your API token.
+> Run `picoclaw-agents auth login --provider anthropic` to paste your API token.
 
 **Google Antigravity (OAuth — free tier)**
 
@@ -958,7 +958,7 @@ This design also enables **multi-agent support** with flexible provider selectio
 }
 ```
 
-> Run `picoclaw auth login --provider google-antigravity` to authenticate via browser. No API key required — uses your Google account. See [docs/ANTIGRAVITY_QUICKSTART.md](docs/ANTIGRAVITY_QUICKSTART.md) for setup details.
+> Run `picoclaw-agents auth login --provider google-antigravity` to authenticate via browser. No API key required — uses your Google account. See [docs/ANTIGRAVITY_QUICKSTART.md](docs/ANTIGRAVITY_QUICKSTART.md) for setup details.
 
 **Ollama (local)**
 
@@ -1090,7 +1090,7 @@ This keeps the runtime lightweight while making new OpenAI-compatible backends m
 **3. Run**
 
 ```bash
-picoclaw agent -m "Hello"
+picoclaw-agents agent -m "Hello"
 ```
 
 </details>
@@ -1169,15 +1169,15 @@ picoclaw agent -m "Hello"
 
 ## CLI Reference
 
-| Command                   | Description                   |
-| ------------------------- | ----------------------------- |
-| `picoclaw onboard`        | Initialize config & workspace |
-| `picoclaw agent -m "..."` | Chat with the agent           |
-| `picoclaw agent`          | Interactive chat mode         |
-| `picoclaw gateway`        | Start the gateway             |
-| `picoclaw status`         | Show status                   |
-| `picoclaw cron list`      | List all scheduled jobs       |
-| `picoclaw cron add ...`   | Add a scheduled job           |
+| Command                      | Description                   |
+| ---------------------------- | ----------------------------- |
+| `picoclaw-agents onboard`    | Initialize config & workspace |
+| `picoclaw-agents agent -m "..."` | Chat with the agent           |
+| `picoclaw-agents agent`      | Interactive chat mode         |
+| `picoclaw-agents gateway`    | Start the gateway             |
+| `picoclaw-agents status`     | Show status                   |
+| `picoclaw-agents cron list`  | List all scheduled jobs       |
+| `picoclaw-agents cron add ...` | Add a scheduled job           |
 
 ### Scheduled Tasks / Reminders
 
@@ -1212,8 +1212,8 @@ Configure keys in `~/.picoclaw/config.json`:
 Usage examples:
 
 ```bash
-picoclaw agent -m "Use binance_get_ticker_price with symbol BTCUSDT and return only the numeric price."
-picoclaw agent -m "Use binance_get_spot_balance and show my non-zero balances."
+picoclaw-agents agent -m "Use binance_get_ticker_price with symbol BTCUSDT and return only the numeric price."
+picoclaw-agents agent -m "Use binance_get_spot_balance and show my non-zero balances."
 ```
 
 Behavior without API keys:
@@ -1224,17 +1224,17 @@ Behavior without API keys:
 Optional MCP server mode (for MCP clients):
 
 ```bash
-picoclaw util binance-mcp-server
+picoclaw-agents util binance-mcp-server
 ```
 
-Example `mcp_servers` config (use the absolute `picoclaw` path generated by your installation/onboard flow):
+Example `mcp_servers` config (use the absolute `picoclaw-agents` path generated by your installation/onboard flow):
 
 ```json
 {
   "mcp_servers": {
     "binance": {
       "enabled": true,
-      "command": "/absolute/path/to/picoclaw",
+      "command": "/absolute/path/to/picoclaw-agents",
       "args": ["util", "binance-mcp-server"]
     }
   }
@@ -1286,7 +1286,7 @@ Some providers (like Zhipu) have content filtering. Try rephrasing your query or
 
 ### Telegram bot says "Conflict: terminated by other getUpdates"
 
-This happens when another instance of the bot is running. Make sure only one `picoclaw gateway` is running at a time.
+This happens when another instance of the bot is running. Make sure only one `picoclaw-agents gateway` is running at a time.
 
 ---
 

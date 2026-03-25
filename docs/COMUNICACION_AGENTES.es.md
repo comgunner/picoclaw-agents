@@ -150,7 +150,7 @@ Para usuarios con planes como *Google One AI Premium* o *Workspace Gemini*, el a
 
 ```bash
 cp config/config.example_antigravity.json ~/.picoclaw/config.json
-./picoclaw auth antigravity
+./picoclaw-agents auth antigravity
 ```
 
 ### Tubería de Resolución de Modelos (Pipeline)

@@ -704,7 +704,7 @@ cp -r ~/.picoclaw/workspace/sessions/ /ubicacion/segura/
 ### Paso 3: Erradicar la Amenaza
 
 **Acciones:**
-- Eliminar skills maliciosos: `picoclaw skills remove <nombre>`
+- Eliminar skills maliciosos: `picoclaw-agents skills remove <nombre>`
 - Eliminar sesiones comprometidas
 - Actualizar a la última versión: `make build`
 - Parchear vulnerabilidades

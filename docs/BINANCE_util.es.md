@@ -63,37 +63,37 @@ futures balance
 ### Atajos simples (recomendado)
 
 ```bash
-./picoclaw agent -m "open futures BTCUSDT long 0.001 leverage 5"
-./picoclaw agent -m "close futures BTCUSDT"
-./picoclaw agent -m "close futures partial BTCUSDT 0.0005"
-./picoclaw agent -m "order book BTCUSDT top 10"
-./picoclaw agent -m "futures order book BTCUSDT top 10"
-./picoclaw agent -m "list future volume"
-./picoclaw agent -m "spot balance"
-./picoclaw agent -m "futures balance"
+./picoclaw-agents agent -m "open futures BTCUSDT long 0.001 leverage 5"
+./picoclaw-agents agent -m "close futures BTCUSDT"
+./picoclaw-agents agent -m "close futures partial BTCUSDT 0.0005"
+./picoclaw-agents agent -m "order book BTCUSDT top 10"
+./picoclaw-agents agent -m "futures order book BTCUSDT top 10"
+./picoclaw-agents agent -m "list future volume"
+./picoclaw-agents agent -m "spot balance"
+./picoclaw-agents agent -m "futures balance"
 ```
 
 ### Abrir LONG
 
 ```bash
-./picoclaw agent -m "Usa binance_open_futures_position con symbol BTCUSDT, side LONG, quantity 0.001, leverage 5 y confirm true."
+./picoclaw-agents agent -m "Usa binance_open_futures_position con symbol BTCUSDT, side LONG, quantity 0.001, leverage 5 y confirm true."
 ```
 
 ### Cerrar posición completa
 
 ```bash
-./picoclaw agent -m "Usa binance_close_futures_position con symbol BTCUSDT y confirm true."
+./picoclaw-agents agent -m "Usa binance_close_futures_position con symbol BTCUSDT y confirm true."
 ```
 
 ### Cerrar parcial
 
 ```bash
-./picoclaw agent -m "Usa binance_close_futures_position con symbol BTCUSDT, quantity 0.0005 y confirm true."
+./picoclaw-agents agent -m "Usa binance_close_futures_position con symbol BTCUSDT, quantity 0.0005 y confirm true."
 ```
 
 ## Uso desde Telegram
 
-Con `picoclaw gateway` activo, envía estos mensajes al bot:
+Con `picoclaw-agents gateway` activo, envía estos mensajes al bot:
 
 ### Atajos simples (recomendado)
 
@@ -131,39 +131,39 @@ Usa binance_close_futures_position con symbol BTCUSDT, quantity 0.0005 y confirm
 ### Precio público (sin API)
 
 ```bash
-./picoclaw agent -m "Usa binance_get_ticker_price con symbol ETHUSDT y responde solo con el precio."
+./picoclaw-agents agent -m "Usa binance_get_ticker_price con symbol ETHUSDT y responde solo con el precio."
 ```
 
 ### Libro de órdenes / profundidad (sin API)
 
 ```bash
-./picoclaw agent -m "Usa binance_get_order_book con symbol BTCUSDT y limit 10."
+./picoclaw-agents agent -m "Usa binance_get_order_book con symbol BTCUSDT y limit 10."
 ```
 
 ### Libro de órdenes de futuros / profundidad (sin API)
 
 ```bash
-./picoclaw agent -m "Usa binance_get_futures_order_book con symbol BTCUSDT y limit 10."
+./picoclaw-agents agent -m "Usa binance_get_futures_order_book con symbol BTCUSDT y limit 10."
 ```
 
 ### Ranking de futuros por volumen (sin API)
 
 ```bash
-./picoclaw agent -m "Usa binance_list_futures_volume con top 10."
-./picoclaw agent -m "list future volume"
-./picoclaw agent -m "list future volume top 20"
+./picoclaw-agents agent -m "Usa binance_list_futures_volume con top 10."
+./picoclaw-agents agent -m "list future volume"
+./picoclaw-agents agent -m "list future volume top 20"
 ```
 
 ### Balance spot
 
 ```bash
-./picoclaw agent -m "Usa binance_get_spot_balance y muestra mis balances no cero."
+./picoclaw-agents agent -m "Usa binance_get_spot_balance y muestra mis balances no cero."
 ```
 
 ### Balance de futuros
 
 ```bash
-./picoclaw agent -m "Usa binance_get_futures_balance y muestra mis balances de futuros no cero."
+./picoclaw-agents agent -m "Usa binance_get_futures_balance y muestra mis balances de futuros no cero."
 ```
 
 ### Top 10 símbolos de futuros (libro de órdenes)
@@ -176,14 +176,14 @@ Consulta rápida en terminal:
 
 ```bash
 for s in BTCUSDT ETHUSDT BNBUSDT SOLUSDT XRPUSDT DOGEUSDT ADAUSDT AVAXUSDT LINKUSDT LTCUSDT; do
-  ./picoclaw agent -m "futures order book ${s} top 10"
+  ./picoclaw-agents agent -m "futures order book ${s} top 10"
 done
 ```
 
 También lo puedes pedir en un solo prompt:
 
 ```bash
-./picoclaw agent -m "Muestra el order book top 10 de futuros para BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT, DOGEUSDT, ADAUSDT, AVAXUSDT, LINKUSDT y LTCUSDT."
+./picoclaw-agents agent -m "Muestra el order book top 10 de futuros para BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT, DOGEUSDT, ADAUSDT, AVAXUSDT, LINKUSDT y LTCUSDT."
 ```
 
 ## Notas de seguridad
@@ -236,9 +236,9 @@ Cierra mi posición de BTCUSDT
 
 **CLI:**
 ```bash
-./picoclaw agent -m "Get BTCUSDT price"
-./picoclaw agent -m "Show order book for ETHUSDT limit 10"
-./picoclaw agent -m "Open long position BTCUSDT 0.001 leverage 5 confirm true"
+./picoclaw-agents agent -m "Get BTCUSDT price"
+./picoclaw-agents agent -m "Show order book for ETHUSDT limit 10"
+./picoclaw-agents agent -m "Open long position BTCUSDT 0.001 leverage 5 confirm true"
 ```
 
 **Beneficios:**
@@ -289,16 +289,16 @@ Puedes combinar las herramientas de Binance con las herramientas de Social Media
 
 ```bash
 # Order book de futuros + publicar en Twitter
-./picoclaw agent -m "futures order book BTCUSDT top 10 y publica el resultado en Twitter"
+./picoclaw-agents agent -m "futures order book BTCUSDT top 10 y publica el resultado en Twitter"
 
 # Volumen de futuros + publicar en Discord
-./picoclaw agent -m "list future volume y publica el top 5 en Discord"
+./picoclaw-agents agent -m "list future volume y publica el top 5 en Discord"
 
 # Order book + publicar en Facebook
-./picoclaw agent -m "futures order book ETHUSDT top 10 y publica en Facebook"
+./picoclaw-agents agent -m "futures order book ETHUSDT top 10 y publica en Facebook"
 
 # Múltiples símbolos + publicar resumen
-./picoclaw agent -m "Muestra order book de BTCUSDT, ETHUSDT, BNBUSDT y publica el más líquido en Twitter"
+./picoclaw-agents agent -m "Muestra order book de BTCUSDT, ETHUSDT, BNBUSDT y publica el más líquido en Twitter"
 ```
 
 ### Ejemplos en Telegram
@@ -327,14 +327,14 @@ order book ETHUSDT and share on Facebook
 
 ```bash
 # Generar post atractivo desde datos de Binance
-./picoclaw agent -m "
+./picoclaw-agents agent -m "
   Usa binance_get_futures_order_book con symbol BTCUSDT limit 10,
   luego usa community_manager_create_draft con raw_data del resultado, platform='twitter',
   luego publica el borrador generado
 "
 
 # Flujo completo: datos → post atractivo → publicar
-./picoclaw agent -m "
+./picoclaw-agents agent -m "
   Obtené order book de BTCUSDT,
   creá un post atractivo con community_manager para Twitter,
   publicalo con hashtags #BTC #Binance #Trading
@@ -381,13 +381,13 @@ Mercado líquido y estable. ¡Buen momento para operar!
 ```bash
 # Monitorear cada 5 minutos y publicar en Discord
 while true; do
-  ./picoclaw agent -m "futures order book BTCUSDT top 10 y publica en Discord si el spread es < $5"
+  ./picoclaw-agents agent -m "futures order book BTCUSDT top 10 y publica en Discord si el spread es < $5"
   sleep 300
 done
 
 # Publicar top volumen cada hora
 while true; do
-  ./picoclaw agent -m "list future volume top 10 y publica en Twitter"
+  ./picoclaw-agents agent -m "list future volume top 10 y publica en Twitter"
   sleep 3600
 done
 ```
@@ -396,7 +396,7 @@ done
 
 ```bash
 # Generar imagen con datos de Binance y publicar
-./picoclaw agent -m "
+./picoclaw-agents agent -m "
   Obtené order book de BTCUSDT,
   generá una imagen con gráfico usando image_gen_create,
   creá post con community_manager,

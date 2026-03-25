@@ -336,14 +336,14 @@ make clean
 
 **Build Output:**
 ```
-Building picoclaw for darwin/arm64...
-Build complete: build/picoclaw-darwin-arm64
+Building picoclaw-agents for darwin/arm64...
+Build complete: build/picoclaw-agents-darwin-arm64
 ```
 
 **Binary Location:**
 ```
-build/picoclaw-{platform}-{arch}
-build/picoclaw  # Symlink to current platform
+build/picoclaw-agents-{platform}-{arch}
+build/picoclaw-agents  # Symlink to current platform
 ```
 
 ### Cross-Compilation
@@ -358,22 +358,22 @@ make build-all
 
 | Platform | Architecture | Binary Name |
 |----------|--------------|-------------|
-| Linux | amd64 | `picoclaw-linux-amd64` |
-| Linux | arm64 | `picoclaw-linux-arm64` |
-| Linux | loong64 | `picoclaw-linux-loong64` |
-| Linux | riscv64 | `picoclaw-linux-riscv64` |
-| Linux | armv7 | `picoclaw-linux-armv7` |
-| macOS | arm64 (Apple Silicon) | `picoclaw-darwin-arm64` |
-| macOS | amd64 (Intel) | `picoclaw-darwin-amd64` |
-| Windows | amd64 | `picoclaw-windows-amd64.exe` |
+| Linux | amd64 | `picoclaw-agents-linux-amd64` |
+| Linux | arm64 | `picoclaw-agents-linux-arm64` |
+| Linux | loong64 | `picoclaw-agents-linux-loong64` |
+| Linux | riscv64 | `picoclaw-agents-linux-riscv64` |
+| Linux | armv7 | `picoclaw-agents-linux-armv7` |
+| macOS | arm64 (Apple Silicon) | `picoclaw-agents-darwin-arm64` |
+| macOS | amd64 (Intel) | `picoclaw-agents-darwin-amd64` |
+| Windows | amd64 | `picoclaw-agents-windows-amd64.exe` |
 
 **Manual Cross-Compilation:**
 ```bash
 # Build for Linux ARM64
-GOOS=linux GOARCH=arm64 go build -o picoclaw-linux-arm64 ./cmd/picoclaw
+GOOS=linux GOARCH=arm64 go build -o picoclaw-agents-linux-arm64 ./cmd/picoclaw
 
 # Build for Windows AMD64
-GOOS=windows GOARCH=amd64 go build -o picoclaw-windows-amd64.exe ./cmd/picoclaw
+GOOS=windows GOARCH=amd64 go build -o picoclaw-agents-windows-amd64.exe ./cmd/picoclaw
 ```
 
 ### GoReleaser Build
@@ -2389,7 +2389,7 @@ export PICOCLAW_DEBUG=true
 }
 
 # Via CLI flag
-./picoclaw gateway --debug
+./picoclaw-agents gateway --debug
 ```
 
 **Debug Features:**
@@ -2427,7 +2427,7 @@ Error: failed to initialize exec tool: deny patterns cannot be empty
 **Solution:**
 ```bash
 # Check channel configuration
-./picoclaw status
+./picoclaw-agents status
 
 # Verify bot token
 echo $TELEGRAM_BOT_TOKEN
@@ -2481,15 +2481,15 @@ Error: context length exceeded (max: 8192 tokens)
 ```bash
 # CPU profiling
 export PICOCLAW_PROFILE_CPU=true
-./picoclaw gateway
+./picoclaw-agents gateway
 
 # Memory profiling
 export PICOCLAW_PROFILE_MEMORY=true
-./picoclaw gateway
+./picoclaw-agents gateway
 
 # Block profiling
 export PICOCLAW_PROFILE_BLOCK=true
-./picoclaw gateway
+./picoclaw-agents gateway
 ```
 
 **Analyze Profiles:**
@@ -2787,7 +2787,7 @@ go generate ./...
 **Diagnosis:**
 ```bash
 # Check logs
-./picoclaw gateway 2>&1 | tee startup.log
+./picoclaw-agents gateway 2>&1 | tee startup.log
 
 # Check config
 cat ~/.picoclaw/config.json | jq .
@@ -2820,7 +2820,7 @@ ls -lh ~/.picoclaw/workspace/sessions/
 **Diagnosis:**
 ```bash
 # Check channel status
-./picoclaw status
+./picoclaw-agents status
 
 # Test connection
 curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe"
@@ -2877,7 +2877,7 @@ curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe"
 ```
 
 **Steps to Reproduce:**
-1. Start gateway: `./picoclaw gateway`
+1. Start gateway: `./picoclaw-agents gateway`
 2. Send /start to bot on Telegram
 3. No response
 ```

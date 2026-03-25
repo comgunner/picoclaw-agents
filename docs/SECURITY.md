@@ -726,7 +726,7 @@ cp -r ~/.picoclaw/workspace/sessions/ /secure/location/
 ### Step 3: Eradicate the Threat
 
 **Actions:**
-- Remove malicious skills: `picoclaw skills remove <name>`
+- Remove malicious skills: `picoclaw-agents skills remove <name>`
 - Delete compromised sessions
 - Update to latest version: `make build`
 - Patch vulnerabilities

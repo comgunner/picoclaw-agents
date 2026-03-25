@@ -83,36 +83,36 @@ export DISCORD_WEBHOOK_URL="your_webhook_url"
 
 ```bash
 # Facebook text-only
-./picoclaw agent -m "Use facebook_post with message='Hello from PicoClaw'"
+./picoclaw-agents agent -m "Use facebook_post with message='Hello from PicoClaw'"
 
 # Facebook image + text
-./picoclaw agent -m "Use facebook_post with message='Launch update', image_path='/tmp/post.jpg'"
+./picoclaw-agents agent -m "Use facebook_post with message='Launch update', image_path='/tmp/post.jpg'"
 
 # Facebook image + text + comment
-./picoclaw agent -m "Use facebook_post with message='Main update', image_path='/tmp/post.jpg', comment='Extra details'"
+./picoclaw-agents agent -m "Use facebook_post with message='Main update', image_path='/tmp/post.jpg', comment='Extra details'"
 
 # Facebook multi-page override
-./picoclaw agent -m "Use facebook_post with page_id='123456789', page_token='EAAB...', message='Page-specific update'"
+./picoclaw-agents agent -m "Use facebook_post with page_id='123456789', page_token='EAAB...', message='Page-specific update'"
 
 # X text-only
-./picoclaw agent -m "Use x_post_tweet with message='Hello X'"
+./picoclaw-agents agent -m "Use x_post_tweet with message='Hello X'"
 
 # X with image
-./picoclaw agent -m "Use x_post_tweet with message='Check this out', image_path='/tmp/photo.jpg'"
+./picoclaw-agents agent -m "Use x_post_tweet with message='Check this out', image_path='/tmp/photo.jpg'"
 
 # Discord text-only
-./picoclaw agent -m "Use discord_post with message='Hello Discord'"
+./picoclaw-agents agent -m "Use discord_post with message='Hello Discord'"
 
 # Discord with image
-./picoclaw agent -m "Use discord_post with message='Check this image', image_path='/tmp/photo.jpg'"
+./picoclaw-agents agent -m "Use discord_post with message='Check this image', image_path='/tmp/photo.jpg'"
 
 # Post to multiple platforms
-./picoclaw agent -m "Post 'Big announcement!' to Facebook, Twitter and Discord"
+./picoclaw-agents agent -m "Post 'Big announcement!' to Facebook, Twitter and Discord"
 ```
 
 ### Telegram Usage
 
-Send messages directly to your bot (with `picoclaw gateway` running):
+Send messages directly to your bot (with `picoclaw-agents gateway` running):
 
 ```text
 # Simple posts
@@ -147,26 +147,26 @@ Post to all social media: "Major announcement!"
 
 ```bash
 # Generate image and post
-./picoclaw agent -m "Generate image of new product and post to Facebook with attractive text"
+./picoclaw-agents agent -m "Generate image of new product and post to Facebook with attractive text"
 
 # Full workflow
-./picoclaw agent -m "Use script_to_image_workflow with topic='Product launch', then post to Twitter"
+./picoclaw-agents agent -m "Use script_to_image_workflow with topic='Product launch', then post to Twitter"
 
 # Community manager integration
-./picoclaw agent -m "Generate image, create community manager draft for Discord, then publish"
+./picoclaw-agents agent -m "Generate image, create community manager draft for Discord, then publish"
 ```
 
 ### Community Manager Examples
 
 ```bash
 # Create draft from technical content
-./picoclaw agent -m "Use community_manager_create_draft with raw_data='New API endpoints released', platform='discord'"
+./picoclaw-agents agent -m "Use community_manager_create_draft with raw_data='New API endpoints released', platform='discord'"
 
 # Generate text from image
-./picoclaw agent -m "Use community_from_image with image_path='./workspace/image_gen/abc/abc.-imagen.jpg', platform='twitter'"
+./picoclaw-agents agent -m "Use community_from_image with image_path='./workspace/image_gen/abc/abc.-imagen.jpg', platform='twitter'"
 
 # Full workflow
-./picoclaw agent -m "Generate image, create engaging post with community_manager, publish to Facebook"
+./picoclaw-agents agent -m "Generate image, create engaging post with community_manager, publish to Facebook"
 ```
 
 ## Notes
@@ -222,7 +222,7 @@ With v3.4.1, you can delegate complete social media workflows to subagents:
 
 ```bash
 # Delegate full workflow to subagent
-./picoclaw agent -m "spawn task='Generate image about AI, create post for Twitter, and publish it' label='social_campaign'"
+./picoclaw-agents agent -m "spawn task='Generate image about AI, create post for Twitter, and publish it' label='social_campaign'"
 
 # The subagent will:
 # 1. Generate image with image_gen_create
