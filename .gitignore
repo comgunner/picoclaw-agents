@@ -135,6 +135,7 @@ scripts/*.sh
 !scripts/health_check.sh
 !scripts/update-changelog.sh
 !scripts/update-readmes.sh
+!scripts/create-release.sh
 docs_backup_*/
 update_log_*.txt
 update_docs_binary_name.sh
