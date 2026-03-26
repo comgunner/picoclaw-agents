@@ -5,12 +5,14 @@
 #   Manual:       ./scripts/create-release.sh <VERSION> [PRERELEASE]
 #   Interactive:  ./scripts/create-release.sh
 #   Auto:         ./scripts/create-release.sh auto
+#   Dry-run:      ./scripts/create-release.sh --dry-run
 #
 # Examples:
 #   ./scripts/create-release.sh v1.0.1 false        # Manual release
 #   ./scripts/create-release.sh v1.1.0-beta true    # Manual pre-release
 #   ./scripts/create-release.sh                     # Interactive (analyze & suggest)
 #   ./scripts/create-release.sh auto                # Auto (analyze & create)
+#   ./scripts/create-release.sh --dry-run           # Test (no changes)
 #
 # Features:
 #   - Validates version format (SemVer)
@@ -19,6 +21,7 @@
 #   - Creates and pushes git tags
 #   - Triggers GitHub Actions release workflow
 #   - Supports pre-releases (beta, alpha, rc)
+#   - Dry-run mode for testing
 
 set -e
 
@@ -118,6 +121,7 @@ analyze_commits() {
 
 # Validate arguments and determine mode
 MODE="manual"
+DRY_RUN=false
 
 if [ -z "$VERSION" ]; then
     # Interactive mode - analyze and suggest
@@ -125,10 +129,19 @@ if [ -z "$VERSION" ]; then
 elif [ "$VERSION" = "auto" ]; then
     # Auto mode - analyze and create without confirmation
     MODE="auto"
+elif [ "$VERSION" = "--dry-run" ] || [ "$VERSION" = "-d" ]; then
+    # Dry-run mode - test without changes
+    MODE="dry-run"
+    DRY_RUN=true
 fi
 
 echo ""
-if [ "$MODE" = "interactive" ]; then
+if [ "$MODE" = "dry-run" ]; then
+    print_info "╔═══════════════════════════════════════════════════════════╗"
+    print_info "║     PicoClaw-Agents Release Script (DRY-RUN)              ║"
+    print_info "║     MODO PRUEBA - SIN CAMBIOS REALES                      ║"
+    print_info "╚═══════════════════════════════════════════════════════════╝"
+elif [ "$MODE" = "interactive" ]; then
     print_info "╔═══════════════════════════════════════════════════════════╗"
     print_info "║     PicoClaw-Agents Release Script (Interactivo)          ║"
     print_info "╚═══════════════════════════════════════════════════════════╝"
@@ -203,8 +216,8 @@ fi
 print_success "Branch verificada: $CURRENT_BRANCH"
 echo ""
 
-# Step 2.5: Analyze commits (for interactive/auto mode)
-if [ "$MODE" = "interactive" ] || [ "$MODE" = "auto" ]; then
+# Step 2.5: Analyze commits (for interactive/auto/dry-run mode)
+if [ "$MODE" = "interactive" ] || [ "$MODE" = "auto" ] || [ "$MODE" = "dry-run" ]; then
     print_info "Paso 2.5/6: Analizando commits..."
 
     # Parse last version to numbers
@@ -221,6 +234,26 @@ if [ "$MODE" = "interactive" ] || [ "$MODE" = "auto" ]; then
     if [ "$MODE" = "auto" ]; then
         VERSION="$SUGGESTED_VERSION"
         print_success "Versión automática: $VERSION"
+    elif [ "$MODE" = "dry-run" ]; then
+        print_info "➡️  Versión sugerida: $SUGGESTED_VERSION ($CHANGE_TYPE)"
+        print_info ""
+        print_info "═══════════════════════════════════════════════════════"
+        print_info "MODO DRY-RUN - Lo que HARÍA:"
+        print_info "═══════════════════════════════════════════════════════"
+        print_info "1. ✅ Ejecutar: make check"
+        print_info "2. ✅ Ejecutar: make test"
+        print_info "3. ✅ Ejecutar: make security-check"
+        print_info "4. 🏷️  Crear tag: git tag $SUGGESTED_VERSION"
+        print_info "5. 📤 Subir tag: git push origin $SUGGESTED_VERSION"
+        print_info "6. 🚀 Disparar: gh workflow run release.yml"
+        print_info "═══════════════════════════════════════════════════════"
+        print_info ""
+        print_info "Para ejecutar REALMENTE, usa:"
+        print_info "  ./scripts/create-release.sh $SUGGESTED_VERSION"
+        print_info ""
+        print_info "O para interactivo:"
+        print_info "  ./scripts/create-release.sh"
+        exit 0
     else
         # Interactive mode - show suggestion and ask
         print_info "Versión sugerida: $SUGGESTED_VERSION ($CHANGE_TYPE)"
