@@ -1,8 +1,24 @@
 #!/bin/bash
 # PicoClaw-Agents Release Script
-# Usage: ./scripts/create-release.sh <VERSION> [PRERELEASE]
-# Example: ./scripts/create-release.sh v1.0.1 false
-#          ./scripts/create-release.sh v1.1.0-beta true
+#
+# Usage:
+#   Manual:       ./scripts/create-release.sh <VERSION> [PRERELEASE]
+#   Interactive:  ./scripts/create-release.sh
+#   Auto:         ./scripts/create-release.sh auto
+#
+# Examples:
+#   ./scripts/create-release.sh v1.0.1 false        # Manual release
+#   ./scripts/create-release.sh v1.1.0-beta true    # Manual pre-release
+#   ./scripts/create-release.sh                     # Interactive (analyze & suggest)
+#   ./scripts/create-release.sh auto                # Auto (analyze & create)
+#
+# Features:
+#   - Validates version format (SemVer)
+#   - Analyzes commits to suggest version (interactive/auto mode)
+#   - Runs pre-release checks (make check, test, security-check)
+#   - Creates and pushes git tags
+#   - Triggers GitHub Actions release workflow
+#   - Supports pre-releases (beta, alpha, rc)
 
 set -e
 
@@ -34,30 +50,105 @@ print_error() {
     echo -e "${RED}❌ $1${NC}"
 }
 
-# Validate arguments
-if [ -z "$VERSION" ]; then
-    print_error "Error: Debes especificar la versión"
-    echo ""
-    echo "Uso: $0 <VERSION> [PRERELEASE]"
-    echo "Ejemplos:"
-    echo "  $0 v1.0.1 false          # Release normal"
-    echo "  $0 v1.1.0-beta true      # Pre-release"
-    echo "  $0 v1.1.0-rc1 true       # Release candidate"
-    exit 1
-fi
+# Analyze commits and suggest version
+analyze_commits() {
+    print_info "Analizando commits desde $LAST_VERSION..."
 
-# Validate version format (SemVer)
-if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
-    print_error "Error: Formato de versión inválido"
-    echo "El formato debe ser: vMAJOR.MINOR.PATCH o vMAJOR.MINOR.PATCH-LABEL"
-    echo "Ejemplos: v1.0.1, v1.1.0, v2.0.0-beta, v1.0.0-rc1"
-    exit 1
+    # Get commits
+    COMMITS=$(git log "$LAST_VERSION"..HEAD --oneline 2>/dev/null || echo "")
+
+    if [ -z "$COMMITS" ]; then
+        print_warning "No hay commits desde $LAST_VERSION"
+        SUGGESTED_VERSION="$LAST_VERSION"
+        CHANGE_TYPE="NONE"
+        return
+    fi
+
+    COMMIT_COUNT=$(echo "$COMMITS" | wc -l | tr -d ' ')
+    print_info "Encontrados $COMMIT_COUNT commits"
+
+    # Analyze commit messages
+    FEAT_COUNT=$(git log "$LAST_VERSION"..HEAD --oneline --grep="^feat" | wc -l | tr -d ' ')
+    FIX_COUNT=$(git log "$LAST_VERSION"..HEAD --oneline --grep="^fix" | wc -l | tr -d ' ')
+    BREAKING_COUNT=$(git log "$LAST_VERSION"..HEAD --oneline --grep="BREAKING" | wc -l | tr -d ' ')
+    DOCS_COUNT=$(git log "$LAST_VERSION"..HEAD --oneline --grep="^docs" | wc -l | tr -d ' ')
+    NATIVE_SKILLS=$(git log "$LAST_VERSION"..HEAD --oneline --grep="[Nn]ative [Ss]kill" | wc -l | tr -d ' ')
+    NEW_PROVIDER=$(git log "$LAST_VERSION"..HEAD --oneline --grep="[Pp]rovider" | wc -l | tr -d ' ')
+
+    echo ""
+    print_info "Cambios detectados:"
+    print_info "  - Features (feat): $FEAT_COUNT"
+    print_info "  - Bug fixes (fix): $FIX_COUNT"
+    print_info "  - Breaking changes: $BREAKING_COUNT"
+    print_info "  - Docs: $DOCS_COUNT"
+    print_info "  - Native Skills: $NATIVE_SKILLS"
+    print_info "  - Nuevos Proveedores: $NEW_PROVIDER"
+    echo ""
+
+    # Determine version type
+    if [ "$BREAKING_COUNT" -gt 0 ]; then
+        CHANGE_TYPE="MAJOR"
+        NEW_MINOR=0
+        NEW_PATCH=0
+        print_info "➡️  BREAKING CHANGE detectado"
+    elif [ "$NATIVE_SKILLS" -gt 0 ] || [ "$NEW_PROVIDER" -gt 0 ] || [ "$FEAT_COUNT" -gt 0 ]; then
+        CHANGE_TYPE="MINOR"
+        NEW_MINOR=$((LAST_MINOR + 1))
+        NEW_PATCH=0
+        print_info "➡️  Nuevas features detectadas"
+    else
+        CHANGE_TYPE="PATCH"
+        NEW_MINOR=$LAST_MINOR
+        NEW_PATCH=$((LAST_PATCH + 1))
+        print_info "➡️  Solo bug fixes"
+    fi
+
+    # Build suggested version
+    if [ "$CHANGE_TYPE" = "MAJOR" ]; then
+        NEW_MAJOR=$((LAST_MAJOR + 1))
+        SUGGESTED_VERSION="v$NEW_MAJOR.0.0"
+    elif [ "$CHANGE_TYPE" = "MINOR" ]; then
+        SUGGESTED_VERSION="v$LAST_MAJOR.$NEW_MINOR.0"
+    else
+        SUGGESTED_VERSION="v$LAST_MAJOR.$LAST_MINOR.$NEW_PATCH"
+    fi
+
+    print_info "➡️  Versión sugerida: $SUGGESTED_VERSION ($CHANGE_TYPE)"
+}
+
+# Validate arguments and determine mode
+MODE="manual"
+
+if [ -z "$VERSION" ]; then
+    # Interactive mode - analyze and suggest
+    MODE="interactive"
+elif [ "$VERSION" = "auto" ]; then
+    # Auto mode - analyze and create without confirmation
+    MODE="auto"
 fi
 
 echo ""
-print_info "╔═══════════════════════════════════════════════════════════╗"
-print_info "║     PicoClaw-Agents Release Script                        ║"
-print_info "╚═══════════════════════════════════════════════════════════╝"
+if [ "$MODE" = "interactive" ]; then
+    print_info "╔═══════════════════════════════════════════════════════════╗"
+    print_info "║     PicoClaw-Agents Release Script (Interactivo)          ║"
+    print_info "╚═══════════════════════════════════════════════════════════╝"
+elif [ "$MODE" = "auto" ]; then
+    print_info "╔═══════════════════════════════════════════════════════════╗"
+    print_info "║     PicoClaw-Agents Release Script (Automático)           ║"
+    print_info "╚═══════════════════════════════════════════════════════════╝"
+else
+    print_info "╔═══════════════════════════════════════════════════════════╗"
+    print_info "║     PicoClaw-Agents Release Script (Manual)               ║"
+    print_info "╚═══════════════════════════════════════════════════════════╝"
+
+    # Validate version format (SemVer)
+    if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+        print_error "Error: Formato de versión inválido"
+        echo "El formato debe ser: vMAJOR.MINOR.PATCH o vMAJOR.MINOR.PATCH-LABEL"
+        echo "Ejemplos: v1.0.1, v1.1.0, v2.0.0-beta, v1.0.0-rc1"
+        exit 1
+    fi
+fi
 echo ""
 
 # Step 1: Check prerequisites
@@ -112,34 +203,94 @@ fi
 print_success "Branch verificada: $CURRENT_BRANCH"
 echo ""
 
-# Step 3: Verify last version
-print_info "Paso 3/6: Verificando última versión..."
+# Step 2.5: Analyze commits (for interactive/auto mode)
+if [ "$MODE" = "interactive" ] || [ "$MODE" = "auto" ]; then
+    print_info "Paso 2.5/6: Analizando commits..."
 
-LAST_VERSION=$(git ls-remote --tags origin | tail -1 | cut -f2 | sed 's|refs/tags/||')
-if [ -z "$LAST_VERSION" ]; then
-    print_warning "No se encontraron tags remotos"
-    LAST_VERSION="v1.0.0"
+    # Parse last version to numbers
+    LAST_VERSION_CLEAN=$(echo "$LAST_VERSION" | sed 's/^v//' | sed 's/-.*//')
+    LAST_MAJOR=$(echo "$LAST_VERSION_CLEAN" | cut -d. -f1)
+    LAST_MINOR=$(echo "$LAST_VERSION_CLEAN" | cut -d. -f2)
+    LAST_PATCH=$(echo "$LAST_VERSION_CLEAN" | cut -d. -f3)
+
+    # Analyze commits
+    analyze_commits
+
+    echo ""
+
+    if [ "$MODE" = "auto" ]; then
+        VERSION="$SUGGESTED_VERSION"
+        print_success "Versión automática: $VERSION"
+    else
+        # Interactive mode - show suggestion and ask
+        print_info "Versión sugerida: $SUGGESTED_VERSION ($CHANGE_TYPE)"
+        echo ""
+        echo "Opciones:"
+        echo "  1. Usar versión sugerida ($SUGGESTED_VERSION)"
+        echo "  2. Especificar versión manual"
+        echo "  3. Cancelar"
+        echo ""
+        read -p "Elige una opción (1/2/3): " -n 1 -r
+        echo
+
+        if [[ $REPLY =~ ^[3]$ ]]; then
+            print_info "Operación cancelada"
+            exit 0
+        elif [[ $REPLY =~ ^[2]$ ]]; then
+            read -p "Ingresa la versión (ej: v1.0.1): " VERSION
+            if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+                print_error "Formato de versión inválido"
+                exit 1
+            fi
+        else
+            VERSION="$SUGGESTED_VERSION"
+        fi
+
+        # Ask for pre-release
+        echo ""
+        read -p "¿Es un pre-release? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            PRERELEASE="true"
+            read -p "Tipo de pre-release (beta/alpha/rc): " LABEL
+            VERSION="$VERSION-$LABEL"
+        fi
+    fi
+
+    print_info "Versión final: $VERSION"
+    echo ""
 fi
 
-print_info "Última versión: $LAST_VERSION"
-print_info "Nueva versión: $VERSION"
+# Step 3: Verify last version (skip if already analyzed)
+if [ "$MODE" != "interactive" ] && [ "$MODE" != "auto" ]; then
+    print_info "Paso 3/6: Verificando última versión..."
 
-# Determine version type
-if [[ $VERSION == *"-beta"* ]] || [[ $VERSION == *"-alpha"* ]]; then
-    print_info "Tipo: Pre-release"
-elif [[ $VERSION == *"-rc"* ]]; then
-    print_info "Tipo: Release Candidate"
-else
-    print_info "Tipo: Release estable"
-fi
+    LAST_VERSION=$(git ls-remote --tags origin | tail -1 | cut -f2 | sed 's|refs/tags/||')
+    if [ -z "$LAST_VERSION" ]; then
+        print_warning "No se encontraron tags remotos"
+        LAST_VERSION="v1.0.0"
+    fi
 
-read -p "¿Continuar con la creación de esta versión? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    print_info "Operación cancelada"
-    exit 0
+    print_info "Última versión: $LAST_VERSION"
+    print_info "Nueva versión: $VERSION"
+
+    # Determine version type
+    if [[ $VERSION == *"-beta"* ]] || [[ $VERSION == *"-alpha"* ]]; then
+        print_info "Tipo: Pre-release"
+    elif [[ $VERSION == *"-rc"* ]]; then
+        print_info "Tipo: Release Candidate"
+    else
+        print_info "Tipo: Release estable"
+    fi
+
+    read -p "¿Continuar con la creación de esta versión? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_info "Operación cancelada"
+        exit 0
+    fi
+    echo ""
 fi
-echo ""
 
 # Step 4: Run verifications
 print_info "Paso 4/6: Ejecutando verificaciones de código..."
