@@ -199,7 +199,11 @@ func (t *WorkspaceMaintenanceTool) resolveWorkspace() (string, error) {
 	return filepath.Clean(abs), nil
 }
 
-func (t *WorkspaceMaintenanceTool) executeUnix(ctx context.Context, workspace string, args MaintenanceArgs) (string, error) {
+func (t *WorkspaceMaintenanceTool) executeUnix(
+	ctx context.Context,
+	workspace string,
+	args MaintenanceArgs,
+) (string, error) {
 	cmd := exec.CommandContext(ctx, "bash", "-c", t.generateBashScript())
 	cmd.Dir = workspace
 	cmd.Env = append(os.Environ(),
@@ -217,8 +221,19 @@ func (t *WorkspaceMaintenanceTool) executeUnix(ctx context.Context, workspace st
 	return string(out), err
 }
 
-func (t *WorkspaceMaintenanceTool) executeWindows(ctx context.Context, workspace string, args MaintenanceArgs) (string, error) {
-	cmd := exec.CommandContext(ctx, "powershell", "-NoProfile", "-NonInteractive", "-Command", t.generatePowerShellScript())
+func (t *WorkspaceMaintenanceTool) executeWindows(
+	ctx context.Context,
+	workspace string,
+	args MaintenanceArgs,
+) (string, error) {
+	cmd := exec.CommandContext(
+		ctx,
+		"powershell",
+		"-NoProfile",
+		"-NonInteractive",
+		"-Command",
+		t.generatePowerShellScript(),
+	)
 	cmd.Dir = workspace
 	cmd.Env = append(os.Environ(),
 		"WORKSPACE="+workspace,
@@ -393,7 +408,11 @@ Write-Output "SPACE_FREED_BYTES: $SPACE_FREED_BYTES"
 `
 }
 
-func (t *WorkspaceMaintenanceTool) parseOutput(output, workspace string, durationMs int64, osType string) *MaintenanceResult {
+func (t *WorkspaceMaintenanceTool) parseOutput(
+	output, workspace string,
+	durationMs int64,
+	osType string,
+) *MaintenanceResult {
 	result := &MaintenanceResult{
 		WorkspacePath:   workspace,
 		ExecutionTimeMs: durationMs,

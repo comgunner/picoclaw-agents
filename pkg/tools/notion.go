@@ -68,9 +68,17 @@ func (t *NotionCreatePageTool) Parameters() map[string]any {
 
 func (t *NotionCreatePageTool) Execute(ctx context.Context, args map[string]any) *ToolResult {
 	databaseID, _ := args["database_id"].(string)
-	return executeNotionTool(ctx, t.apiKey, databaseID, "database_id", args["properties"], func(client *utils.NotionClient, cCtx context.Context, id string, props map[string]any) (*utils.NotionPage, error) {
-		return client.NotionCreatePage(cCtx, id, props)
-	}, "creada")
+	return executeNotionTool(
+		ctx,
+		t.apiKey,
+		databaseID,
+		"database_id",
+		args["properties"],
+		func(client *utils.NotionClient, cCtx context.Context, id string, props map[string]any) (*utils.NotionPage, error) {
+			return client.NotionCreatePage(cCtx, id, props)
+		},
+		"creada",
+	)
 }
 
 // ============== Notion Query Database Tool ==============
@@ -363,9 +371,17 @@ func (t *NotionUpdatePageTool) Parameters() map[string]any {
 
 func (t *NotionUpdatePageTool) Execute(ctx context.Context, args map[string]any) *ToolResult {
 	pageID, _ := args["page_id"].(string)
-	return executeNotionTool(ctx, t.apiKey, pageID, "page_id", args["properties"], func(client *utils.NotionClient, cCtx context.Context, id string, props map[string]any) (*utils.NotionPage, error) {
-		return client.NotionUpdatePage(cCtx, id, props)
-	}, "actualizada")
+	return executeNotionTool(
+		ctx,
+		t.apiKey,
+		pageID,
+		"page_id",
+		args["properties"],
+		func(client *utils.NotionClient, cCtx context.Context, id string, props map[string]any) (*utils.NotionPage, error) {
+			return client.NotionUpdatePage(cCtx, id, props)
+		},
+		"actualizada",
+	)
 }
 
 func executeNotionTool(

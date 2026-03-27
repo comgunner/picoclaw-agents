@@ -105,7 +105,8 @@ func (t *SelfDiagnosticsTool) readSelfLogs(lines int, levelFilter string) *ToolR
 	var sb strings.Builder
 
 	// 1. Try journalctl (Linux + systemd)
-	if out, err := exec.Command("journalctl", "-u", "picoclaw", "-n", fmt.Sprintf("%d", lines), "--no-pager", "-o", "short").Output(); err == nil {
+	if out, err := exec.Command("journalctl", "-u", "picoclaw", "-n", fmt.Sprintf("%d", lines), "--no-pager", "-o", "short").
+		Output(); err == nil {
 		content := string(out)
 		if levelFilter != "" {
 			content = selfFilterLines(content, levelFilter)

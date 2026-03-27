@@ -78,10 +78,10 @@ func RunToolLoop(
 			}
 
 			errMsg := strings.ToLower(err.Error())
-			isRateLimit := strings.Contains(errMsg, "rate limit") || 
-						   strings.Contains(errMsg, "429") || 
-						   strings.Contains(errMsg, "exhausted") ||
-						   strings.Contains(errMsg, "too many requests")
+			isRateLimit := strings.Contains(errMsg, "rate limit") ||
+				strings.Contains(errMsg, "429") ||
+				strings.Contains(errMsg, "exhausted") ||
+				strings.Contains(errMsg, "too many requests")
 
 			if isRateLimit && retry < maxRetries {
 				backoff := time.Duration(1<<retry) * 5 * time.Second // 5s, 10s, 20s, 40s
@@ -91,7 +91,7 @@ func RunToolLoop(
 					"sleep":   backoff.String(),
 					"error":   err.Error(),
 				})
-				
+
 				select {
 				case <-ctx.Done():
 					return nil, ctx.Err()

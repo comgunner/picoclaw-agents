@@ -255,12 +255,12 @@ func TestConfigManagerTool_NonExistentConfig(t *testing.T) {
 
 func TestSanitizeConfig(t *testing.T) {
 	cfg := map[string]any{
-		"normal":    "value",
-		"api_key":   "secret123",
-		"password":  "pass123",
+		"normal":   "value",
+		"api_key":  "secret123",
+		"password": "pass123",
 		"nested": map[string]any{
-			"token":     "token123",
-			"safe":      "value",
+			"token": "token123",
+			"safe":  "value",
 		},
 	}
 

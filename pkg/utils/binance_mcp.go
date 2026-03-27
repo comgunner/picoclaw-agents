@@ -233,7 +233,6 @@ func formatOrderBook(symbol string, limit int, title string, bids []binance.Bid,
 }
 
 func formatOrderBookEntries(symbol string, limit int, title string, bids []BookEntry, asks []BookEntry) string {
-
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("%s for %s (top %d)\n", title, symbol, limit))
 	sb.WriteString("Bids:\n")

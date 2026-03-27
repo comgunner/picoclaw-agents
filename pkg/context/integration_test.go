@@ -79,7 +79,6 @@ func TestContextMiddleware_BeforeRequestBlocked(t *testing.T) {
 	assert.False(t, blocked, "Request should be blocked when hard limit (100%) is reached")
 }
 
-
 func TestContextMiddleware_GetUsage(t *testing.T) {
 	tmpDir := t.TempDir()
 	middleware := NewContextMiddleware(tmpDir, 10000)

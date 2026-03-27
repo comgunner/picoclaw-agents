@@ -266,7 +266,9 @@ func (t *WriteFileTool) Execute(ctx context.Context, args map[string]any) *ToolR
 
 	if t.checker != nil {
 		if locked, owner := t.checker.IsFileLocked(absPath); locked {
-			return ErrorResult(fmt.Sprintf("access denied: file '%s' is currently locked by agent '%s'", absPath, owner))
+			return ErrorResult(
+				fmt.Sprintf("access denied: file '%s' is currently locked by agent '%s'", absPath, owner),
+			)
 		}
 	}
 

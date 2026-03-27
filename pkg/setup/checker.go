@@ -22,26 +22,26 @@ import (
 
 // SecurityReport contains security check results.
 type SecurityReport struct {
-	RunningAsRoot     bool     // true if running as root (euid == 0)
-	DangerousBinaries []string // dangerous binaries found in PATH (nc, netcat, ncat, telnet)
-	OpenPorts         []int    // open ports detected (22, 80, 443, 8080, 8443)
+	RunningAsRoot     bool     `json:"running_as_root"`    // true if running as root (euid == 0)
+	DangerousBinaries []string `json:"dangerous_binaries"` // dangerous binaries found in PATH (nc, netcat, ncat, telnet)
+	OpenPorts         []int    `json:"open_ports"`         // open ports detected (22, 80, 443, 8080, 8443)
 }
 
 // EnvironmentReport contains the environment check results.
 // All fields are public for easy JSON serialization.
 type EnvironmentReport struct {
-	OS              string         // runtime.GOOS
-	Arch            string         // runtime.GOARCH
-	GoVersion       string         // output of `go version` or "unknown"
-	GoOK            bool           // true if Go >= 1.21
-	DockerInstalled bool           // true if docker binary exists in PATH
-	DockerRunning   bool           // true if `docker info` returns exit 0
-	WorkspacePath   string         // absolute path to workspace (~/.picoclaw by default)
-	WorkspaceOK     bool           // true if directory exists and has rw permissions
-	Shell           string         // value of $SHELL
-	ExistingConfig  bool           // true if ~/.picoclaw/config.json already exists
-	WSL             bool           // true if running in Windows Subsystem for Linux
-	SecurityChecks  SecurityReport // security check results
+	OS              string         `json:"os"`               // runtime.GOOS
+	Arch            string         `json:"arch"`             // runtime.GOARCH
+	GoVersion       string         `json:"go_version"`       // output of `go version` or "unknown"
+	GoOK            bool           `json:"go_ok"`            // true if Go >= 1.21
+	DockerInstalled bool           `json:"docker_installed"` // true if docker binary exists in PATH
+	DockerRunning   bool           `json:"docker_running"`   // true if `docker info` returns exit 0
+	WorkspacePath   string         `json:"workspace_path"`   // absolute path to workspace (~/.picoclaw by default)
+	WorkspaceOK     bool           `json:"workspace_ok"`     // true if directory exists and has rw permissions
+	Shell           string         `json:"shell"`            // value of $SHELL
+	ExistingConfig  bool           `json:"existing_config"`  // true if ~/.picoclaw/config.json already exists
+	WSL             bool           `json:"wsl"`              // true if running in Windows Subsystem for Linux
+	SecurityChecks  SecurityReport `json:"security_checks"`  // security check results
 }
 
 // IsReady returns true if the environment meets minimum requirements to run picoclaw-agents.

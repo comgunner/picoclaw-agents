@@ -36,7 +36,11 @@ type RuntimeManager struct {
 }
 
 // NewRuntimeManager creates runtimes for all registered agents.
-func NewRuntimeManager(loop *AgentLoop, msgBus *management.AgentMessageBus, instReg *management.InstanceRegistry) *RuntimeManager {
+func NewRuntimeManager(
+	loop *AgentLoop,
+	msgBus *management.AgentMessageBus,
+	instReg *management.InstanceRegistry,
+) *RuntimeManager {
 	rm := &RuntimeManager{
 		loop:     loop,
 		runtimes: make([]*AgentRuntime, 0),
@@ -118,7 +122,7 @@ func (r *AgentRuntime) processMessage(ctx context.Context, msg management.AgentM
 	if len(msg.Payload) > 0 {
 		payloadStr = string(msg.Payload)
 	}
-	
+
 	systemPrompt := fmt.Sprintf(
 		"[Internal Task from %s]\nTask Type: %s\nPayload: %s\n\nPlease process this task using your available tools. You are working autonomously. Provide a clear summary of your results.",
 		msg.SenderID,
@@ -154,20 +158,20 @@ func (r *AgentRuntime) processMessage(ctx context.Context, msg management.AgentM
 
 	// Auto-respond if required or if it's an explicit task
 	if msg.RequiresResponse || strings.Contains(strings.ToLower(response), "error") || msg.MessageType == "task" {
-		respPayload := map[string]interface{}{
+		respPayload := map[string]any{
 			"result": response,
 			"status": "completed",
 		}
 		if err != nil {
 			respPayload["status"] = "error"
 		}
-		
+
 		// Attempt to parse response as JSON just in case the LLM returned structured data
-		var jsonRes map[string]interface{}
+		var jsonRes map[string]any
 		if err := json.Unmarshal([]byte(response), &jsonRes); err == nil {
 			respPayload["result"] = jsonRes
 		}
-		
+
 		respBytes, _ := json.Marshal(respPayload)
 		err = r.MessageBus.Send(management.AgentMessage{
 			ID:               fmt.Sprintf("RESP_%s_%d", msg.ID, time.Now().UnixNano()),

@@ -140,7 +140,10 @@ func (c *TelegramChannel) Start(ctx context.Context) error {
 			{Command: "disable_sentinel", Description: "Desactivar sentinel (5m|15m|1h)"},
 			{Command: "activate_sentinel", Description: "Activar sentinel"},
 			{Command: "sentinel_status", Description: "Ver estado del sentinel"},
-			{Command: "restrict_to_workspace", Description: "Controlar restricción de archivos (activate|deactivate|status)"},
+			{
+				Command:     "restrict_to_workspace",
+				Description: "Controlar restricción de archivos (activate|deactivate|status)",
+			},
 			{Command: "show", Description: "Ver configuración actual"},
 			{Command: "list", Description: "Listar opciones disponibles"},
 			{Command: "status", Description: "Ver estado del contexto"},

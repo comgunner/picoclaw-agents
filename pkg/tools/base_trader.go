@@ -638,7 +638,10 @@ func (t *TradingAgent) ValidateSignal(result AnalysisResult) (bool, []string) {
 	minRR := decimal.NewFromFloat(1.5)
 	if (result.Recommendation == "LONG" || result.Recommendation == "SHORT") &&
 		result.RiskRewardRatio.LessThan(minRR) && !result.RiskRewardRatio.IsZero() {
-		errs = append(errs, fmt.Sprintf("poor risk/reward: %.2f:1 (minimum 1.5:1)", result.RiskRewardRatio.InexactFloat64()))
+		errs = append(
+			errs,
+			fmt.Sprintf("poor risk/reward: %.2f:1 (minimum 1.5:1)", result.RiskRewardRatio.InexactFloat64()),
+		)
 	}
 
 	return len(errs) == 0, errs
@@ -727,7 +730,11 @@ func (t *TradingAgent) CalculateStopLoss(entryPrice decimal.Decimal, atr float64
 }
 
 // CalculateTakeProfit sets take profit at minRR × risk distance from entry.
-func (t *TradingAgent) CalculateTakeProfit(entryPrice, stopLoss decimal.Decimal, isLong bool, minRR decimal.Decimal) decimal.Decimal {
+func (t *TradingAgent) CalculateTakeProfit(
+	entryPrice, stopLoss decimal.Decimal,
+	isLong bool,
+	minRR decimal.Decimal,
+) decimal.Decimal {
 	risk := entryPrice.Sub(stopLoss).Abs()
 	if isLong {
 		return entryPrice.Add(risk.Mul(minRR))
@@ -805,7 +812,12 @@ func (t *TradingAgent) CalculateSortinoRatio(returns []float64, riskFreeRate flo
 // ============================================================
 
 // GenerateSignal scores indicator confluence and returns a trading signal.
-func (t *TradingAgent) GenerateSignal(indicators BTIndicatorData, patterns []string, trend string, currentPrice float64) AnalysisResult {
+func (t *TradingAgent) GenerateSignal(
+	indicators BTIndicatorData,
+	patterns []string,
+	trend string,
+	currentPrice float64,
+) AnalysisResult {
 	score := 0.0
 	maxScore := 0.0
 	bullishVotes := 0
@@ -947,7 +959,11 @@ func (t *TradingAgent) ConsolidateResults(results []AnalysisResult, symbol strin
 }
 
 // ComprehensiveAnalysis performs full multi-timeframe analysis with 6-layer validation.
-func (t *TradingAgent) ComprehensiveAnalysis(ctx context.Context, symbol string, timeframes []string) (*AnalysisResult, error) {
+func (t *TradingAgent) ComprehensiveAnalysis(
+	ctx context.Context,
+	symbol string,
+	timeframes []string,
+) (*AnalysisResult, error) {
 	results := make([]AnalysisResult, 0, len(timeframes))
 
 	for _, tf := range timeframes {
@@ -1180,10 +1196,10 @@ func NewBaseTraderTool(balance float64) *BaseTraderTool {
 	return &BaseTraderTool{
 		agent: &TradingAgent{
 			balance:        decimal.NewFromFloat(balance),
-			riskPerTrade:   decimal.NewFromFloat(0.02),  // 2%
-			maxPositionPct: decimal.NewFromFloat(0.10),  // 10%
-			stopLossPct:    decimal.NewFromFloat(0.15),  // 15%
-			takeProfitPct:  decimal.NewFromFloat(0.30),  // 30%
+			riskPerTrade:   decimal.NewFromFloat(0.02), // 2%
+			maxPositionPct: decimal.NewFromFloat(0.10), // 10%
+			stopLossPct:    decimal.NewFromFloat(0.15), // 15%
+			takeProfitPct:  decimal.NewFromFloat(0.30), // 30%
 			journal:        &TradeJournal{Trades: make([]BTTrade, 0)},
 		},
 	}

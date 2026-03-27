@@ -10,7 +10,8 @@ release_assets/
 *.test
 *.out
 /picoclaw
-picoclaw
+build/picoclaw
+cmd/picoclaw/picoclaw
 /picoclaw-test
 cmd/**/workspace
 

@@ -131,7 +131,7 @@ func (t *ConfigManagerTool) validateConfig() *ToolResult {
 
 	// Validate required fields
 	var issues []string
-	
+
 	// Check agents configuration
 	if agents, ok := cfg["agents"].(map[string]any); ok {
 		if defaults, ok := agents["defaults"].(map[string]any); ok {

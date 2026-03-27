@@ -35,20 +35,20 @@ type ExecTool struct {
 
 // DefaultDenyPatterns son los patrones de comandos peligrosos bloqueados por defecto
 var DefaultDenyPatterns = []string{
-	`(?i)\brm\s+(-[rf]+\s+)?/`,           // rm -rf /
-	`(?i)\bdel\s+/f\s`,                   // Windows del
-	`(?i)\bformat\s`,                     // format
-	`(?i)\bmkfs`,                         // mkfs
-	`(?i)\bdd\s+if=`,                     // dd if=
-	`(?i)\bshutdown\b`,                   // shutdown
-	`(?i)\breboot\b`,                     // reboot
-	`(?i)\bpoweroff\b`,                   // poweroff
-	`(?i):\(\)\s*{\s*:\|:&\s*}`,          // Fork bomb
-	`(?i)/dev/sd[a-z]`,                   // Disk writes
-	`(?i)\bchmod\s+[0-7]{3,4}\s+/`,       // chmod dangerous paths
-	`(?i)\bchown\s+.*:/`,                 // chown dangerous paths
-	`(?i)(tail|journalctl).*?\s+-f\b`,    // journalctl -f, tail -f (infinite loop)
-	`(?i)\b(top|htop|nano|vim|vi|less)\b`,// Interactive TTY commands (infinite block)
+	`(?i)\brm\s+(-[rf]+\s+)?/`,            // rm -rf /
+	`(?i)\bdel\s+/f\s`,                    // Windows del
+	`(?i)\bformat\s`,                      // format
+	`(?i)\bmkfs`,                          // mkfs
+	`(?i)\bdd\s+if=`,                      // dd if=
+	`(?i)\bshutdown\b`,                    // shutdown
+	`(?i)\breboot\b`,                      // reboot
+	`(?i)\bpoweroff\b`,                    // poweroff
+	`(?i):\(\)\s*{\s*:\|:&\s*}`,           // Fork bomb
+	`(?i)/dev/sd[a-z]`,                    // Disk writes
+	`(?i)\bchmod\s+[0-7]{3,4}\s+/`,        // chmod dangerous paths
+	`(?i)\bchown\s+.*:/`,                  // chown dangerous paths
+	`(?i)(tail|journalctl).*?\s+-f\b`,     // journalctl -f, tail -f (infinite loop)
+	`(?i)\b(top|htop|nano|vim|vi|less)\b`, // Interactive TTY commands (infinite block)
 }
 
 func NewExecTool(workingDir string, restrict bool) (*ExecTool, error) {
@@ -287,7 +287,7 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 
 		for _, match := range matches {
 			raw := cmd[match[0]:match[1]]
-			
+
 			// Skip URL path components (e.g., https://github.com, ftp://...)
 			// Only skip if preceded by a web URL scheme
 			if strings.HasPrefix(raw, "//") {
@@ -300,13 +300,13 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 					}
 					precedingContext = strings.ToLower(cmd[start:match[0]])
 				}
-				if strings.HasSuffix(precedingContext, "http:") || 
-				   strings.HasSuffix(precedingContext, "https:") ||
-				   strings.HasSuffix(precedingContext, "ftp:") {
+				if strings.HasSuffix(precedingContext, "http:") ||
+					strings.HasSuffix(precedingContext, "https:") ||
+					strings.HasSuffix(precedingContext, "ftp:") {
 					continue
 				}
 			}
-			
+
 			// Handle file:// URIs - extract the actual path and check it
 			if strings.HasPrefix(raw, "file://") {
 				raw = raw[7:] // Remove "file://" prefix

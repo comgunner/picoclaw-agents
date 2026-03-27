@@ -95,7 +95,6 @@ func runClean(olderThan string, dryRun bool, all bool) error {
 
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error walking sessions: %w", err)
 	}

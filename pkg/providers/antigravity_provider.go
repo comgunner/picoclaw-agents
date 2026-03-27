@@ -298,7 +298,7 @@ func (p *AntigravityProvider) buildRequest(
 		case "tool":
 			// Tool result - Gemini requires exactly one function response per function call
 			toolName := resolveToolResponseName(msg.ToolCallID, toolCallNames)
-			
+
 			// Parse content as JSON if possible for better structured response
 			var resultValue any
 			resultValue = msg.Content
@@ -308,7 +308,7 @@ func (p *AntigravityProvider) buildRequest(
 					resultValue = parsed
 				}
 			}
-			
+
 			req.Contents = append(req.Contents, antigravityContent{
 				Role: "user",
 				Parts: []antigravityPart{{
@@ -565,17 +565,17 @@ func sanitizeSchemaForGemini(schema map[string]any) map[string]any {
 			}
 		}
 	}
-	
+
 	// ✅ FIX: Reemplazar "any" con "object" (Gemini no soporta "any")
 	if typeStr == "any" || typeStr == "" {
 		typeStr = "object"
 	}
-	
+
 	// Validar que el tipo sea compatible con Gemini
 	if !geminiValidTypes[typeStr] {
 		typeStr = "object" // Fallback seguro
 	}
-	
+
 	if typeStr != "" {
 		result["type"] = typeStr
 	}

@@ -117,7 +117,9 @@ func (t *MemoryStoreTool) Execute(ctx context.Context, args map[string]any) *Too
 	case "count":
 		return t.count()
 	default:
-		return ErrorResult(fmt.Sprintf("unknown action: %s. Valid options: set, get, delete, list, clear, count", action))
+		return ErrorResult(
+			fmt.Sprintf("unknown action: %s. Valid options: set, get, delete, list, clear, count", action),
+		)
 	}
 }
 

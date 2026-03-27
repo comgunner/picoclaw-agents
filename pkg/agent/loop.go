@@ -39,24 +39,24 @@ import (
 )
 
 type AgentLoop struct {
-	bus               *bus.MessageBus
-	cfg               *config.Config
-	registry          *AgentRegistry
-	state             *state.Manager
-	running           atomic.Bool
-	summarizing       sync.Map
-	fallback          *providers.FallbackChain
-	channelManager    *channels.Manager
-	summaryCache      *utils.SummaryCache
-	tasklocks         *tasklock.Manager
+	bus            *bus.MessageBus
+	cfg            *config.Config
+	registry       *AgentRegistry
+	state          *state.Manager
+	running        atomic.Bool
+	summarizing    sync.Map
+	fallback       *providers.FallbackChain
+	channelManager *channels.Manager
+	summaryCache   *utils.SummaryCache
+	tasklocks      *tasklock.Manager
 	// validator is used to pre-check token usage before calling an LLM.
-	tokenValidator    providers.TokenValidator
+	tokenValidator providers.TokenValidator
 	// sentinel is used for local security checks against prompt injection.
-	sentinel          *tools.SkillsSentinelTool
+	sentinel *tools.SkillsSentinelTool
 	// auditor handles security event logging.
-	auditor           *security.Auditor
+	auditor *security.Auditor
 	// configMutex protects concurrent access to config.json during runtime updates.
-	configMutex       sync.Mutex
+	configMutex sync.Mutex
 
 	contextMiddleware *pcontext.ContextMiddleware
 	runtimeMgr        *RuntimeManager
@@ -116,8 +116,11 @@ func NewAgentLoop(cfg *config.Config, msgBus *bus.MessageBus, provider providers
 				// If a heartbeat lock is stranded after a crash, silently discard it — never
 				// wake up the LLM for an internal monitoring task.
 				if sessionKey == "heartbeat" || strings.HasPrefix(tl.TaskID, "heartbeat_") {
-					logger.InfoCF("rehydration", "Discarding stranded heartbeat lock (internal task, no recovery needed)",
-						map[string]any{"task_id": tl.TaskID})
+					logger.InfoCF(
+						"rehydration",
+						"Discarding stranded heartbeat lock (internal task, no recovery needed)",
+						map[string]any{"task_id": tl.TaskID},
+					)
 					tlm.RemoveLock(tl.TaskID)
 					continue
 				}
@@ -1048,12 +1051,12 @@ func (al *AgentLoop) runLLMIteration(
 			}
 
 			errMsg := strings.ToLower(err.Error())
-			
+
 			// Handle rate limit errors
-			isRateLimit := strings.Contains(errMsg, "rate limit") || 
-						   strings.Contains(errMsg, "429") || 
-						   strings.Contains(errMsg, "exhausted") ||
-						   strings.Contains(errMsg, "too many requests")
+			isRateLimit := strings.Contains(errMsg, "rate limit") ||
+				strings.Contains(errMsg, "429") ||
+				strings.Contains(errMsg, "exhausted") ||
+				strings.Contains(errMsg, "too many requests")
 
 			if isRateLimit && retry < maxRetries {
 				backoff := time.Duration(1<<retry) * 5 * time.Second // 5s, 10s, 20s, 40s
@@ -1063,7 +1066,7 @@ func (al *AgentLoop) runLLMIteration(
 					"sleep":   backoff.String(),
 					"error":   err.Error(),
 				})
-				
+
 				select {
 				case <-ctx.Done():
 					return "", iteration, usedBinancePublicEndpoint, ctx.Err()
@@ -1285,7 +1288,7 @@ func (al *AgentLoop) runLLMIteration(
 			if contentForLLM == "" && toolResult.Err != nil {
 				contentForLLM = toolResult.Err.Error()
 			}
-			
+
 			// Issue 1 Patch: Filter sensitive data if enabled
 			contentForLLM = al.filterSensitiveData(contentForLLM)
 
@@ -2170,7 +2173,7 @@ func (al *AgentLoop) filterSensitiveData(content string) string {
 	if al.cfg == nil || !al.cfg.Security.FilterSensitiveData {
 		return content
 	}
-	
+
 	secrets := al.cfg.GetSensitiveValues()
 	for _, secret := range secrets {
 		if secret != "" && len(secret) > 3 { // Prevent replacing tiny strings just in case

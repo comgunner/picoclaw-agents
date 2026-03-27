@@ -330,10 +330,10 @@ func makeRestrictTestEnv(t *testing.T) (al *AgentLoop, cfgFile string, cleanup f
 	cfg := &config.Config{
 		Agents: config.AgentsConfig{
 			Defaults: config.AgentDefaults{
-				Workspace:         tmpDir,
-				Model:             "test-model",
-				MaxTokens:         4096,
-				MaxToolIterations: 10,
+				Workspace:           tmpDir,
+				Model:               "test-model",
+				MaxTokens:           4096,
+				MaxToolIterations:   10,
 				RestrictToWorkspace: false,
 			},
 		},

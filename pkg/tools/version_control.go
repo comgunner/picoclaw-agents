@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver/v3"
+
 	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
@@ -95,7 +96,9 @@ func (t *VersionControlTool) Execute(ctx context.Context, args map[string]any) *
 		version, _ := args["version"].(string)
 		return t.parse(version)
 	default:
-		return ErrorResult(fmt.Sprintf("unknown action: %s. Valid options: compare, validate, bump, constraint, parse", action))
+		return ErrorResult(
+			fmt.Sprintf("unknown action: %s. Valid options: compare, validate, bump, constraint, parse", action),
+		)
 	}
 }
 
@@ -138,10 +141,10 @@ func (t *VersionControlTool) compare(v1Str, v2Str string) *ToolResult {
 	}
 
 	resultData := map[string]any{
-		"version_1": v1.String(),
-		"version_2": v2.String(),
+		"version_1":  v1.String(),
+		"version_2":  v2.String(),
 		"comparison": cmp,
-		"result":    result,
+		"result":     result,
 	}
 
 	_ = resultData // For future structured output

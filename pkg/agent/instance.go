@@ -15,13 +15,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/comgunner/picoclaw/pkg/agents/management/init"
+	managementinit "github.com/comgunner/picoclaw/pkg/agents/management/init"
 	"github.com/comgunner/picoclaw/pkg/config"
+	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/comgunner/picoclaw/pkg/providers"
 	"github.com/comgunner/picoclaw/pkg/routing"
 	"github.com/comgunner/picoclaw/pkg/session"
 	"github.com/comgunner/picoclaw/pkg/tools"
-	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
 // AgentInstance represents a fully configured agent with its own workspace,

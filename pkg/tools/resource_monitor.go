@@ -12,9 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
+
+	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
 // UsagePoint represents a single usage data point.
@@ -78,7 +79,9 @@ func (t *ResourceMonitorTool) Parameters() map[string]any {
 func (t *ResourceMonitorTool) Execute(ctx context.Context, args map[string]any) *ToolResult {
 	action, ok := args["action"].(string)
 	if !ok {
-		return ErrorResult("action is required and must be one of: cpu_threshold, ram_threshold, throttle, history, current")
+		return ErrorResult(
+			"action is required and must be one of: cpu_threshold, ram_threshold, throttle, history, current",
+		)
 	}
 
 	threshold := 80.0
@@ -103,7 +106,12 @@ func (t *ResourceMonitorTool) Execute(ctx context.Context, args map[string]any) 
 	case "current":
 		return t.getCurrentUsage()
 	default:
-		return ErrorResult(fmt.Sprintf("unknown action: %s. Valid options: cpu_threshold, ram_threshold, throttle, history, current", action))
+		return ErrorResult(
+			fmt.Sprintf(
+				"unknown action: %s. Valid options: cpu_threshold, ram_threshold, throttle, history, current",
+				action,
+			),
+		)
 	}
 }
 
@@ -126,10 +134,10 @@ func (t *ResourceMonitorTool) checkCPUThreshold(threshold float64) *ToolResult {
 	t.recordUsage(currentCPU, getRAMUsagePercent())
 
 	result := map[string]any{
-		"cpu_percent":   currentCPU,
-		"threshold":     threshold,
-		"alert":         alert,
-		"timestamp":     time.Now().Format(time.RFC3339),
+		"cpu_percent": currentCPU,
+		"threshold":   threshold,
+		"alert":       alert,
+		"timestamp":   time.Now().Format(time.RFC3339),
 	}
 
 	_ = result // For future structured output
@@ -158,10 +166,10 @@ func (t *ResourceMonitorTool) checkRAMThreshold(threshold float64) *ToolResult {
 	t.recordUsage(getCPUUsagePercent(), currentRAM)
 
 	result := map[string]any{
-		"ram_percent":   currentRAM,
-		"threshold":     threshold,
-		"alert":         alert,
-		"timestamp":     time.Now().Format(time.RFC3339),
+		"ram_percent": currentRAM,
+		"threshold":   threshold,
+		"alert":       alert,
+		"timestamp":   time.Now().Format(time.RFC3339),
 	}
 
 	_ = result // For future structured output
@@ -180,11 +188,17 @@ func (t *ResourceMonitorTool) getThrottleRecommendation(threshold float64) *Tool
 	status := "OPTIMAL"
 
 	if cpuPercent > threshold {
-		recommendations = append(recommendations, fmt.Sprintf("- Reduce concurrent agent spawns (CPU at %.1f%%)", cpuPercent))
+		recommendations = append(
+			recommendations,
+			fmt.Sprintf("- Reduce concurrent agent spawns (CPU at %.1f%%)", cpuPercent),
+		)
 		status = "THROTTLE_RECOMMENDED"
 	}
 	if ramPercent > threshold {
-		recommendations = append(recommendations, fmt.Sprintf("- Limit context size or reduce agent count (RAM at %.1f%%)", ramPercent))
+		recommendations = append(
+			recommendations,
+			fmt.Sprintf("- Limit context size or reduce agent count (RAM at %.1f%%)", ramPercent),
+		)
 		status = "THROTTLE_RECOMMENDED"
 	}
 
@@ -194,12 +208,12 @@ func (t *ResourceMonitorTool) getThrottleRecommendation(threshold float64) *Tool
 	}
 
 	result := map[string]any{
-		"cpu_percent":    cpuPercent,
-		"ram_percent":    ramPercent,
-		"threshold":      threshold,
-		"status":         status,
+		"cpu_percent":     cpuPercent,
+		"ram_percent":     ramPercent,
+		"threshold":       threshold,
+		"status":          status,
 		"recommendations": recommendations,
-		"timestamp":      time.Now().Format(time.RFC3339),
+		"timestamp":       time.Now().Format(time.RFC3339),
 	}
 
 	_ = result // For future structured output
@@ -248,8 +262,16 @@ func (t *ResourceMonitorTool) getHistory(hours int) *ToolResult {
 	}
 
 	_ = result // For future structured output
-	return SilentResult(fmt.Sprintf("Resource history: %d data points, Avg CPU: %.1f%%, Avg RAM: %.1f%%, Peak CPU: %.1f%%, Peak RAM: %.1f%%",
-		len(t.history), avgCPU, avgRAM, peakCPU, peakRAM))
+	return SilentResult(
+		fmt.Sprintf(
+			"Resource history: %d data points, Avg CPU: %.1f%%, Avg RAM: %.1f%%, Peak CPU: %.1f%%, Peak RAM: %.1f%%",
+			len(t.history),
+			avgCPU,
+			avgRAM,
+			peakCPU,
+			peakRAM,
+		),
+	)
 }
 
 // getCurrentUsage returns current CPU and RAM usage.
