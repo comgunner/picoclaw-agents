@@ -3,11 +3,35 @@
     "defaults": {
       "workspace": "~/.picoclaw/workspace_context_demo",
       "restrict_to_workspace": true,
+      "model": "deepseek-chat",
       "max_tokens": 32768,
       "max_tool_iterations": 30
-    }
+    },
+    "list": [
+      {
+        "id": "project_manager",
+        "name": "Project Manager",
+        "default": true,
+        "model": "deepseek-chat",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "subagents": {
+          "allow_agents": ["*", "researcher"],
+          "max_spawn_depth": 3,
+          "max_children_per_agent": 5
+        }
+      },
+      {
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "deepseek-chat",
+        "skills": ["researcher"],
+        "subagents": {}
+      }
+    ]
   },
   "context_management": {
+    "_description": "Token budget management configuration (v3.4.4+)",
+    "_reference": "See docs/CONTEXT_MANAGEMENT.md for detailed guide",
     "compact_threshold": 0.75,
     "critical_threshold": 0.9,
     "min_completion_tokens": 512,

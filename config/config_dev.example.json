@@ -13,9 +13,7 @@
         "id": "engineering_manager",
         "name": "Engineering Manager (Team Lead)",
         "default": true,
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
@@ -23,7 +21,10 @@
             "frontend_dev",
             "devops_eng",
             "qa_eng",
-            "security_eng"
+            "security_eng",
+            "data_eng",
+            "ml_eng",
+            "researcher"
           ],
           "max_spawn_depth": 3,
           "max_children_per_agent": 3
@@ -32,9 +33,7 @@
       {
         "id": "backend_dev",
         "name": "Backend Developer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["backend_developer"],
         "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
         "subagents": {}
@@ -42,9 +41,7 @@
       {
         "id": "frontend_dev",
         "name": "Frontend Developer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["frontend_developer"],
         "tools_override": ["read_file", "write_file", "edit_file"],
         "subagents": {}
@@ -52,9 +49,7 @@
       {
         "id": "devops_eng",
         "name": "DevOps Engineer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["devops_engineer"],
         "tools_override": ["read_file", "write_file", "exec"],
         "subagents": {}
@@ -62,9 +57,7 @@
       {
         "id": "qa_eng",
         "name": "QA Engineer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["qa_engineer"],
         "tools_override": ["read_file", "write_file", "exec"],
         "subagents": {}
@@ -72,19 +65,39 @@
       {
         "id": "security_eng",
         "name": "Security Engineer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["security_engineer"],
         "tools_override": ["read_file", "web_search"],
         "subagents": {}
       },
       {
+        "id": "data_eng",
+        "name": "Data Engineer",
+        "model": "deepseek-chat",
+        "skills": ["data_engineer"],
+        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "ml_eng",
+        "name": "ML Engineer",
+        "model": "deepseek-chat",
+        "skills": ["ml_engineer"],
+        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "deepseek-chat",
+        "skills": ["researcher"],
+        "tools_override": ["read_file", "write_file", "web_search"],
+        "subagents": {}
+      },
+      {
         "id": "senior_developer",
         "name": "Senior Full-Stack Developer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
@@ -97,13 +110,88 @@
       {
         "id": "junior_developer",
         "name": "Junior Code Fixer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
         "skills": ["fullstack_developer"],
         "subagents": {}
       }
     ]
+  },
+  "_examples": {
+    "_description": "Examples of specialized agents using engineering role skills (v3.6.0+)",
+    "_note": "Copy agents from this section to the 'list' array above to use them",
+    "_native_skills_reference": "See docs/NATIVE_SKILLS_LIST.md for complete list of 14 native skills",
+    "orchestrator_with_specialized_subagents": {
+      "_description": "Example: Orchestrator with specialized engineering subagents",
+      "orchestrator": {
+        "id": "tech_lead",
+        "name": "Technical Lead",
+        "model": "deepseek-chat",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "subagents": {
+          "allow_agents": ["backend_dev", "frontend_dev", "devops_eng", "qa_eng", "security_eng", "data_eng", "ml_eng", "researcher"],
+          "max_spawn_depth": 2,
+          "max_children_per_agent": 3
+        }
+      },
+      "subagents": [
+        {
+          "id": "backend_dev",
+          "name": "Backend Developer",
+          "model": "deepseek-chat",
+          "skills": ["backend_developer"],
+          "tools_override": ["read_file", "write_file", "edit_file", "exec"]
+        },
+        {
+          "id": "frontend_dev",
+          "name": "Frontend Developer",
+          "model": "deepseek-chat",
+          "skills": ["frontend_developer"],
+          "tools_override": ["read_file", "write_file", "edit_file"]
+        },
+        {
+          "id": "devops_eng",
+          "name": "DevOps Engineer",
+          "model": "deepseek-chat",
+          "skills": ["devops_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "qa_eng",
+          "name": "QA Engineer",
+          "model": "deepseek-chat",
+          "skills": ["qa_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "security_eng",
+          "name": "Security Engineer",
+          "model": "deepseek-chat",
+          "skills": ["security_engineer"],
+          "tools_override": ["read_file", "web_search"]
+        },
+        {
+          "id": "data_eng",
+          "name": "Data Engineer",
+          "model": "deepseek-chat",
+          "skills": ["data_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "ml_eng",
+          "name": "ML Engineer",
+          "model": "deepseek-chat",
+          "skills": ["ml_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "researcher",
+          "name": "Researcher",
+          "model": "deepseek-chat",
+          "skills": ["researcher"],
+          "tools_override": ["read_file", "write_file", "web_search"]
+        }
+      ]
+    }
   },
   "model_list": [
     {

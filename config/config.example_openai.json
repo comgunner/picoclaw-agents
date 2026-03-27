@@ -13,13 +13,13 @@
         "id": "project_manager",
         "name": "Project Manager",
         "default": true,
-        "model": {
-          "primary": "o3-mini-2025-01-31"
-        },
+        "model": "o3-mini-2025-01-31",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "*",
-            "general_worker"
+            "general_worker",
+            "researcher"
           ],
           "max_spawn_depth": 3,
           "max_children_per_agent": 5
@@ -27,10 +27,9 @@
       },
       {
         "id": "senior_dev",
-        "name": "Senior Developer",
-        "model": {
-          "primary": "o3-mini-2025-01-31"
-        },
+        "name": "Senior Full-Stack Developer",
+        "model": "o3-mini-2025-01-31",
+        "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
             "qa_specialist",
@@ -41,33 +40,31 @@
       },
       {
         "id": "qa_specialist",
-        "name": "QA Specialist (GitHub Ops)",
-        "model": {
-          "primary": "o3-mini-2025-01-31"
-        },
-        "subagents": {
-          "allow_agents": []
-        }
+        "name": "QA Specialist",
+        "model": "o3-mini-2025-01-31",
+        "skills": ["qa_engineer"],
+        "subagents": {}
       },
       {
         "id": "junior_fixer",
         "name": "Junior Code Fixer",
-        "model": {
-          "primary": "o3-mini-2025-01-31"
-        },
-        "subagents": {
-          "allow_agents": []
-        }
+        "model": "o3-mini-2025-01-31",
+        "skills": ["fullstack_developer"],
+        "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": {
-          "primary": "o3-mini-2025-01-31"
-        },
-        "subagents": {
-          "allow_agents": []
-        }
+        "model": "o3-mini-2025-01-31",
+        "skills": ["fullstack_developer"],
+        "subagents": {}
+      },
+      {
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "o3-mini-2025-01-31",
+        "skills": ["researcher"],
+        "subagents": {}
       }
     ]
   },

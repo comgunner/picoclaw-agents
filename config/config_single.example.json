@@ -13,13 +13,13 @@
         "id": "tech_lead",
         "name": "Tech Lead",
         "default": true,
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "*",
-            "general_worker"
+            "general_worker",
+            "researcher"
           ],
           "max_spawn_depth": 3,
           "max_children_per_agent": 5
@@ -28,9 +28,8 @@
       {
         "id": "backend_coder",
         "name": "Backend Coder",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
+        "skills": ["backend_developer"],
         "subagents": {
           "allow_agents": [
             "data_researcher"
@@ -41,9 +40,8 @@
       {
         "id": "data_researcher",
         "name": "Data Researcher",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
+        "skills": ["researcher"],
         "subagents": {
           "allow_agents": []
         }
@@ -51,9 +49,8 @@
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": {
-          "primary": "deepseek-chat"
-        },
+        "model": "deepseek-chat",
+        "skills": ["fullstack_developer"],
         "subagents": {
           "allow_agents": []
         }

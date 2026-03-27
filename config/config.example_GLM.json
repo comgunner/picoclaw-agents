@@ -13,13 +13,13 @@
         "id": "project_manager",
         "name": "Project Manager",
         "default": true,
-        "model": {
-          "primary": "glm-4.5-flash"
-        },
+        "model": "glm-4.5-flash",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "*",
-            "general_worker"
+            "general_worker",
+            "researcher"
           ],
           "max_spawn_depth": 3,
           "max_children_per_agent": 5
@@ -27,33 +27,36 @@
       },
       {
         "id": "senior_dev",
-        "name": "Senior Developer",
-        "model": {
-          "primary": "glm-4.5-flash"
-        },
+        "name": "Senior Full-Stack Developer",
+        "model": "glm-4.5-flash",
+        "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
             "junior_fixer"
           ],
-          "max_spawn_depth": 3
+          "max_spawn_depth": 2
         }
       },
       {
         "id": "junior_fixer",
-        "name": "Junior Fixer",
-        "model": {
-          "primary": "glm-4.5-flash"
-        }
+        "name": "Junior Code Fixer",
+        "model": "glm-4.5-flash",
+        "skills": ["fullstack_developer"],
+        "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": {
-          "primary": "glm-4.5-flash"
-        },
-        "subagents": {
-          "allow_agents": []
-        }
+        "model": "glm-4.5-flash",
+        "skills": ["fullstack_developer"],
+        "subagents": {}
+      },
+      {
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "glm-4.5-flash",
+        "skills": ["researcher"],
+        "subagents": {}
       }
     ]
   },
