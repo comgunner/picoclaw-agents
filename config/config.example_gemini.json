@@ -16,11 +16,13 @@
         "id": "project_manager",
         "default": true,
         "name": "Project Manager",
-        "model": "gemini/gemini-2.5-flash",
+        "model": "gemini-2.5-flash",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "*",
-            "general_worker"
+            "general_worker",
+            "researcher"
           ],
           "max_spawn_depth": 3,
           "max_children_per_agent": 5
@@ -28,8 +30,9 @@
       },
       {
         "id": "senior_dev",
-        "name": "Senior Developer",
-        "model": "gemini/gemini-2.5-flash",
+        "name": "Senior Full-Stack Developer",
+        "model": "gemini-2.5-flash",
+        "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
             "qa_specialist",
@@ -40,38 +43,44 @@
       },
       {
         "id": "qa_specialist",
-        "name": "QA Specialist (GitHub Ops)",
-        "model": "gemini/gemini-2.5-flash",
+        "name": "QA Specialist",
+        "model": "gemini-2.5-flash",
+        "skills": ["qa_engineer"],
         "subagents": {}
       },
       {
         "id": "junior_fixer",
         "name": "Junior Code Fixer",
-        "model": "gemini/gemini-2.5-flash",
+        "model": "gemini-2.5-flash",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": "gemini/gemini-2.5-flash",
+        "model": "gemini-2.5-flash",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
-        "id": "script_writer",
-        "name": "Script Writer",
-        "model": "gemini/gemini-2.5-flash",
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "gemini-2.5-flash",
+        "skills": ["researcher"],
         "subagents": {}
       },
       {
         "id": "image_creator",
         "name": "Image Creator",
-        "model": "gemini/gemini-2.5-flash",
+        "model": "gemini-2.5-flash",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
         "id": "social_manager",
         "name": "Social Media Manager",
-        "model": "gemini/gemini-2.5-flash",
+        "model": "gemini-2.5-flash",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       }
     ]

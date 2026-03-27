@@ -14,10 +14,12 @@
         "id": "project_manager",
         "model": "antigravity-gemini-3-flash",
         "name": "Project Manager",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "*",
-            "general_worker"
+            "general_worker",
+            "researcher"
           ],
           "max_children_per_agent": 5,
           "max_spawn_depth": 3
@@ -26,7 +28,8 @@
       {
         "id": "senior_dev",
         "model": "antigravity-gemini-3-flash",
-        "name": "Senior Developer",
+        "name": "Senior Full-Stack Developer",
+        "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
             "qa_specialist",
@@ -38,37 +41,43 @@
       {
         "id": "qa_specialist",
         "model": "antigravity-gemini-3-flash",
-        "name": "QA Specialist (GitHub Ops)",
+        "name": "QA Specialist",
+        "skills": ["qa_engineer"],
         "subagents": {}
       },
       {
         "id": "junior_fixer",
         "model": "antigravity-gemini-3-flash",
         "name": "Junior Code Fixer",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
         "id": "general_worker",
         "model": "antigravity-gemini-3-flash",
         "name": "General Worker",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
-        "id": "script_writer",
+        "id": "researcher",
         "model": "antigravity-gemini-3-flash",
-        "name": "Script Writer",
+        "name": "Researcher",
+        "skills": ["researcher"],
         "subagents": {}
       },
       {
         "id": "image_creator",
         "model": "antigravity-gemini-3-flash",
         "name": "Image Creator",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
         "id": "social_manager",
         "model": "antigravity-gemini-3-flash",
         "name": "Social Media Manager",
+        "skills": ["fullstack_developer"],
         "subagents": {}
       }
     ]

@@ -13,24 +13,23 @@
         "id": "project_manager",
         "name": "Project Manager",
         "default": true,
-        "model": {
-          "primary": "qwen-flash"
-        },
+        "model": "qwen-flash",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "senior_dev",
             "junior_fixer",
-            "general_worker"
+            "general_worker",
+            "researcher"
           ],
           "max_spawn_depth": 3
         }
       },
       {
         "id": "senior_dev",
-        "name": "Senior Developer",
-        "model": {
-          "primary": "qwen3-coder-flash"
-        },
+        "name": "Senior Full-Stack Developer",
+        "model": "qwen3-coder-flash",
+        "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
             "junior_fixer"
@@ -40,20 +39,24 @@
       },
       {
         "id": "junior_fixer",
-        "name": "Junior Fixer",
-        "model": {
-          "primary": "qwen3-coder-flash"
-        }
+        "name": "Junior Code Fixer",
+        "model": "qwen3-coder-flash",
+        "skills": ["fullstack_developer"],
+        "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": {
-          "primary": "qwen-flash"
-        },
-        "subagents": {
-          "allow_agents": []
-        }
+        "model": "qwen-flash",
+        "skills": ["fullstack_developer"],
+        "subagents": {}
+      },
+      {
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "qwen-flash",
+        "skills": ["researcher"],
+        "subagents": {}
       }
     ]
   },
