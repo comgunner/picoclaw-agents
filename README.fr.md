@@ -18,17 +18,35 @@
 ## ✨ Fonctionnalités
 
 *   🪶 **Ultra-Léger**: Implémentation Go optimisée avec une empreinte minimale.
-*   🤖 **Architecture Multi-Agent**: la v3.2 introduit la sécurité **Fail-Close** (détecte les erreurs de config), la v3.2.1 optimise la stabilité, et la **v3.2.2** ajoute le **Sentinelle de Skills** (couche de sécurité native) avec désinfection proactive des entrées/sorties et audit local (`AUDIT.md`).
+*   🤖 **Architecture Multi-Agent**: introduit la sécurité **Fail-Close** (détecte les erreurs de config),  optimise la stabilité, et  le **Sentinelle de Skills** (couche de sécurité native) avec désinfection proactive des entrées/sorties et audit local (`AUDIT.md`).
 *   🚀 **Sous-agents Parallèles**: Déployez plusieurs sous-agents autonomes travaillant en parallèle, chacun avec des configurations de modèles indépendantes.
 *   🌍 **Vraie Portabilité**: Binaire unique et autonome pour les architectures RISC-V, ARM et x86.
 *   🦾 **IA-Auto-générée**: Implémentation de base affinée via des flux de travail agentiques autonomes.
 
 ## 📢 Actualités
 
-2026-03-01 🎉 **PicoClaw v3.2.2 - Sentinelle de Skills Native**: Ajout d'une couche de sécurité interne (`skills_sentinel.go`) qui offre une protection en temps réel contre l'injection de prompts et les fuites du système.
-2026-03-01 🎉 **PicoClaw v3.2 - Sécurité Fail-Close & Stabilité** : Politique de sécurité robuste. L'outil d'exécution de commandes effectue désormais une validation stricte des modèles de déni pendant l'initialisation.
+2026-03-26 🎉 **Documentation MCP Builder** : Documentation complète de MCP Builder Agent en anglais et espagnol avec référence API, cas d'utilisation et exemples. Voir [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md).
 
-2026-02-27 🎉 **PicoClaw v3.1 - Reprise après Sinistre & Verrous de Tâches** : Implémentation de verrous de tâches atomiques pour éviter les collisions d'agents, "Boot Rehydration" pour la récupération après des plantages abrupts, et Context Compactor (augmentant la limite à 32K jetons en toute sécurité) pour éradiquer les explosions de contexte dans les longues tâches de codage.
+2026-03-26 🎉 **Commandes Sandbox et Codegen** : Ajout de `sandbox init/status` pour les espaces de travail isolés et `util codegen` pour la génération de code Go. Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-26 🎉 **Moniteur de Tokens Auth** : Ajout des commandes `auth tokens` et `auth monitor` pour le suivi d'expiration des tokens OAuth. Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-26 🎉 **Validateur de Config et Secret Masking** : Ajout de la commande `config validate` pour la validation de schema et le masquage des secrets dans le wizard onboard. Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-26 🎉 **Commande Doctor** : Ajout de la commande `doctor` pour le diagnostic d'environnement incluant la détection WSL et les vérifications de sécurité. Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-12 🎉 **Support Antigravity et Stabilité** : Support complet de Google Antigravity OAuth avec assainissement du schema, correction de deadlock TokenBudget, améliorations de réhydratation de session, nouvelle commande `picoclaw-agents clean`, et modèles de déni durcis. Voir [CHANGELOG.md](CHANGELOG.md) pour plus de détails.
+
+2026-03-03 🎉 **Architecture de Skills Native** : Introduction de skills natives compilées directement dans le binaire (`pkg/skills/queue_batch.go`), éliminant les dépendances de fichiers `.md` externes. Sécurité, performance et type safety améliorés. Voir [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
+
+2026-03-02 🎉 **Commandes Slash Fast-path & Tracker Global** : Ajout de commandes Slash instantanées (`/bundle_approve`, `/status`, etc.) pour une interaction à latence zéro. Unification de l'`ImageGenTracker` across tous les agents pour une cohérence parfaite des états multi-agents. Voir [docs/queue_batch.md](docs/queue_batch.md).
+
+2026-03-01 🎉 **Génération d'Images IA & Community Manager** : Ajout de la génération native d'images (Gemini/Ideogram), flux script-vers-image, menus interactifs post-génération, et agent community manager pour générer automatiquement des publications sur les réseaux sociaux. Voir [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+
+2026-03-01 🎉 **Sentinelle de Skills Native**: Ajout d'une couche de sécurité interne (`skills_sentinel.go`) qui offre une protection en temps réel contre l'injection de prompts et les fuites du système.
+2026-03-01 🎉 **Sécurité Fail-Close & Stabilité** : Politique de sécurité robuste. L'outil d'exécution de commandes effectue désormais une validation stricte des modèles de déni pendant l'initialisation.
+
+2026-02-27 🎉 **Reprise après Sinistre & Verrous de Tâches** : Implémentation de verrous de tâches atomiques pour éviter les collisions d'agents, "Boot Rehydration" pour la récupération après des plantages abrupts, et Context Compactor (augmentant la limite à 32K jetons en toute sécurité) pour éradiquer les explosions de contexte dans les longues tâches de codage.
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -362,6 +380,42 @@ Pour les tâches de codage lourdes, la performance et la logique sont essentiell
 *   **Anthropic** : `Claude Haiku 4.5` (Rapide et fiable)
 
 > **Note** : Voir `config.example.json` pour un modèle de configuration complet.
+
+### 🧠 Skills Natifs (Optionnel)
+
+Les skills natifs injectent des personas IA spécialisées directement dans le system prompt de l'agent. Une fois activés, l'agent « devient » ce rôle — sans fichiers externes, tout est compilé dans le binaire.
+
+**Activer dans `~/.picoclaw/config.json` :**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "skills": ["backend_developer", "researcher"]
+    }
+  }
+}
+```
+
+**Les 13 skills natifs disponibles :**
+
+| Skill | Description |
+|-------|-------------|
+| `queue_batch` | Traitement par lots et gestion de files d'attente |
+| `agent_team_workflow` | Orchestration de workflows d'équipes multi-agents |
+| `fullstack_developer` | Développement web full-stack (frontend + backend) |
+| `n8n_workflow` | Conception de workflows d'automatisation n8n |
+| `binance_mcp` | Trading Binance via le protocole MCP |
+| `researcher` | Recherche approfondie, analyse et synthèse |
+| `backend_developer` | APIs REST, bases de données, microservices |
+| `frontend_developer` | React, Vue, CSS, patterns UX |
+| `devops_engineer` | CI/CD, Docker, Kubernetes, IaC |
+| `security_engineer` | Revues de sécurité, modélisation des menaces |
+| `qa_engineer` | Stratégies de tests, automatisation, qualité |
+| `data_engineer` | Pipelines, ETL, entrepôts de données |
+| `ml_engineer` | Développement et déploiement de modèles ML/IA |
+
+> **Skills vs Outils :** Les skills injectent du contexte dans le system prompt (l'agent *devient* le rôle). Les outils sont des actions appelables (fonctions que le LLM peut invoquer). Configurez-les séparément : `"skills"` pour les rôles, `"tools_override"` pour les outils appelables. Voir [`docs/SKILLS.md`](docs/SKILLS.md) pour plus de détails.
 
 **4. Chatter**
 

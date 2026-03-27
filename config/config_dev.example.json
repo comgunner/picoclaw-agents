@@ -10,19 +10,74 @@
     },
     "list": [
       {
-        "id": "project_manager",
-        "name": "Project Manager (Team Lead)",
+        "id": "engineering_manager",
+        "name": "Engineering Manager (Team Lead)",
         "default": true,
         "model": {
           "primary": "deepseek-chat"
         },
+        "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
-            "*"
+            "backend_dev",
+            "frontend_dev",
+            "devops_eng",
+            "qa_eng",
+            "security_eng"
           ],
-          "max_spawn_depth": 4,
+          "max_spawn_depth": 3,
           "max_children_per_agent": 3
         }
+      },
+      {
+        "id": "backend_dev",
+        "name": "Backend Developer",
+        "model": {
+          "primary": "deepseek-chat"
+        },
+        "skills": ["backend_developer"],
+        "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "frontend_dev",
+        "name": "Frontend Developer",
+        "model": {
+          "primary": "deepseek-chat"
+        },
+        "skills": ["frontend_developer"],
+        "tools_override": ["read_file", "write_file", "edit_file"],
+        "subagents": {}
+      },
+      {
+        "id": "devops_eng",
+        "name": "DevOps Engineer",
+        "model": {
+          "primary": "deepseek-chat"
+        },
+        "skills": ["devops_engineer"],
+        "tools_override": ["read_file", "write_file", "exec"],
+        "subagents": {}
+      },
+      {
+        "id": "qa_eng",
+        "name": "QA Engineer",
+        "model": {
+          "primary": "deepseek-chat"
+        },
+        "skills": ["qa_engineer"],
+        "tools_override": ["read_file", "write_file", "exec"],
+        "subagents": {}
+      },
+      {
+        "id": "security_eng",
+        "name": "Security Engineer",
+        "model": {
+          "primary": "deepseek-chat"
+        },
+        "skills": ["security_engineer"],
+        "tools_override": ["read_file", "web_search"],
+        "subagents": {}
       },
       {
         "id": "senior_developer",
@@ -30,28 +85,14 @@
         "model": {
           "primary": "deepseek-chat"
         },
+        "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
-            "qa_engineer",
+            "qa_eng",
             "junior_developer"
           ],
           "max_spawn_depth": 2
         }
-      },
-      {
-        "id": "qa_engineer",
-        "name": "QA & GitHub Automation Engineer",
-        "model": {
-          "primary": "deepseek-chat"
-        },
-        "subagents": {
-          "allow_agents": []
-        },
-        "skills": [
-          "web_search",
-          "exec",
-          "github_actions"
-        ]
       },
       {
         "id": "junior_developer",
@@ -59,9 +100,8 @@
         "model": {
           "primary": "deepseek-chat"
         },
-        "subagents": {
-          "allow_agents": []
-        }
+        "skills": ["fullstack_developer"],
+        "subagents": {}
       }
     ]
   },

@@ -12,6 +12,7 @@ func NewUtilCommand() *cobra.Command {
 		newBinanceMCPServerCommand(),
 		newSocialMediaMCPServerCommand(),
 		newNotionMCPServerCommand(),
+		newCodegenCommand(),
 	)
 	return cmd
 }

@@ -136,6 +136,10 @@ scripts/*.sh
 !scripts/update-changelog.sh
 !scripts/update-readmes.sh
 !scripts/create-release.sh
+scripts/*.tar.gz
+scripts/*.zip
+scripts/*.bin
+scripts/*.exe
 docs_backup_*/
 update_log_*.txt
 update_docs_binary_name.sh

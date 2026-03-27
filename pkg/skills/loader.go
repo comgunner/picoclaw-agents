@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -71,6 +72,7 @@ type SkillsLoader struct {
 	workspaceSkills string // workspace skills (project-level)
 	globalSkills    string // global skills (~/.picoclaw/skills)
 	builtinSkills   string // builtin skills
+	embeddedFS      fs.FS  // embedded skills (//go:embed)
 }
 
 func NewSkillsLoader(workspace string, globalSkills string, builtinSkills string) *SkillsLoader {
@@ -79,6 +81,7 @@ func NewSkillsLoader(workspace string, globalSkills string, builtinSkills string
 		workspaceSkills: filepath.Join(workspace, "skills"),
 		globalSkills:    globalSkills, // ~/.picoclaw/skills
 		builtinSkills:   builtinSkills,
+		embeddedFS:      GetEmbeddedSkillsFS(),
 	}
 }
 
@@ -131,12 +134,75 @@ func (sl *SkillsLoader) ListSkills() []SkillInfo {
 		}
 	}
 
-	// Priority: workspace > global > builtin
+	// Priority: workspace > global > builtin > embedded
 	addSkills(sl.workspaceSkills, "workspace")
 	addSkills(sl.globalSkills, "global")
 	addSkills(sl.builtinSkills, "builtin")
 
+	// Add embedded skills (lowest priority)
+	if sl.embeddedFS != nil {
+		addEmbeddedSkills(sl.embeddedFS, "embedded", seen, &skills)
+	}
+
 	return skills
+}
+
+// addEmbeddedSkills adds skills from the embedded filesystem
+func addEmbeddedSkills(fsys fs.FS, source string, seen map[string]bool, skills *[]SkillInfo) {
+	// Read categories from embedded FS
+	categories, err := fs.ReadDir(fsys, ".")
+	if err != nil {
+		return
+	}
+
+	for _, cat := range categories {
+		if !cat.IsDir() {
+			continue
+		}
+
+		skillDirs, err := fs.ReadDir(fsys, cat.Name())
+		if err != nil {
+			continue
+		}
+
+		for _, d := range skillDirs {
+			if !d.IsDir() {
+				continue
+			}
+
+			skillFile := cat.Name() + "/" + d.Name() + "/SKILL.md"
+			content, err := fs.ReadFile(fsys, skillFile)
+			if err != nil {
+				continue
+			}
+
+			info := SkillInfo{
+				Name:   d.Name(),
+				Path:   "embedded://" + skillFile,
+				Source: source,
+			}
+
+			metadata := parseSkillFrontmatter(string(content))
+			if metadata != nil {
+				if metadata["name"] != "" {
+					info.Name = metadata["name"]
+				}
+				info.Description = metadata["description"]
+			}
+
+			if err := info.validate(); err != nil {
+				slog.Warn("invalid skill from "+source, "name", info.Name, "error", err)
+				continue
+			}
+
+			if seen[info.Name] {
+				continue
+			}
+
+			seen[info.Name] = true
+			*skills = append(*skills, info)
+		}
+	}
 }
 
 func (sl *SkillsLoader) LoadSkill(name string) (string, bool) {
@@ -161,6 +227,27 @@ func (sl *SkillsLoader) LoadSkill(name string) (string, bool) {
 		skillFile := filepath.Join(sl.builtinSkills, name, "SKILL.md")
 		if content, err := os.ReadFile(skillFile); err == nil {
 			return sl.stripFrontmatter(string(content)), true
+		}
+	}
+
+	// 4. fallback to embedded FS
+	if sl.embeddedFS != nil {
+		// Try direct path: {name}/SKILL.md
+		skillFile := filepath.Join(name, "SKILL.md")
+		if content, err := fs.ReadFile(sl.embeddedFS, skillFile); err == nil {
+			return sl.stripFrontmatter(string(content)), true
+		}
+
+		// Try category paths: {category}/{name}/SKILL.md
+		categories, _ := fs.ReadDir(sl.embeddedFS, ".")
+		for _, cat := range categories {
+			if !cat.IsDir() {
+				continue
+			}
+			skillFile := filepath.Join(cat.Name(), name, "SKILL.md")
+			if content, err := fs.ReadFile(sl.embeddedFS, skillFile); err == nil {
+				return sl.stripFrontmatter(string(content)), true
+			}
 		}
 	}
 
@@ -219,12 +306,30 @@ var nativeSkillsRegistry = struct {
 	fullstackDev      *FullStackDeveloperSkill
 	n8nWorkflow       *N8NWorkflowSkill
 	agentTeamWorkflow *AgentTeamWorkflowSkill
+	researcher        *ResearcherSkill       // Fase 0: registrar skill existente
+	backendDev        *BackendDeveloperSkill // Fase 5: skills de rol engineering
+	frontendDev       *FrontendDeveloperSkill
+	devopsEng         *DevOpsEngineerSkill
+	securityEng       *SecurityEngineerSkill
+	qaEng             *QAEngineerSkill
+	dataEng           *DataEngineerSkill
+	mlEng             *MLEngineerSkill
+	odooDev           *OdooDeveloperSkill // Odoo Developer skill
 }{
 	queueBatch:        nil, // Initialized on first use
 	binanceMCP:        nil, // Initialized on first use
 	fullstackDev:      nil, // Initialized on first use
 	n8nWorkflow:       nil, // Initialized on first use
 	agentTeamWorkflow: nil, // Initialized on first use
+	researcher:        nil, // Initialized on first use
+	backendDev:        nil, // Initialized on first use
+	frontendDev:       nil, // Initialized on first use
+	devopsEng:         nil, // Initialized on first use
+	securityEng:       nil, // Initialized on first use
+	qaEng:             nil, // Initialized on first use
+	dataEng:           nil, // Initialized on first use
+	mlEng:             nil, // Initialized on first use
+	odooDev:           nil, // Initialized on first use
 }
 
 // GetQueueBatchSkill returns the singleton instance of QueueBatchSkill.
@@ -270,6 +375,87 @@ func GetAgentTeamWorkflowSkill(workspace string) *AgentTeamWorkflowSkill {
 		nativeSkillsRegistry.agentTeamWorkflow = NewAgentTeamWorkflowSkill(workspace)
 	}
 	return nativeSkillsRegistry.agentTeamWorkflow
+}
+
+// GetResearcherSkill returns the singleton instance of ResearcherSkill.
+// Thread-safe lazy initialization.
+func GetResearcherSkill(workspace string) *ResearcherSkill {
+	if nativeSkillsRegistry.researcher == nil {
+		nativeSkillsRegistry.researcher = NewResearcherSkill(workspace)
+	}
+	return nativeSkillsRegistry.researcher
+}
+
+// GetBackendDeveloperSkill returns the singleton instance of BackendDeveloperSkill.
+// Thread-safe lazy initialization.
+func GetBackendDeveloperSkill(workspace string) *BackendDeveloperSkill {
+	if nativeSkillsRegistry.backendDev == nil {
+		nativeSkillsRegistry.backendDev = NewBackendDeveloperSkill(workspace)
+	}
+	return nativeSkillsRegistry.backendDev
+}
+
+// GetFrontendDeveloperSkill returns the singleton instance of FrontendDeveloperSkill.
+// Thread-safe lazy initialization.
+func GetFrontendDeveloperSkill(workspace string) *FrontendDeveloperSkill {
+	if nativeSkillsRegistry.frontendDev == nil {
+		nativeSkillsRegistry.frontendDev = NewFrontendDeveloperSkill(workspace)
+	}
+	return nativeSkillsRegistry.frontendDev
+}
+
+// GetDevOpsEngineerSkill returns the singleton instance of DevOpsEngineerSkill.
+// Thread-safe lazy initialization.
+func GetDevOpsEngineerSkill(workspace string) *DevOpsEngineerSkill {
+	if nativeSkillsRegistry.devopsEng == nil {
+		nativeSkillsRegistry.devopsEng = NewDevOpsEngineerSkill(workspace)
+	}
+	return nativeSkillsRegistry.devopsEng
+}
+
+// GetSecurityEngineerSkill returns the singleton instance of SecurityEngineerSkill.
+// Thread-safe lazy initialization.
+func GetSecurityEngineerSkill(workspace string) *SecurityEngineerSkill {
+	if nativeSkillsRegistry.securityEng == nil {
+		nativeSkillsRegistry.securityEng = NewSecurityEngineerSkill(workspace)
+	}
+	return nativeSkillsRegistry.securityEng
+}
+
+// GetQAEngineerSkill returns the singleton instance of QAEngineerSkill.
+// Thread-safe lazy initialization.
+func GetQAEngineerSkill(workspace string) *QAEngineerSkill {
+	if nativeSkillsRegistry.qaEng == nil {
+		nativeSkillsRegistry.qaEng = NewQAEngineerSkill(workspace)
+	}
+	return nativeSkillsRegistry.qaEng
+}
+
+// GetDataEngineerSkill returns the singleton instance of DataEngineerSkill.
+// Thread-safe lazy initialization.
+func GetDataEngineerSkill(workspace string) *DataEngineerSkill {
+	if nativeSkillsRegistry.dataEng == nil {
+		nativeSkillsRegistry.dataEng = NewDataEngineerSkill(workspace)
+	}
+	return nativeSkillsRegistry.dataEng
+}
+
+// GetMLEngineerSkill returns the singleton instance of MLEngineerSkill.
+// Thread-safe lazy initialization.
+func GetMLEngineerSkill(workspace string) *MLEngineerSkill {
+	if nativeSkillsRegistry.mlEng == nil {
+		nativeSkillsRegistry.mlEng = NewMLEngineerSkill(workspace)
+	}
+	return nativeSkillsRegistry.mlEng
+}
+
+// GetOdooDeveloperSkill returns the singleton instance of OdooDeveloperSkill.
+// Thread-safe lazy initialization.
+func GetOdooDeveloperSkill(workspace string) *OdooDeveloperSkill {
+	if nativeSkillsRegistry.odooDev == nil {
+		nativeSkillsRegistry.odooDev = NewOdooDeveloperSkill(workspace)
+	}
+	return nativeSkillsRegistry.odooDev
 }
 
 // LoadNativeQueueBatchSkill returns the complete skill context from the native Go implementation.
@@ -333,6 +519,114 @@ func (sl *SkillsLoader) BuildNativeAgentTeamWorkflowSummary() string {
 	return skill.BuildSummary()
 }
 
+// LoadNativeResearcherSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeResearcherSkill() string {
+	skill := GetResearcherSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeResearcherSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeResearcherSummary() string {
+	skill := GetResearcherSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeBackendDeveloperSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeBackendDeveloperSkill() string {
+	skill := GetBackendDeveloperSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeBackendDeveloperSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeBackendDeveloperSummary() string {
+	skill := GetBackendDeveloperSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeFrontendDeveloperSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeFrontendDeveloperSkill() string {
+	skill := GetFrontendDeveloperSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeFrontendDeveloperSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeFrontendDeveloperSummary() string {
+	skill := GetFrontendDeveloperSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeDevOpsEngineerSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeDevOpsEngineerSkill() string {
+	skill := GetDevOpsEngineerSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeDevOpsEngineerSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeDevOpsEngineerSummary() string {
+	skill := GetDevOpsEngineerSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeSecurityEngineerSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeSecurityEngineerSkill() string {
+	skill := GetSecurityEngineerSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeSecurityEngineerSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeSecurityEngineerSummary() string {
+	skill := GetSecurityEngineerSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeQAEngineerSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeQAEngineerSkill() string {
+	skill := GetQAEngineerSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeQAEngineerSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeQAEngineerSummary() string {
+	skill := GetQAEngineerSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeDataEngineerSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeDataEngineerSkill() string {
+	skill := GetDataEngineerSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeDataEngineerSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeDataEngineerSummary() string {
+	skill := GetDataEngineerSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeMLEngineerSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeMLEngineerSkill() string {
+	skill := GetMLEngineerSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeMLEngineerSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeMLEngineerSummary() string {
+	skill := GetMLEngineerSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
+// LoadNativeOdooDeveloperSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeOdooDeveloperSkill() string {
+	skill := GetOdooDeveloperSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeOdooDeveloperSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeOdooDeveloperSummary() string {
+	skill := GetOdooDeveloperSkill(sl.workspace)
+	return skill.BuildSummary()
+}
+
 // listNativeSkills returns all native compiled-in skills.
 func (sl *SkillsLoader) listNativeSkills() []SkillInfo {
 	return []SkillInfo{
@@ -365,6 +659,63 @@ func (sl *SkillsLoader) listNativeSkills() []SkillInfo {
 			Description: "Multi-Agent Team Orchestrator - Organize optimal agent teams for any task",
 			Source:      "native",
 			Path:        "builtin://agent_team_workflow",
+		},
+		// Fase 0: researcher (existía sin registrar)
+		{
+			Name:        "researcher",
+			Description: "Deep Research Agent — web search, source evaluation, information synthesis, and structured reporting",
+			Source:      "native",
+			Path:        "builtin://researcher",
+		},
+		// Fase 5: Engineering role skills
+		{
+			Name:        "backend_developer",
+			Description: "Backend development expert: REST APIs, databases, microservices, performance, security",
+			Source:      "native",
+			Path:        "builtin://backend_developer",
+		},
+		{
+			Name:        "frontend_developer",
+			Description: "Frontend development expert: React, Vue, performance, accessibility, design systems",
+			Source:      "native",
+			Path:        "builtin://frontend_developer",
+		},
+		{
+			Name:        "devops_engineer",
+			Description: "DevOps expert: CI/CD pipelines, containers, infrastructure as code, monitoring, SRE",
+			Source:      "native",
+			Path:        "builtin://devops_engineer",
+		},
+		{
+			Name:        "security_engineer",
+			Description: "Security expert: OWASP, penetration testing, hardening, threat modeling, compliance",
+			Source:      "native",
+			Path:        "builtin://security_engineer",
+		},
+		{
+			Name:        "qa_engineer",
+			Description: "QA expert: testing strategies, test automation, coverage analysis, quality gates",
+			Source:      "native",
+			Path:        "builtin://qa_engineer",
+		},
+		{
+			Name:        "data_engineer",
+			Description: "Data engineering expert: ETL pipelines, data warehouses, streaming, data quality",
+			Source:      "native",
+			Path:        "builtin://data_engineer",
+		},
+		{
+			Name:        "ml_engineer",
+			Description: "ML/AI expert: model training, deployment, evaluation pipelines, MLOps, feature engineering",
+			Source:      "native",
+			Path:        "builtin://ml_engineer",
+		},
+		// Odoo Developer skill
+		{
+			Name:        "odoo_developer",
+			Description: "Principal Odoo Architect & QA Engineer - Odoo ecosystems, Pine Script migration, L10n-Mexico, CFDI 4.0",
+			Source:      "native",
+			Path:        "builtin://odoo_developer",
 		},
 	}
 }
@@ -443,6 +794,40 @@ func (sl *SkillsLoader) extractFrontmatter(content string) string {
 		return match[1]
 	}
 	return ""
+}
+
+// parseSkillFrontmatter extracts and parses YAML frontmatter from skill content
+func parseSkillFrontmatter(content string) map[string]string {
+	// Find frontmatter between --- delimiters
+	match := reFrontmatter.FindStringSubmatch(content)
+	if len(match) < 2 {
+		return nil
+	}
+
+	frontmatter := match[1]
+	result := make(map[string]string)
+
+	// Normalize line endings
+	normalized := strings.ReplaceAll(frontmatter, "\r\n", "\n")
+	normalized = strings.ReplaceAll(normalized, "\r", "\n")
+
+	for _, line := range strings.Split(normalized, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			// Remove quotes if present
+			value = strings.Trim(value, "\"'")
+			result[key] = value
+		}
+	}
+
+	return result
 }
 
 func (sl *SkillsLoader) stripFrontmatter(content string) string {

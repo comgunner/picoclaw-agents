@@ -18,17 +18,35 @@
 ## ✨ 特性
 
 *   🪶 **极致轻量**: 优化的 Go 语言实现，极低的内存占用。
-*   🤖 **多智能体架构**: v3.2 引入 **Fail-Close** 安全机制，**v3.2.1** 优化稳定性，**v3.2.2** 增加原生 **Skills Sentinel**（安全哨兵）层，提供主动输入/输出清理及本地审计功能 (`AUDIT.md`)。
+*   🤖 **多智能体架构**: 引入 **Fail-Close** 安全机制，优化稳定性，增加原生 **Skills Sentinel**（安全哨兵）层，提供主动输入/输出清理及本地审计功能 (`AUDIT.md`)。
 *   🚀 **并行子智能体**: 支持同时运行多个自主子智能体，每个子智能体可独立配置模型。
 *   🌍 **真正可移植**: 跨 RISC-V、ARM 和 x86 架构的单二进制文件。
 *   🦾 **AI 自举**: 核心代码通过自主 Agent 工作流不断精简和优化。
 
 ## 📢 新闻
 
-2026-03-01 🎉 **PicoClaw v3.2.2 - 原生技能哨兵 (Skills Sentinel)**: 增加了其内部安全层 (`skills_sentinel.go`)，提供基于模式的实时保护，防止提示注入和系统泄漏。
-2026-03-01 🎉 **PicoClaw v3.2 - Fail-Close 安全机制与稳定性**: 引入了更强大的安全策略。ExecTool 在启动时会严格验证安全规则。
+2026-03-26 🎉 **MCP Builder 文档**: 完整的 MCP Builder Agent 文档，包含 API 参考、用例和示例。查看 [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md)。
 
-2026-02-27 🎉 **PicoClaw v3.1 - 灾后恢复与任务锁**: 引入了原子级任务锁机制，防止 Agent 冲突；支持“启动再水化”，能从异常重启中快速恢复；优化了上下文压缩逻辑（安全提升至 32K token），彻底解决长代码任务中的上下文爆炸问题。
+2026-03-26 🎉 **Sandbox 和 Codegen 命令**: 添加 `sandbox init/status` 用于隔离工作区，`util codegen` 用于 Go 代码生成。查看 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-26 🎉 **Auth Token 监控**: 添加 `auth tokens` 和 `auth monitor` 命令用于 OAuth token 过期跟踪。查看 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-26 🎉 **Config 验证器和 Secret Masking**: 添加 `config validate` 命令用于 schema 验证，在 onboard wizard 中添加密钥掩码。查看 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-26 🎉 **Doctor 命令**: 添加 `doctor` 命令用于环境诊断，包括 WSL 检测和安全检查。查看 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-12 🎉 **Antigravity 支持和稳定性**: 完整的 Google Antigravity OAuth 支持，schema 清理，TokenBudget 死锁修复，会话再水合改进，新的 `picoclaw-agents clean` 命令，以及强化的拒绝模式。查看 [CHANGELOG.md](CHANGELOG.md) 了解详情。
+
+2026-03-03 🎉 **原生技能架构**: 引入直接编译到二进制文件中的原生技能（`pkg/skills/queue_batch.go`），消除了外部 `.md` 文件依赖。安全性、性能和类型安全性得到增强。查看 [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md)。
+
+2026-03-02 🎉 **快速路径 Slash 命令和全局跟踪器**: 添加即时 Slash 命令（`/bundle_approve`、`/status` 等）实现零延迟交互。统一所有代理的 `ImageGenTracker` 实现完美的多代理状态一致性。查看 [docs/queue_batch.md](docs/queue_batch.md)。
+
+2026-03-01 🎉 **AI 图像生成和社区管理员**: 添加原生图像生成（Gemini/Ideogram）、脚本到图像工作流、交互式生成后菜单，以及社区管理员代理自动生成社交媒体帖子。查看 [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md)。
+
+2026-03-01 🎉 **原生技能哨兵 (Skills Sentinel)**: 增加了其内部安全层 (`skills_sentinel.go`)，提供基于模式的实时保护，防止提示注入和系统泄漏。
+2026-03-01 🎉 **Fail-Close 安全机制与稳定性**: 引入了更强大的安全策略。ExecTool 在启动时会严格验证安全规则。
+
+2026-02-27 🎉 **灾后恢复与任务锁**: 引入了原子级任务锁机制，防止 Agent 冲突；支持"启动再水化"，能从异常重启中快速恢复；优化了上下文压缩逻辑（安全提升至 32K token），彻底解决长代码任务中的上下文爆炸问题。
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -364,6 +382,42 @@ picoclaw-agents onboard --gemini      # 使用 Gemini 模板 (gemini-2.5-flash)
 *   **Anthropic**: `Claude Haiku 4.5` (快速且可靠)
 
 > **注意**：完整配置模板请参考 `config.example.json`。
+
+### 🧠 原生技能（可选）
+
+原生技能将专业 AI 角色直接注入到 Agent 的系统提示中。启用后，Agent 将"成为"该角色——无需外部文件，一切均编译进二进制文件。
+
+**在 `~/.picoclaw/config.json` 中启用：**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "skills": ["backend_developer", "researcher"]
+    }
+  }
+}
+```
+
+**全部 13 个可用原生技能：**
+
+| 技能 | 描述 |
+|------|------|
+| `queue_batch` | 批处理与队列管理 |
+| `agent_team_workflow` | 编排多 Agent 团队工作流 |
+| `fullstack_developer` | 全栈 Web 开发（前端 + 后端） |
+| `n8n_workflow` | n8n 自动化工作流设计 |
+| `binance_mcp` | 通过 MCP 协议进行 Binance 交易 |
+| `researcher` | 深度研究、分析与综合 |
+| `backend_developer` | REST API、数据库、微服务 |
+| `frontend_developer` | React、Vue、CSS、UX 模式 |
+| `devops_engineer` | CI/CD、Docker、Kubernetes、IaC |
+| `security_engineer` | 安全审查、威胁建模、安全加固 |
+| `qa_engineer` | 测试策略、自动化测试、质量保证 |
+| `data_engineer` | 数据管道、ETL、数据仓库 |
+| `ml_engineer` | ML/AI 模型开发与部署 |
+
+> **技能 vs 工具：** 技能将上下文注入系统提示（Agent *成为* 该角色）。工具是可调用的动作（LLM 可以调用的函数）。分别配置：`"skills"` 用于角色，`"tools_override"` 用于可调用工具。详见 [`docs/SKILLS.md`](docs/SKILLS.md)。
 
 **4. 对话**
 

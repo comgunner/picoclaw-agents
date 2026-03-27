@@ -20,10 +20,13 @@ import (
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/agents"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/auth"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/clean"
+	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/config"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/cron"
+	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/doctor"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/gateway"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/migrate"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/onboard"
+	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/sandbox"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/skills"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/status"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/util"
@@ -44,12 +47,15 @@ func NewPicoclawCommand() *cobra.Command {
 		agent.NewAgentCommand(),
 		agents.NewAgentsCommand(),
 		auth.NewAuthCommand(),
-		gateway.NewGatewayCommand(),
-		status.NewStatusCommand(),
-		cron.NewCronCommand(),
-		migrate.NewMigrateCommand(),
-		skills.NewSkillsCommand(),
 		clean.NewCleanCommand(),
+		config.NewConfigCommand(),
+		cron.NewCronCommand(),
+		doctor.NewDoctorCommand(),
+		gateway.NewGatewayCommand(),
+		migrate.NewMigrateCommand(),
+		sandbox.NewSandboxCommand(),
+		skills.NewSkillsCommand(),
+		status.NewStatusCommand(),
 		util.NewUtilCommand(),
 		version.NewVersionCommand(),
 	)

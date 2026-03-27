@@ -18,17 +18,35 @@
 ## ✨ Đặc điểm
 
 *   🪶 **Siêu nhẹ**: Triển khai bằng Go được tối ưu hóa với dấu chân tối thiểu.
-*   🤖 **Kiến trúc Đa tác vụ**: v3.2 giới thiệu bảo mật **Fail-Close** (phát hiện cấu hình không hợp lệ), v3.2.1 tối ưu hóa độ ổn định, và **v3.2.2** bổ sung lớp bảo mật nội bộ bản địa **Skills Sentinel** với khả năng xác thực đầu vào và làm sạch đầu ra chủ động cùng hệ thống kiểm tra cục bộ (`AUDIT.md`).
+*   🤖 **Kiến trúc Đa tác vụ**: giới thiệu bảo mật **Fail-Close** (phát hiện cấu hình không hợp lệ), tối ưu hóa độ ổn định, và bổ sung lớp bảo mật nội bộ bản địa **Skills Sentinel** với khả năng xác thực đầu vào và làm sạch đầu ra chủ động cùng hệ thống kiểm tra cục bộ (`AUDIT.md`).
 *   🚀 **Subagent Song song**: Triển khai nhiều subagent tự trị hoạt động song song, mỗi subagent có cấu hình mô hình độc lập.
 *   🌍 **Khả năng di động thực sự**: Một tệp thực thi duy nhất tự chứa cho kiến trúc RISC-V, ARM và x86.
 *   🦾 **AI Tự tối ưu**: Triển khai cốt lõi được tinh chỉnh thông qua các quy trình làm việc agentic tự trị.
 
 ## 📢 Tin tức
 
-01-03-2026 🎉 **PicoClaw v3.2.2 - Sentinel Kỹ năng Bản địa**: Đã thêm lớp bảo mật nội bộ bản địa (`skills_sentinel.go`) cung cấp khả năng bảo vệ dựa trên mẫu thời gian thực chống lại việc chèn prompt và rò rỉ hệ thống.
-01-03-2026 🎉 **PicoClaw v3.2 - Bảo mật Fail-Close & Độ ổn định**: Chính sách bảo mật mạnh mẽ. Công cụ thực thi lệnh hiện thực hiện xác thực nghiêm ngặt các mẫu từ chối trong quá trình khởi tạo.
+26-03-2026 🎉 **Tài liệu MCP Builder**: Tài liệu MCP Builder Agent hoàn chỉnh bằng tiếng Anh và Tây Ban Nha với tham chiếu API, trường hợp sử dụng và ví dụ. Xem [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md).
 
-27-02-2026 🎉 **PicoClaw v3.1 - Phục hồi sau sự cố & Khóa tác vụ**: Triển khai Khóa tác vụ nguyên tử để ngăn chặn xung đột agent, "Boot Rehydration" để phục hồi từ các lỗi dừng đột ngột, và Bộ nén ngữ cảnh (nâng giới hạn lên 32K token một cách an toàn) để xóa bỏ tình trạng bùng nổ ngữ cảnh trong các tác vụ lập trình dài.
+26-03-2026 🎉 **Lệnh Sandbox và Codegen**: Đã thêm `sandbox init/status` cho không gian làm việc biệt lập và `util codegen` để tạo mã Go. Xem [CHANGELOG.md](CHANGELOG.md).
+
+26-03-2026 🎉 **Giám sát Token Auth**: Đã thêm lệnh `auth tokens` và `auth monitor` để theo dõi hết hạn token OAuth. Xem [CHANGELOG.md](CHANGELOG.md).
+
+26-03-2026 🎉 **Trình kiểm tra Config và Secret Masking**: Đã thêm lệnh `config validate` để kiểm tra schema và che secret trong wizard onboard. Xem [CHANGELOG.md](CHANGELOG.md).
+
+26-03-2026 🎉 **Lệnh Doctor**: Đã thêm lệnh `doctor` để chẩn đoán môi trường bao gồm phát hiện WSL và kiểm tra bảo mật. Xem [CHANGELOG.md](CHANGELOG.md).
+
+12-03-2026 🎉 **Hỗ trợ Antigravity và Ổn định**: Hỗ trợ OAuth Google Antigravity đầy đủ với vệ sinh schema, sửa deadlock TokenBudget, cải thiện tái hydrat hóa phiên, lệnh `picoclaw-agents clean` mới và các mẫu từ chối được củng cố. Xem [CHANGELOG.md](CHANGELOG.md) để biết chi tiết.
+
+03-03-2026 🎉 **Kiến trúc Kỹ năng Bản địa**: Giới thiệu các kỹ năng bản địa được biên dịch trực tiếp vào nhị phân (`pkg/skills/queue_batch.go`), loại bỏ các phụ thuộc tệp `.md` bên ngoài. Bảo mật, hiệu suất và an toàn kiểu được tăng cường. Xem [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
+
+02-03-2026 🎉 **Lệnh Slash Fast-path và Bộ theo dõi Toàn cầu**: Đã thêm lệnh Slash tức thì (`/bundle_approve`, `/status`, v.v.) để tương tác độ trễ bằng không. Thống nhất `ImageGenTracker` trên tất cả các agent để nhất quán trạng thái multi-agent hoàn hảo. Xem [docs/queue_batch.md](docs/queue_batch.md).
+
+01-03-2026 🎉 **Tạo ảnh AI và Quản lý Cộng đồng**: Đã thêm tạo ảnh gốc (Gemini/Ideogram), quy trình script-to-ảnh, menu tương tác sau tạo và agent quản lý cộng đồng để tự động tạo bài đăng truyền thông xã hội. Xem [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+
+01-03-2026 🎉 **Sentinel Kỹ năng Bản địa**: Đã thêm lớp bảo mật nội bộ bản địa (`skills_sentinel.go`) cung cấp khả năng bảo vệ dựa trên mẫu thời gian thực chống lại việc chèn prompt và rò rỉ hệ thống.
+01-03-2026 🎉 **Bảo mật Fail-Close & Độ ổn định**: Chính sách bảo mật mạnh mẽ. Công cụ thực thi lệnh hiện thực hiện xác thực nghiêm ngặt các mẫu từ chối trong quá trình khởi tạo.
+
+27-02-2026 🎉 **Phục hồi sau sự cố & Khóa tác vụ**: Triển khai Khóa tác vụ nguyên tử để ngăn chặn xung đột agent, "Boot Rehydration" để phục hồi từ các lỗi dừng đột ngột, và Bộ nén ngữ cảnh (nâng giới hạn lên 32K token một cách an toàn) để xóa bỏ tình trạng bùng nổ ngữ cảnh trong các tác vụ lập trình dài.
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -362,6 +380,42 @@ Cả ba đều được định tuyến qua [OpenRouter](https://openrouter.ai) 
 *   **Anthropic**: `Claude Haiku 4.5` (Nhanh chóng và đáng tin cậy)
 
 > **Lưu ý**: Xem `config.example.json` để biết bản mẫu cấu hình đầy đủ.
+
+### 🧠 Kỹ Năng Gốc (Tùy chọn)
+
+Kỹ năng gốc tiêm các nhân vật AI chuyên biệt trực tiếp vào system prompt của agent. Khi được bật, agent sẽ "trở thành" vai trò đó — không cần tệp ngoài, tất cả được biên dịch vào nhị phân.
+
+**Bật trong `~/.picoclaw/config.json`:**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "skills": ["backend_developer", "researcher"]
+    }
+  }
+}
+```
+
+**Tất cả 13 kỹ năng gốc có sẵn:**
+
+| Kỹ năng | Mô tả |
+|---------|-------|
+| `queue_batch` | Xử lý hàng loạt và quản lý hàng đợi |
+| `agent_team_workflow` | Điều phối quy trình làm việc nhóm đa agent |
+| `fullstack_developer` | Phát triển web full-stack (frontend + backend) |
+| `n8n_workflow` | Thiết kế quy trình tự động hóa n8n |
+| `binance_mcp` | Giao dịch Binance qua giao thức MCP |
+| `researcher` | Nghiên cứu chuyên sâu, phân tích và tổng hợp |
+| `backend_developer` | REST API, cơ sở dữ liệu, microservices |
+| `frontend_developer` | React, Vue, CSS, các mẫu UX |
+| `devops_engineer` | CI/CD, Docker, Kubernetes, IaC |
+| `security_engineer` | Đánh giá bảo mật, mô hình hóa mối đe dọa |
+| `qa_engineer` | Chiến lược kiểm thử, tự động hóa, chất lượng |
+| `data_engineer` | Pipeline, ETL, kho dữ liệu |
+| `ml_engineer` | Phát triển và triển khai mô hình ML/AI |
+
+> **Kỹ năng vs Công cụ:** Kỹ năng tiêm ngữ cảnh vào system prompt (agent *trở thành* vai trò). Công cụ là các hành động có thể gọi (hàm mà LLM có thể gọi). Cấu hình riêng biệt: `"skills"` cho vai trò, `"tools_override"` cho công cụ có thể gọi. Xem [`docs/SKILLS.md`](docs/SKILLS.md) để biết chi tiết.
 
 **4. Trò chuyện**
 

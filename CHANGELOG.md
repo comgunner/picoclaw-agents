@@ -2,7 +2,530 @@
 
 All notable changes to the PicoClaw project will be documented in this file.
 
-## [3.4.5] - 2026-03-23
+> **Current Version:** v1.1.0 (as of March 2026)
+>
+> This changelog documents all changes by date. Version numbers in internal references (e.g., v3.4.2) refer to feature milestones, not release versions.
+
+---
+
+## 2026-03-26
+
+### 📚 Documentation
+
+#### **New MCP Builder Agent Documentation**
+- `docs/MCP_BUILDER_AGENT.md` — Complete guide in English
+- `docs/MCP_BUILDER_AGENT.es.md` — Complete guide in Spanish
+- Examples added to `README.md` and `README.es.md`
+
+**What's included:**
+- What is MCP Builder Agent and when to use it
+- 5 use cases with code examples (API integration, database access, workflow automation, file operations, custom tools)
+- 3 activation methods (CLI, Chat, Config)
+- 2 complete examples: GitHub MCP Server + PostgreSQL Database Server
+- MCP server structure and tool anatomy
+- Best practices (DO/DON'T) with code examples
+- Full API reference (server.tool, server.resource, server.prompt)
+- Return types and environment variables
+- Links to official MCP resources
+
+**Quick Example from README:**
+```bash
+# Invoke MCP Builder
+picoclaw-agents agent -m "Build an MCP server for GitHub API"
+```
+
+#### **New Native Skills Complete List**
+- `docs/NATIVE_SKILLS_LIST.md` — Complete list of all 14 native skills (English)
+- `docs/NATIVE_SKILLS_LIST.es.md` — Lista completa de 14 skills nativas (Spanish)
+- `docs/SKILLS.md` — Updated to  with 14 skills (English)
+- `docs/SKILLS.es.md` — Guía actualizada  con 14 skills (Spanish)
+
+**Native Skills Catalog ():**
+
+**Engineering Role Skills (7):**
+1. `backend_developer` — REST APIs, databases, microservices
+2. `frontend_developer` — React, Vue, performance, accessibility
+3. `devops_engineer` — CI/CD, Kubernetes, Terraform, monitoring
+4. `security_engineer` — OWASP, penetration testing, compliance
+5. `qa_engineer` — Test automation, coverage analysis, quality gates
+6. `data_engineer` — ETL pipelines, data warehouses, streaming
+7. `ml_engineer` — Model training, deployment, MLOps
+
+**General Purpose Skills (4):**
+8. `fullstack_developer` — Full-stack development, architecture
+9. `researcher` — Deep research, web search, synthesis
+10. `queue_batch` — Background task delegation, fire-and-forget
+11. `agent_team_workflow` — Multi-agent orchestration
+
+**Integration Skills (3):**
+12. `binance_mcp` — Binance trading, market data
+13. `n8n_workflow` — n8n automation, workflow creation
+14. `odoo_developer` — Odoo architect, L10n-Mexico, CFDI 4.0
+
+**Documentation Includes:**
+- Detailed description of each skill
+- Best practices and when to use
+- Configuration examples
+- Multi-skill combination patterns
+- Troubleshooting guide
+- Performance considerations (token usage)
+
+---
+
+## 2026-03-26
+
+### ✨ New Features
+
+#### **Comando `sandbox` — Workspaces aislados**
+- `picoclaw-agents sandbox init [name]` — crea workspace aislado con permisos restrictivos (700)
+- `picoclaw-agents sandbox status [name]` — verifica permisos y estructura del sandbox
+- Subdirectorios automáticos: workspace, sessions, memory, state
+- README generado automáticamente con instrucciones de uso
+
+#### **Comando `util codegen` — Generador de código boilerplate**
+- `picoclaw-agents util codegen --type <api|service|handler|model|config> --name <Name>`
+- Genera código Go desde plantillas predefinidas
+- Soporta 5 tipos: api, service, handler, model, config
+- Integración con agente para generación automática vía tool `codegen`
+
+### 🏗️ Internal
+
+#### **New `pkg/tools/codegen.go`**
+- `CodeGeneratorTool` — tool nativo para generación de código
+- Plantillas para: API interfaces, services, HTTP handlers, models, configs
+- Función `extractBaseName()` para parsear nombres compuestos (UserService → User)
+
+#### **New `cmd/picoclaw/internal/sandbox/`**
+- `command.go` — comandos `sandbox init` y `sandbox status`
+- `command_test.go` — tests de creación y verificación
+
+#### **Extended `cmd/picoclaw/internal/util/`**
+- `codegen.go` — CLI wrapper para codegen tool
+
+### 🧪 Tests
+- `TestSandboxCommand_Runs`, `TestSandboxInitCommand_CreatesDirectory`
+- Tests de subdirectorios y README
+
+---
+
+## 2026-03-26
+
+### ✨ New Features
+
+#### **Auth token monitor**
+- `picoclaw-agents auth tokens` — lista estado de tokens OAuth cacheados
+- `picoclaw-agents auth monitor --interval <min>` — monitoreo continuo de expiración
+- Detección local de tokens: `valid` / `expiring_soon` / `expired` (sin HTTP en background)
+- Umbbral de expiración: 5 minutos antes del expiry
+
+### 🏗️ Internal
+
+#### **New `pkg/auth/monitor.go`**
+- `TokenMonitor` con goroutine de monitoreo configurable
+- Lee `~/.picoclaw/auth.json`, sin llamadas HTTP automáticas
+- `CheckInterval` público para configuración custom
+- `CheckTokens()` — verifica expiración local
+- `GetExpiringSoon()` — filtra tokens próximos a expirar
+
+#### **New `pkg/auth/monitor_test.go`**
+- `TestTokenMonitor_Start_Stop`, `TestTokenMonitor_ExpiringStatus`
+- `TestTokenMonitor_GetExpiringSoon`, `TestTokenMonitor_Status_ReturnsCopy`
+
+#### **Extended `cmd/picoclaw/internal/auth/`**
+- `tokens.go` — subcomando `auth tokens` con output tabular
+- `monitor.go` — subcomando `auth monitor` con watch en tiempo real
+- `command.go` — registrados `newTokensCommand()` y `newMonitorCommand()`
+
+### 🧪 Tests
+- `TestTokenMonitor_*` — 6 tests nuevos
+
+---
+
+## 2026-03-26
+
+### ✨ New Features
+
+#### **Comando `config validate`**
+- `picoclaw-agents config validate` — valida schema y valores semánticos de config.json
+- Detecta: API keys faltantes, tokens inválidos, agent IDs duplicados, subagents mal configurados
+- Acumula todos los errores (no fail-fast) para mejor UX
+- Límite de output: 20 errores máx (evita overflow en configs grandes)
+
+#### **Secret masking en wizard**
+- Input de API keys en `onboard` ya no muestra caracteres en pantalla
+- Funciona con `golang.org/x/term.ReadPassword`
+- Fallback automático a texto plano en entornos no-TTY (CI, pipes)
+- Integrado en `wizard.promptSecret()`
+
+### 🏗️ Internal
+
+#### **New `pkg/cli/input.go`**
+- `ReadMasked(prompt)` — input sin eco para terminals interactivos
+- `ReadMaskedWithFallback(prompt, scanner)` — compatible con tests/pipes
+- `ReadLine(scanner)` — lectura normal de líneas
+- `Confirm(prompt, scanner)` — confirmaciones y/n
+
+#### **New `pkg/cli/input_test.go`**
+- `TestReadLine_*`, `TestConfirm_*`, `TestReadMaskedWithFallback_*`
+
+#### **New `pkg/config/validator.go`**
+- `Validator.Validate(cfg)` — validación semántica de struct Config
+- `Validator.ValidateFile(path)` — lee y valida archivo config.json
+- Validaciones: model_list uniqueness, agent IDs únicos, Telegram token format, Binance keys pares
+- `ValidationErrorList` — error acumulativo con formato legible
+
+#### **New `pkg/config/validator_test.go`**
+- `TestValidator_ValidConfig`, `TestValidator_MissingAPIKey`
+- `TestValidator_InvalidTelegramToken`, `TestValidator_DuplicateAgentID`
+- `TestValidator_SubagentsMaxSpawnDepth`, `TestValidator_BinancePartialKeys`
+
+#### **New `cmd/picoclaw/internal/config/`**
+- `command.go` — `NewConfigCommand()`
+- `validate.go` — `newValidateCommand()` con flag `--config`
+
+#### **Extended `cmd/picoclaw/internal/onboard/wizard.go`**
+- Import `pkg/cli`
+- `promptSecret()` usa `cli.ReadMaskedWithFallback()`
+
+### 🧪 Tests
+- `TestValidator_*` — 13 tests nuevos
+- `TestReadMaskedWithFallback_NonTTY`, `TestConfirm_*`
+
+### ⚠️ Upgrade Notes
+- **Nueva dependencia:** `golang.org/x/term` (agregada a go.mod)
+
+---
+
+## 2026-03-26
+
+### ✨ New Features
+
+#### **Comando `doctor` — diagnóstico de entorno**
+- `picoclaw-agents doctor` — verifica Go, Docker, workspace, WSL y seguridad
+- Flag `--json` para output estructurado
+- Detección de WSL (Windows Subsystem for Linux)
+- Security checks: root, binaries peligrosas en PATH, puertos abiertos
+
+**Output ejemplo:**
+```
+=== PicoClaw-Agents Doctor ===
+
+System:
+  OS/Arch:  darwin/arm64
+  WSL:      false
+  Shell:    /bin/zsh
+
+Requirements:
+  Go:         go version go1.26.0 darwin/arm64 [OK]
+  Docker:     installed (not running)
+  Workspace:  /Users/user/.picoclaw [OK]
+  Config:     exists
+
+Security:
+  Root:        false (good)
+  Dangerous:   nc
+  Open ports:  none
+
+✓ Environment ready!
+```
+
+### 🏗️ Internal
+
+#### **Extended `pkg/setup/checker.go`**
+- Nuevo campo `WSL bool` en `EnvironmentReport`
+- Nuevo struct `SecurityReport` con `RunningAsRoot`, `DangerousBinaries`, `OpenPorts`
+- Funciones: `detectWSL()`, `runSecurityChecks()`, `isPortOpen()`
+- `detectWSL()` solo activo en Linux (`runtime.GOOS == "linux"`)
+- `isPortOpen()` usa `net.DialTimeout` con 500ms timeout
+
+#### **Extended `pkg/setup/checker_test.go`**
+- `TestDetectWSL_NonLinux` — en macOS/Windows siempre false
+- `TestSecurityChecks_NotRoot` — euid != 0 en tests normales
+- `TestSecurityChecks_Ports` — verifica lista de puertos
+- `TestSecurityChecks_DangerousBinaries` — verifica binaries detectados
+- `TestEnvironmentReport_WithSecurity` — String() incluye security section
+- `TestEnvironmentReport_WithoutSecurity` — String() omite section si está limpio
+
+#### **New `cmd/picoclaw/internal/doctor/`**
+- `command.go` — `NewDoctorCommand()` registrado en root
+- `command_test.go` — 9 tests: `TestDoctorCommand_*`, `TestRunDoctor_*`
+
+### 🧪 Tests
+- `TestDetectWSL_NonLinux`, `TestSecurityChecks_NotRoot`, `TestDoctorCommand_Runs`
+- Todos los tests pasan: 14 en `pkg/setup/...`, 9 en `cmd/.../doctor/...`
+
+---
+
+## 2026-03-26
+
+### ✨ New Features
+
+#### **158 Embedded Skills via `//go:embed`** (Fases 1-5)
+- **158 new skills** embebidos en el binario usando `//go:embed all:data`
+- Skills organizados por categoría: academic, design, engineering, game-development, marketing, paid-media, product, project-management, sales, spatial-computing, specialized, support, testing
+- Binario self-contained — sin archivos externos, sin instalación adicional
+- Aumento de binario: ~750 KB (de 19 MB a ~20 MB) — dentro del límite de 50 MB ✅
+
+**Skills por categoría:**
+- **academic** (5): anthropologist, geographer, historian, narratologist, psychologist
+- **design** (8): brand-guardian, image-prompt-engineer, inclusive-visuals-specialist, ui-designer, ux-architect, ux-researcher, visual-storyteller, whimsy-injector
+- **engineering** (23 nuevos): ai-engineer, backend-architect, code-reviewer, database-optimizer, devops-automator, embedded-firmware-engineer, feishu-integration-developer, git-workflow-master, incident-response-commander, mobile-app-builder, rapid-prototyper, senior-developer, software-architect, solidity-smart-contract-engineer, sre, technical-writer, threat-detection-engineer, wechat-mini-program-developer, etc.
+- **game-development** (20): blender-addon-engineer, game-audio-engineer, game-designer, godot-gameplay-scripter, godot-multiplayer-engineer, godot-shader-developer, level-designer, narrative-designer, roblox-avatar-creator, roblox-experience-designer, roblox-systems-scripter, technical-artist, unity-architect, unity-editor-tool-developer, unity-multiplayer-engineer, unity-shader-graph-artist, unreal-multiplayer-architect, unreal-systems-engineer, unreal-technical-artist, unreal-world-builder
+- **marketing** (27): ai-citation-strategist, app-store-optimizer, baidu-seo-specialist, bilibili-content-strategist, book-co-author, carousel-growth-engine, china-ecommerce-operator, content-creator, cross-border-ecommerce, douyin-strategist, growth-hacker, instagram-curator, kuaishou-strategist, linkedin-content-creator, livestream-commerce-coach, podcast-strategist, private-domain-operator, reddit-community-builder, seo-specialist, short-video-editing-coach, social-media-strategist, tiktok-strategist, twitter-engager, wechat-official-account, weibo-strategist, xiaohongshu-specialist, zhihu-strategist
+- **paid-media** (7): auditor, creative-strategist, paid-social-strategist, ppc-strategist, programmatic-buyer, search-query-analyst, tracking-specialist
+- **product** (5): behavioral-nudge-engine, feedback-synthesizer, manager, sprint-prioritizer, trend-researcher
+- **project-management** (6): experiment-tracker, jira-workflow-steward, project-shepherd, studio-operations, studio-producer, project-manager-senior
+- **sales** (8): account-strategist, coach, deal-strategist, discovery-coach, engineer, outbound-strategist, pipeline-analyst, proposal-strategist
+- **spatial-computing** (6): macos-spatial-metal-engineer, terminal-integration-specialist, visionos-spatial-engineer, xr-cockpit-interaction-specialist, xr-immersive-developer, xr-interface-architect
+- **specialized** (27): accounts-payable-agent, agentic-identity-trust, agents-orchestrator, automation-governance-architect, blockchain-security-auditor, compliance-auditor, corporate-training-designer, data-consolidation-agent, government-digital-presales-consultant, healthcare-marketing-compliance, identity-graph-operator, lsp-index-engineer, recruitment-specialist, report-distribution-agent, sales-data-extraction-agent, cultural-intelligence-strategist, developer-advocate, document-generator, french-consulting-market, korean-business-navigator, mcp-builder, model-qa, salesforce-architect, workflow-architect, study-abroad-advisor, supply-chain-strategist, zk-steward
+- **support** (6): analytics-reporter, executive-summary-generator, finance-tracker, infrastructure-maintainer, legal-compliance-checker, support-responder
+- **testing** (8): accessibility-auditor, api-tester, evidence-collector, performance-benchmarker, reality-checker, test-results-analyzer, tool-evaluator, workflow-optimizer
+
+**Skills omitidos (ya existen como native Go):**
+- backend_developer, frontend_developer, devops_engineer, security_engineer, qa_engineer, data_engineer, ml_engineer
+
+### 🏗️ Internal
+
+#### **New `pkg/skills/embedded.go`**
+- `//go:embed all:data` directive for embedding skills filesystem
+- `GetEmbeddedSkillsFS()` function to access embedded FS
+- Skills organized as `data/{category}/{skill-name}/SKILL.md`
+
+#### **Extended `pkg/skills/loader.go`**
+- Added `embeddedFS fs.FS` field to `SkillsLoader` struct
+- Auto-initialized in `NewSkillsLoader()` constructor
+- Extended `ListSkills()` to include embedded skills (lowest priority)
+- Extended `LoadSkill()` with fallback to embedded FS
+- New `addEmbeddedSkills()` helper function
+- New `parseSkillFrontmatter()` function for YAML frontmatter parsing
+- Priority order: workspace > global > builtin > embedded
+
+#### **Conversion Script**
+- `cmd/tools/convert_skills/main.go` — tool to convert skills from `local_work/skills_import/` to embedded format
+- Generates frontmatter with `name`, `description`, `category`, `version`
+- Strips metadata headers from source files
+- Outputs to `pkg/skills/data/{category}/{skill-name}/SKILL.md`
+- Skips 7 native Go skills and excluded categories (examples, strategy)
+
+### 🧪 Tests
+
+#### **New `pkg/skills/embedded_skills_test.go`**
+- `TestEmbeddedSkillsCount` — verifies ≥150 embedded skills loaded
+- `TestEmbeddedSkillLoad` — loads specific skill and verifies content
+- `TestEmbeddedSkillsListIncludes` — verifies expected skills present
+- `TestEmbeddedSkillsNotDuplicated` — native skills not duplicated
+- `TestEmbeddedSkillCategories` — verifies categories present
+- `TestEmbeddedSkillContent` — verifies frontmatter stripped correctly
+- `TestEmbeddedSkillPriority` — native skills have priority
+- `TestEmbeddedSkillMetadata` — metadata parsed correctly
+- `TestEmbeddedSkillsBuildSummary` — summary includes embedded skills
+
+### 📝 Documentation
+
+#### **Updated `local_work/plan_integracion_160skills_nativos.md`**
+- Complete implementation plan for 178 skills via `//go:embed`
+- Architecture decisions and comparisons
+- File structure and format specifications
+- Code change requirements
+- Phase checklist and risk mitigations
+
+### ⚠️ Upgrade Notes
+
+- **No breaking changes**: All existing configurations remain compatible
+- **Native skills have priority**: Existing native Go skills take precedence over embedded versions
+- **No configuration needed**: Embedded skills auto-load on startup
+- **Binary size**: ~750 KB increase (well under 50 MB limit)
+
+---
+
+## 2026-03-26
+
+### ✨ New Features
+
+#### **Bug Fix: Researcher Skill Registration** (Fase 0)
+- **Fixed**: `researcher` skill existed in `pkg/skills/researcher.go` but was not registered
+- **Added**: Registration in `nativeSkillsRegistry` struct in `pkg/skills/loader.go`
+- **Added**: `GetResearcherSkill()`, `LoadNativeResearcherSkill()`, `BuildNativeResearcherSummary()` methods
+- **Added**: Entry in `listNativeSkills()` for researcher skill
+- **Result**: Researcher skill now available for use in `config.json`
+
+#### **Security: Secret Scanner + Log Sanitizer** (Fase 1)
+- **New `pkg/security/scanner.go`**: Static analysis scanner for hardcoded secrets
+  - Detects 12 secret types: OpenAI, Anthropic, Google API, GitHub tokens, AWS keys, Slack tokens, Stripe secrets, Telegram bot tokens, DeepSeek keys, JWTs
+  - `ScanFile()` and `ScanDir()` methods for file/directory scanning
+  - Placeholder detection to avoid false positives on example files
+  - Text file filtering (skips binaries, `.git`, `vendor`, `node_modules`)
+  
+- **New `pkg/security/sanitizer.go`**: Explicit sanitization function
+  - `Sanitize(s string) string`: Redacts secrets from arbitrary strings
+  - `SanitizeMap(m map[string]any) map[string]any`: Recursive map sanitization
+  - Use cases: Tool results, user messages, external API responses
+  - Format: `[REDACTED_pattern_name]`
+
+- **Test Suite**: 
+  - `pkg/security/scanner_test.go`: 13 tests for scanner functionality
+  - `pkg/security/sanitizer_test.go`: 21 tests for sanitization
+
+#### **Native Engineering Role Skills** (Fase 4-5)
+Added 7 new native skills for specialized engineering roles, compiled directly into the binary:
+
+- **`backend_developer`**: Backend development expert — REST APIs, databases, microservices, performance, security
+- **`frontend_developer`**: Frontend development expert — React, Vue, performance, accessibility, design systems
+- **`devops_engineer`**: DevOps expert — CI/CD pipelines, containers, infrastructure as code, monitoring, SRE
+- **`security_engineer`**: Security expert — OWASP, penetration testing, hardening, threat modeling, compliance
+- **`qa_engineer`**: QA expert — testing strategies, test automation, coverage analysis, quality gates
+- **`data_engineer`**: Data engineering expert — ETL pipelines, data warehouses, streaming, data quality
+- **`ml_engineer`**: ML/AI expert — model training, deployment, evaluation pipelines, MLOps, feature engineering
+
+Each skill includes:
+- Comprehensive role instructions and responsibilities
+- Technology stack recommendations
+- Best practices and quality checklists
+- Anti-patterns to avoid (with code examples)
+- Concrete usage examples (with code snippets)
+
+#### **Environment Checker Package** (Fase 2)
+- **New `pkg/setup/checker.go`**: Standalone environment validation package
+- **`EnvironmentReport` struct**: OS, Arch, Go version, Docker status, workspace validation
+- **`CheckEnvironment()` function**: Complete environment diagnostics
+- **`IsReady()` method**: Validates minimum requirements (Go + workspace)
+- **`String()` method**: Tabular output for terminal display
+- Useful for `picoclaw-agents doctor` command and onboarding wizard
+
+#### **Skills Import System** (Fase 3)
+- **Python import script**: `local_work/scripts/import_skills_from_agency.py`
+- Generates Markdown source files for skill conversion
+- Output: `local_work/skills_import/engineering/*.md`
+- Automated skill documentation generation
+
+### 🛠️ Core Improvements
+
+#### **Skills Loader Enhancement**
+- **Expanded `nativeSkillsRegistry`**: Now holds 13 native skills (was 6)
+- **14 new getter methods**: `GetBackendDeveloperSkill()`, `GetFrontendDeveloperSkill()`, etc.
+- **14 new loader methods**: `LoadNativeBackendDeveloperSkill()`, `BuildNativeBackendDeveloperSummary()`, etc.
+- **Thread-safe lazy initialization**: All skills use singleton pattern
+
+#### **Configuration Examples** (Fase 6)
+- **Updated `config/config.example.json`**: Added `_examples` section
+- **Single specialized agent example**: Backend developer with skills
+- **Orchestrator + subagents example**: Tech lead coordinating 7 engineering specialists
+- Demonstrates multi-agent architecture with role-based skills
+
+### 🧪 Tests
+
+#### **Comprehensive Test Suite** (Fase 7)
+- **New `pkg/skills/engineering_skills_test.go`**: 45+ test cases
+- **Individual skill tests**: Name, Description, Instructions, Context, Summary for each of 7 skills
+- **Integration tests**: Consistent structure across all engineering skills
+- **Anti-patterns tests**: Verify all skills contain anti-pattern documentation
+- **Examples tests**: Verify all skills contain usage examples
+- **Structure tests**: Verify XML format and required sections
+
+**Test Coverage:**
+```
+=== RUN   TestAllEngineeringSkillsHaveConsistentStructure
+=== RUN   TestAllEngineeringSkillsHaveAntiPatterns
+=== RUN   TestAllEngineeringSkillsHaveExamples
+=== RUN   TestEngineeringSkillContextsContainRequiredSections
+--- PASS: All tests (100% pass rate)
+```
+
+### 📝 Documentation
+
+#### **New Documentation Files** (Fase 8)
+- **`docs/SKILLS.md`**: Comprehensive comparison of Skills vs Tools
+  - When to use Skills (role injection) vs Tools (action execution)
+  - Complete table of all 13 native skills
+  - Usage examples and configuration patterns
+
+- **`docs/ADDING_NATIVE_SKILLS.md`**: Developer guide for contributing new skills
+  - Step-by-step template for creating native skills
+  - Interface requirements and method signatures
+  - Registration process in `loader.go`
+  - Testing requirements and examples
+
+#### **Updated Documentation**
+- **`CHANGELOG.md`**: This file, with complete v3.6.0 release notes
+- **`config/config.example.json`**: Added extensive examples section
+
+### 📦 Skills Import Report
+
+Generated skills from agency-agents repository:
+```json
+{
+  "timestamp": "2026-03-26T...",
+  "skills_imported": [
+    "backend_developer",
+    "frontend_developer",
+    "devops_engineer",
+    "security_engineer",
+    "qa_engineer",
+    "data_engineer",
+    "ml_engineer"
+  ],
+  "output_directory": "local_work/skills_import/engineering/"
+}
+```
+
+### 🔧 Technical Details
+
+**Native Skill Pattern:**
+```go
+type BackendDeveloperSkill struct {
+    workspace string
+}
+
+func (b *BackendDeveloperSkill) Name() string
+func (b *BackendDeveloperSkill) Description() string
+func (b *BackendDeveloperSkill) GetInstructions() string
+func (b *BackendDeveloperSkill) GetAntiPatterns() string
+func (b *BackendDeveloperSkill) GetExamples() string
+func (b *BackendDeveloperSkill) BuildSkillContext() string
+func (b *BackendDeveloperSkill) BuildSummary() string
+```
+
+**Total Lines of Code Added:**
+- 7 skill files: ~8,500 lines
+- Test file: ~650 lines
+- Setup checker: ~180 lines
+- Loader updates: ~250 lines
+- **Total: ~9,580 lines**
+
+### ⚠️ Upgrade Notes
+
+- **No breaking changes**: All existing configurations remain compatible
+- **New skills are opt-in**: Add to `config.json` `skills` array to use
+- **Example configurations**: Copy from `_examples` section in `config.example.json`
+
+### 🎯 Usage Example
+
+**Single Specialized Agent:**
+```json
+{
+  "id": "backend_dev",
+  "name": "Backend Developer",
+  "model": "deepseek-chat",
+  "skills": ["backend_developer"],
+  "tools_override": ["read_file", "write_file", "edit_file", "exec"]
+}
+```
+
+**Multi-Agent Team:**
+```json
+{
+  "id": "tech_lead",
+  "name": "Technical Lead",
+  "skills": ["fullstack_developer", "agent_team_workflow"],
+  "subagents": {
+    "allow_agents": ["backend_dev", "frontend_dev", "devops_eng", "qa_eng"]
+  }
+}
+```
+
+---
+
+## 2026-03-23
 
 ### ✨ New Features
 - **Autonomous Agent Runtime (LP-03)**: Introduced a background runtime for each agent that automatically processes internal messages. Agents no longer need to manually call `agent_receive` to check for tasks.
@@ -16,7 +539,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
-## [3.4.4] - 2026-03-12
+## 2026-03-12
 
 ### 🛡️ Security
 - **Deny Patterns (MP-01)**: Added `DefaultDenyPatterns` to `pkg/tools/shell.go` with 12 patterns blocking dangerous commands (`rm -rf /`, `shutdown`, `dd if=`, fork bombs, disk writes, etc.). `NewExecToolWithConfig` now fails closed if deny patterns are empty. Warning no longer appears at startup.
@@ -47,7 +570,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
-## [3.4.3] - 2026-03-04
+## 2026-03-04
 
 ### 🛡️ Upstream Security Patch Adaptations
 
@@ -64,7 +587,7 @@ Adapted and applied 2 of 6 upstream patches from audit `upstream_audit_2026-03-0
 - Shell security deny patterns for `.env`/`id_rsa`/AWS credentials (already in `shell.go`)
 
 
-## [3.4.2] - 2026-03-03
+## 2026-03-03
 
 ### ✨ Native Skills Architecture
 
@@ -101,15 +624,15 @@ If you have custom integrations relying on `pkg/skills/queue_batch/SKILL.md`, up
 
 ---
 
-## [3.4.1] - 2026-03-02
+## 2026-03-02
 
 ### 🛡️ Security & Stability
 - **🛡️ Native Skills Sentinel**: Implemented `skills_sentinel.go` as a native internal security tool. It provides proactive pattern-matching protection against prompt injection (input) and system leaks (output sanitization).
 - **📝 Local Auditing**: Integrated a security auditor that records all blocked attacks and suspicious activities in `local_work/AUDIT.md`.
 
-## [3.2.1] - 2026-03-01
+## 2026-03-01
 
-## [3.2.0] - 2026-03-01
+## 2026-03-01
 
 ### 🛡️ Security & Stability
 - **🔒 Fail-Close ExecTool**: Robust security policy. The command execution tool now performs strict validation of deny patterns during initialization. Invalid regex will prevent the agent from starting, eliminating "fail-open" vulnerabilities.
@@ -124,7 +647,7 @@ If you have custom integrations relying on `pkg/skills/queue_batch/SKILL.md`, up
 ### 📦 Dependencies
 - **🖥️ TUI Foundation**: Added `tcell/v2` and `tview` dependencies to support the upcoming terminal management dashboard.
 
-## [3.1.0] - 2026-02-27
+## 2026-02-27
 
 ### ✨ Core Features
 - **🛡️ Task Lock System**: Implemented atomic `.lock` files for robust disaster recovery and concurrency control among subagents.
@@ -134,7 +657,7 @@ If you have custom integrations relying on `pkg/skills/queue_batch/SKILL.md`, up
 - **🤖 o3-mini Support**: Standardized on `o3-mini` for high-performance OpenAI tasks, including automatic `max_completion_tokens` handling.
 - **🌍 Qwen Regional Fixes**: Documented and implemented support for Alibaba Cloud Virginia (US-East-1) regional endpoints.
 
-## [3.0.0] - 2026-02-27
+## 2026-02-27
 
 ### ✨ Core Features
 - **🚀 Advanced Multi-Agent Architecture**: Full support for isolated subagent sessions and the ability to execute different LLM models in parallel.

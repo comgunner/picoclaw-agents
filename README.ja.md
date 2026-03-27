@@ -18,17 +18,35 @@
 ## ✨ 特徴
 
 *   🪶 **超軽量**: 最小限のフットプリントを実現する最適化された Go 実装。
-*   🤖 **マルチエージェントアーキテクチャ**: v3.2 では **Fail-Close** セキュリティ、v3.2.1 では安定性の向上、そして **v3.2.2** ではプロアクティブな入力/出力サニタイズとローカル監査 (`AUDIT.md`) を備えたネイティブ・セキュリティ・レイヤーである **Skills Sentinel** が追加されました。
+*   🤖 **マルチエージェントアーキテクチャ**: では **Fail-Close** セキュリティ、では安定性の向上、そして ではプロアクティブな入力/出力サニタイズとローカル監査 (`AUDIT.md`) を備えたネイティブ・セキュリティ・レイヤーである **Skills Sentinel** が追加されました。
 *   🚀 **並列サブエージェント**: 並列で動作する複数の自律型サブエージェントを生成でき、それぞれが独立したモデル構成を持ちます。
 *   🌍 **真のポータビリティ**: RISC-V、ARM、x86 に対応した単一の自己完結型バイナリ。
 *   🦾 **AI ブートストラップ**: 自律的なエージェント・ワークフローを通じて洗練されたコア実装。
 
 ## 📢 ニュース
 
-2026-03-01 🎉 **PicoClaw v3.2.2 - ネイティブ・スキル・センチネル**: プロンプト・インジェクションやシステム漏洩に対するリアルタイムのパターンベースの保護を提供する内部セキュリティ・レイヤー（`skills_sentinel.go`）を追加しました。
-2026-03-01 🎉 **PicoClaw v3.2 - Fail-Close セキュリティと安定性**: 堅牢なセキュリティポリシー。コマンド実行ツールは、初期化中に拒否パターンの厳格な検証を行うようになりました。
+2026-03-26 🎉 **MCP Builder ドキュメント**: API リファレンス、ユースケース、例を含む英語とスペイン語の完全な MCP Builder Agent ドキュメント。[docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) を参照。
 
-2026-02-27 🎉 **PicoClaw v3.1 - 障害復旧とタスクロック**: エージェントの衝突を防ぐアトミックなタスクロック、突然のクラッシュからの復旧用「Boot Rehydration」、および長いコーディングタスクでのコンテキスト爆発を根絶するためのコンテキストコンパクター（制限を安全に 32K トークンに引き上げ）を実装しました。
+2026-03-26 🎉 **Sandbox および Codegen コマンド**: 隔離されたワークスペース用の `sandbox init/status` と Go コード生成用の `util codegen` を追加。[CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-26 🎉 **Auth Token モニター**: OAuth トークンの有効期限追跡用の `auth tokens` および `auth monitor` コマンドを追加。[CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-26 🎉 **Config バリデーターと Secret Masking**: スキーマ検証用の `config validate` コマンドと onboard ウィザードのシークレットマスキングを追加。[CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-26 🎉 **Doctor コマンド**: WSL 検出とセキュリティチェックを含む環境診断用の `doctor` コマンドを追加。[CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-12 🎉 **Antigravity サポートと安定性**: スキーマのサニタイゼーション、TokenBudget デッドロック修正、セッション再水和の改善、新しい `picoclaw-agents clean` コマンド、および強化された拒否パターンを備えた完全な Google Antigravity OAuth サポート。詳細は [CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-03 🎉 **ネイティブ・スキル・アーキテクチャ**: 外部 `.md` ファイルの依存関係を排除し、バイナリに直接コンパイルされたネイティブ・スキル（`pkg/skills/queue_batch.go`）を導入。セキュリティ、パフォーマンス、および型安全性を強化。[docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md) を参照。
+
+2026-03-02 🎉 **Fast-path Slash コマンドとグローバル・トラッカー**: ゼロ・レイテンシ対話のための即時 Slash コマンド（`/bundle_approve`、`/status` など）を追加。完全なマルチ・エージェント状態の一貫性のために、すべてのエージェントで `ImageGenTracker` を統一。[docs/queue_batch.md](docs/queue_batch.md) を参照。
+
+2026-03-01 🎉 **AI 画像生成とコミュニティ・マネージャー**: ネイティブ画像生成（Gemini/Ideogram）、スクリプト・トゥ・画像ワークフロー、インタラクティブな生成後メニュー、およびソーシャルメディア投稿を自動的に生成するコミュニティ・マネージャー・エージェントを追加。[docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) を参照。
+
+2026-03-01 🎉 **ネイティブ・スキル・センチネル**: プロンプト・インジェクションやシステム漏洩に対するリアルタイムのパターンベースの保護を提供する内部セキュリティ・レイヤー（`skills_sentinel.go`）を追加しました。
+2026-03-01 🎉 **Fail-Close セキュリティと安定性**: 堅牢なセキュリティポリシー。コマンド実行ツールは、初期化中に拒否パターンの厳格な検証を行うようになりました。
+
+2026-02-27 🎉 **障害復旧とタスクロック**: エージェントの衝突を防ぐアトミックなタスクロック、突然のクラッシュからの復旧用「Boot Rehydration」、および長いコーディングタスクでのコンテキスト爆発を根絶するためのコンテキストコンパクター（制限を安全に 32K トークンに引き上げ）を実装しました。
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -362,6 +380,42 @@ picoclaw-agents onboard --gemini      # Gemini テンプレートを使用 (gemi
 *   **Anthropic**: `Claude Haiku 4.5` (高速で信頼性が高い)
 
 > **注意**: 完全な構成テンプレートについては `config.example.json` を参照してください。
+
+### 🧠 ネイティブスキル（オプション）
+
+ネイティブスキルは、専門的な AI ペルソナをエージェントのシステムプロンプトに直接注入します。有効化すると、エージェントはそのロールに「なりきり」ます — 外部ファイル不要、すべてバイナリにコンパイル済みです。
+
+**`~/.picoclaw/config.json` で有効化：**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "skills": ["backend_developer", "researcher"]
+    }
+  }
+}
+```
+
+**利用可能な 13 のネイティブスキル一覧：**
+
+| スキル | 説明 |
+|--------|------|
+| `queue_batch` | バッチ処理とキュー管理 |
+| `agent_team_workflow` | マルチエージェントチームのワークフロー調整 |
+| `fullstack_developer` | フルスタック Web 開発（フロントエンド + バックエンド） |
+| `n8n_workflow` | n8n 自動化ワークフロー設計 |
+| `binance_mcp` | MCP プロトコル経由の Binance トレーディング |
+| `researcher` | 深い調査、分析、統合 |
+| `backend_developer` | REST API、データベース、マイクロサービス |
+| `frontend_developer` | React、Vue、CSS、UX パターン |
+| `devops_engineer` | CI/CD、Docker、Kubernetes、IaC |
+| `security_engineer` | セキュリティレビュー、脅威モデリング、ハードニング |
+| `qa_engineer` | テスト戦略、自動化、品質管理 |
+| `data_engineer` | パイプライン、ETL、データウェアハウス |
+| `ml_engineer` | ML/AI モデル開発とデプロイ |
+
+> **スキル vs ツール：** スキルはシステムプロンプトにコンテキストを注入します（エージェントがそのロールに「なる」）。ツールは呼び出し可能なアクション（LLM が呼び出せる関数）です。別々に設定します：ロールには `"skills"`、呼び出し可能ツールには `"tools_override"`。詳細は [`docs/SKILLS.md`](docs/SKILLS.md) をご覧ください。
 
 **4. チャット**
 

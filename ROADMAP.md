@@ -3,15 +3,19 @@
 
 > **Vision**: To build the ultimate lightweight, secure, and fully autonomous AI Agent infrastructure.automate the mundane, unleash your creativity
 
+> **Current Version:** v1.0.0 (as of March 2026)
+>
+> Version numbers in roadmap items refer to feature milestones, not release versions.
+
 ---
 
-## 🎉 Latest Release: v3.4.2 - Native Skills Architecture
+## 🎉 Latest: Native Skills Architecture
 
-**2026-03-03** - PicoClaw v3.4.2 introduces **Native Skills** - compiled-in documentation with zero external dependencies:
+**2026-03-03** - Introduces **Native Skills** - compiled-in documentation with zero external dependencies:
 
 ### 🚀 Native Skills Architecture
 
-Following the security-first design of v3.2-v3.3, v3.4.2 takes performance and reliability to the next level by compiling skills directly into the binary:
+Following the security-first design of previous versions, Native Skills takes performance and reliability to the next level by compiling skills directly into the binary:
 
 * **✅ Zero Runtime Dependencies**: No external `.md` files required - all skill documentation embedded in binary
 * **✅ Enhanced Security**: Skills cannot be modified or tampered with externally
@@ -124,11 +128,11 @@ func (q *QueueBatchSkill) BuildSummary() string
 
 
 * **Multi-Agent Collaboration (Current Focus)**
-  * ✅ **Multi-Agent Suite (v3)**: Full implementation of subagent architecture with autonomous sessions.
+  * ✅ **Multi-Agent Suite (Multi-Agent)**: Full implementation of subagent architecture with autonomous sessions.
   * ✅ **Atomic Task Locks**: Prevention of multi-agent file collisions and state corruption.
   * ✅ **Disaster Recovery (Boot Rehydration)**: Ability to restore agent state and context after crashes.
   * ✅ **Context Compactor**: Automated token management (Safe 32K limit) to maintain long-running reasoning tasks.
-  * ✅ **External Integrations (v3.3)**: Secure API integrations for Binance (trading), Facebook, X/Twitter, Discord (social media), and Notion (knowledge management) with credential isolation and fail-close security.
+  * ✅ **External Integrations (External Integrations)**: Secure API integrations for Binance (trading), Facebook, X/Twitter, Discord (social media), and Notion (knowledge management) with credential isolation and fail-close security.
   * [ ] **Knowledge Sharing Protocol**: Selective RAG sharing between parallel subagents.
   * [ ] **MCP Server Support**: Implement MCP servers for Social Media and Notion tools (currently native-only).
 
@@ -167,9 +171,9 @@ func (q *QueueBatchSkill) BuildSummary() string
 
 
 
-## 🔌 8. External Integrations (v3.3+) - Pending Work
+## 🔌 8. External Integrations  - Pending Work
 
-*Building on v3.3's secure integration foundation.*
+*Building on External Integrations's secure integration foundation.*
 
 * **MCP Server Implementation**
   * [ ] **Social Media MCP Server**: Implement `ServeSocialMediaMCPStdio` for external MCP clients (currently placeholder)

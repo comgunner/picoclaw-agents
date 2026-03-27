@@ -18,7 +18,7 @@
 ## ✨ Features
 
 *   🪶 **Ultra-Lightweight**: Optimized Go implementation with minimal footprint.
-*   🤖 **Multi-Agent Architecture**: v3.2 introduces **Fail-Close** security (detects invalid config), **v3.2.1** adds robust channel/bus closure handling, and **v3.2.2** adds the **Skills Sentinel** (native security layer) with proactive input/output sanitization and local auditing (`AUDIT.md`).
+*   🤖 **Multi-Agent Architecture**: Fail-Close security (detects invalid config), robust channel/bus closure handling, and Skills Sentinel (native security layer) with proactive input/output sanitization and local auditing (`AUDIT.md`).
 *   🚀 **Parallel Subagents**: Spawn multiple autonomous subagents working in parallel, each with independent model configurations.
 *   🌍 **True Portability**: Single self-contained binary across RISC-V, ARM, and x86.
 *   🦾 **AI-Bootstrapped**: Core implementation refined through autonomous agentic workflows.
@@ -28,26 +28,36 @@
 *   📝 **Notion Integration**: Create, query, update pages and databases for task tracking and data management.
 *   🤖 **Community Manager**: Auto-generate engaging social media posts from technical content or generated images.
 *   ⚡ **Fast-path Slash Commands**: Instant system commands via `/` or `#` that bypass the LLM for zero-latency approvals, status checks, and lotes (bundle) management. Works on Telegram, Discord, and CLI.
-*   🖇️ **Global State Synchronization**: v3.4.1 introduces the **Global ImageGenTracker**, a shared memory space across all agents (PM, Subagents) to ensure perfect consistency in multi-agent workflows.
-*   🚀 **Native Skills Architecture**: v3.4.2 compiles skills directly into the binary (`pkg/skills/queue_batch.go`), eliminating external file dependencies and enhancing security. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
+*   🖇️ **Global State Synchronization**: Global ImageGenTracker, a shared memory space across all agents (PM, Subagents) to ensure perfect consistency in multi-agent workflows.
+*   🚀 **Native Skills Architecture**: Native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external file dependencies and enhancing security. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
 
 ## 📢 News
 
-2026-03-12 🎉 **PicoClaw v3.4.4 - Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw-agents clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
+2026-03-26 🎉 **MCP Builder Documentation**: Complete MCP Builder Agent documentation in English and Spanish with API reference, use cases, and examples. See [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) and [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md).
 
-2026-03-03 🎉 **PicoClaw v3.4.2 - Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md) and [local_work/crear_skill_interna.md](local_work/crear_skill_interna.md) for developer guide.
+2026-03-26 🎉 **Sandbox & Codegen Commands**: Added `sandbox init/status` for isolated workspaces and `util codegen` for Go boilerplate generation. See [CHANGELOG.md](CHANGELOG.md) for full details.
 
-2026-03-02 🎉 **PicoClaw v3.4.1 - Fast-path & Global Tracker**: Added instant Slash Commands (`/bundle_approve`, `/status`, etc.) for zero-latency interaction. Unified the `ImageGenTracker` across all agents for perfect multi-agent state consistency. See [docs/queue_batch.md](docs/queue_batch.md).
+2026-03-26 🎉 **Auth Token Monitor**: Added `auth tokens` and `auth monitor` commands for OAuth token expiration tracking. See [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-01 🎉 **PicoClaw v3.4 - AI Image Generation & Community Manager**: Added native image generation (Gemini/Ideogram), script-to-image workflows, interactive post-generation menus, and community manager agent for auto-generating social media posts. See [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) for complete setup and usage examples.
+2026-03-26 🎉 **Config Validator & Secret Masking**: Added `config validate` command for schema validation and secret masking in onboard wizard. See [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-01 🎉 **PicoClaw v3.3 - External Integrations (Binance, Social Media, Notion)**: Added native tools for cryptocurrency trading (Binance futures & spot), social media publishing (Facebook & X/Twitter), and knowledge management (Notion). Configure via `config.json` or environment variables. See [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) and [docs/NOTION_util.md](docs/NOTION_util.md) for setup guides.
+2026-03-26 🎉 **Doctor Command**: Added `doctor` command for environment diagnostics including WSL detection and security checks. See [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-01 🎉 **PicoClaw v3.2.2 - Native Skills Sentinel**: Added internal security layer (`skills_sentinel.go`) that provides real-time pattern-based protection against prompt injection and system leaks.
-2026-03-01 🎉 **PicoClaw v3.2.1 - Security & Stability Hardening**: Robust message bus closure handling, resilient WeCom App background processing, and reinforced initialization validation for the shell tool.
-2026-03-01 🎉 **PicoClaw v3.2 - Fail-Close Security**: Robust security policy. The command execution tool now performs strict validation of deny patterns during initialization.
+2026-03-12 🎉 **Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw-agents clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
 
-2026-02-27 🎉 **PicoClaw v3.1 - Disaster Recovery & Task Locks**: Implemented atomic Task Locks to prevent agent collisions, "Boot Rehydration" for recovery from abrupt crashes, and Context Compactor (safely raising limit to 32K tokens) to eradicate context explosions in long coding tasks.
+2026-03-03 🎉 **Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md) and [local_work/crear_skill_interna.md](local_work/crear_skill_interna.md) for developer guide.
+
+2026-03-02 🎉 **Fast-path & Global Tracker**: Added instant Slash Commands (`/bundle_approve`, `/status`, etc.) for zero-latency interaction. Unified the `ImageGenTracker` across all agents for perfect multi-agent state consistency. See [docs/queue_batch.md](docs/queue_batch.md).
+
+2026-03-01 🎉 **AI Image Generation & Community Manager**: Added native image generation (Gemini/Ideogram), script-to-image workflows, interactive post-generation menus, and community manager agent for auto-generating social media posts. See [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) for complete setup and usage examples.
+
+2026-03-01 🎉 **External Integrations (Binance, Social Media, Notion)**: Added native tools for cryptocurrency trading (Binance futures & spot), social media publishing (Facebook & X/Twitter), and knowledge management (Notion). Configure via `config.json` or environment variables. See [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) and [docs/NOTION_util.md](docs/NOTION_util.md) for setup guides.
+
+2026-03-01 🎉 **Native Skills Sentinel**: Added internal security layer (`skills_sentinel.go`) that provides real-time pattern-based protection against prompt injection and system leaks.
+2026-03-01 🎉 **Security & Stability Hardening**: Robust message bus closure handling, resilient WeCom App background processing, and reinforced initialization validation for the shell tool.
+2026-03-01 🎉 **Fail-Close Security**: Robust security policy. The command execution tool now performs strict validation of deny patterns during initialization.
+
+2026-02-27 🎉 **Disaster Recovery & Task Locks**: Implemented atomic Task Locks to prevent agent collisions, "Boot Rehydration" for recovery from abrupt crashes, and Context Compactor (safely raising limit to 32K tokens) to eradicate context explosions in long coding tasks.
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -97,6 +107,136 @@ PicoClaw will automatically manage the hierarchy: **PM ➔ Senior Dev ➔ QA Spe
 
 > [!TIP]
 > **Check out the examples:** See `config_dev.example.json` for a standard DeepSeek team, `config_dev_multiple_models.example.json` for a mixed-model team (OpenAI, Anthropic, and DeepSeek), and `config_context_management.example.json` for optimizing token usage during extensive coding sessions.
+
+---
+
+### 🛠️ MCP Builder Agent - Build Custom AI Tools
+
+**MCP Builder Agent** (`specialized-mcp-builder`) is a specialized skill for building **Model Context Protocol (MCP)** servers. Create custom tools that extend your AI agent's capabilities — from API integrations to database access to workflow automation.
+
+#### What Can You Build?
+
+- 🔌 **API Integrations**: Connect to Stripe, GitHub, Slack, or any REST API
+- 🗄️ **Database Access**: Safely expose data from PostgreSQL, MySQL, MongoDB
+- 📁 **File Operations**: Controlled read/write access to file systems
+- 🔄 **Workflow Automation**: Automate business processes (invoices, orders, notifications)
+- 🎯 **Custom Tools**: Any tool your imagination can design!
+
+#### Quick Example: GitHub MCP Server
+
+**1. Invoke MCP Builder:**
+
+```bash
+picoclaw-agents agent -m "Build an MCP server for GitHub API with tools to: search repos, get commits, create issues"
+```
+
+**2. Generated Code:**
+
+```typescript
+// github-server.ts
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+import { Octokit } from "octokit";
+
+const server = new McpServer({ name: "github-server", version: "1.0.0" });
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+server.tool(
+  "search_repositories",
+  { 
+    query: z.string().describe("Search query"),
+    per_page: z.number().default(10)
+  },
+  async ({ query, per_page }) => {
+    const { data } = await octokit.request('GET /search/repositories', {
+      q: query,
+      per_page: Math.min(per_page, 100)
+    });
+    
+    return { 
+      content: [{ 
+        type: "text", 
+        text: JSON.stringify(data.items.map(repo => ({
+          name: repo.full_name,
+          stars: repo.stargazers_count,
+          url: repo.html_url
+        })), null, 2) 
+      }] 
+    };
+  }
+);
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+**3. Configure in PicoClaw:**
+
+```json
+{
+  "tools": {
+    "mcp": {
+      "github": {
+        "command": "node",
+        "args": ["/path/to/github-server.ts"],
+        "env": {
+          "GITHUB_TOKEN": "ghp_..."
+        }
+      }
+    }
+  }
+}
+```
+
+**4. Use with Your Agent:**
+
+```
+@agent Search for machine learning repositories with more than 1000 stars
+```
+
+**Output:**
+```
+Found 15 repositories:
+- tensorflow/tensorflow (178k stars)
+- pytorch/pytorch (85k stars)
+- scikit-learn/scikit-learn (58k stars)
+...
+```
+
+#### Best Practices
+
+✅ **DO:**
+- Use descriptive names: `search_users_by_email` not `query1`
+- Validate all inputs with Zod schemas
+- Provide detailed parameter descriptions
+- Handle errors gracefully with actionable messages
+- Write unit tests for each tool
+
+❌ **DON'T:**
+- Use generic names like `tool1`, `do_stuff`
+- Skip input validation
+- Return cryptic error messages
+- Rely on state between calls (keep tools stateless)
+
+#### Documentation
+
+📖 **Complete Guide:** See [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) for:
+- Full API reference
+- Step-by-step examples (GitHub, PostgreSQL, Stripe)
+- Best practices and patterns
+- Testing strategies
+
+#### Available Skills
+
+MCP Builder is one of **158+ specialized skills** available in PicoClaw:
+
+- **Specialized**: `mcp-builder`, `salesforce-architect`, `blockchain-security-auditor`
+- **Engineering**: `backend-architect`, `devops-automator`, `security-engineer`
+- **Marketing**: `seo-specialist`, `social-media-strategist`, `content-creator`
+- **Support**: `legal-compliance-checker`, `finance-tracker`, `infrastructure-maintainer`
+
+See full list in [CHANGELOG.md](CHANGELOG.md#370---2026-03-26).
 
 
 ### 📱 Run on old Android Phones
@@ -384,6 +524,42 @@ For heavy coding tasks, performance and logic are key. We recommend standardizin
 *   **Anthropic**: `Claude Haiku 4.5` (Fast and reliable)
 
 > **Note**: See `config.example.json` for a complete configuration template.
+
+### 🧠 Native Skills (Optional)
+
+Native skills inject specialized AI personas directly into the agent's system prompt. When enabled, the agent "becomes" that role — no external files, everything compiled into the binary.
+
+**Enable in `~/.picoclaw/config.json`:**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "skills": ["backend_developer", "researcher"]
+    }
+  }
+}
+```
+
+**All 13 available native skills:**
+
+| Skill | Description |
+|-------|-------------|
+| `queue_batch` | Batch processing and queue management |
+| `agent_team_workflow` | Orchestrates multi-agent team workflows |
+| `fullstack_developer` | Full-stack web development (frontend + backend) |
+| `n8n_workflow` | n8n automation workflow design |
+| `binance_mcp` | Binance trading via MCP protocol |
+| `researcher` | Deep research, analysis, and synthesis |
+| `backend_developer` | REST APIs, databases, microservices |
+| `frontend_developer` | React, Vue, CSS, UX patterns |
+| `devops_engineer` | CI/CD, Docker, Kubernetes, IaC |
+| `security_engineer` | Security reviews, threat modeling, hardening |
+| `qa_engineer` | Testing strategies, automation, quality |
+| `data_engineer` | Pipelines, ETL, data warehousing |
+| `ml_engineer` | ML/AI model development and deployment |
+
+> **Skills vs Tools:** Skills inject context into the system prompt (the agent *becomes* the role). Tools are callable actions (functions the LLM can invoke). Configure them separately: `"skills"` for roles, `"tools_override"` for callable tools. See [`docs/SKILLS.md`](docs/SKILLS.md) for details.
 
 **4. Chat**
 
@@ -764,7 +940,7 @@ Even with `restrict_to_workspace: false`, the `exec` tool blocks these dangerous
 * `shutdown`, `reboot`, `poweroff` — System shutdown
 * Fork bomb `:(){ :|:& };:`
 
-#### Core Infrastructure Protections (v3.4.3+)
+#### Core Infrastructure Protections
 
 PicoClaw's multi-agent architecture incorporates several upstream security patches to ensure safe concurrent operations:
 * **Atomic State Saves**: `memory/jsonl.go` and `state/state.go` persist data via strict temp-file `fsync` followed by atomic `rename`, completely eliminating JSON corruption during power losses or subagent crashes.

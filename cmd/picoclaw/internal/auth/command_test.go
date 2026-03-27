@@ -32,6 +32,8 @@ func TestNewAuthCommand(t *testing.T) {
 		"logout",
 		"status",
 		"models",
+		"monitor",
+		"tokens",
 	}
 
 	subcommands := cmd.Commands()

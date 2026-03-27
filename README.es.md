@@ -18,7 +18,7 @@
 ## ✨ Características
 
 *   🪶 **Ultra-Ligero**: Implementación en Go optimizada con un consumo mínimo.
-*   🤖 **Arquitectura Multi-Agente**: la v3.2 introduce seguridad **Fail-Close** (detecta config inválida), **v3.2.1** añade manejo robusto de cierre de canales/bus, y la **v3.2.2** añade el **Sentinel de Skills** (capa de seguridad nativa) con sanitización de entrada/salida y auditoría local (`AUDIT.md`).
+*   🤖 **Arquitectura Multi-Agente**: Seguridad Fail-Close (detecta config inválida), manejo robusto de cierre de canales/bus, y Sentinel de Skills (capa de seguridad nativa) con sanitización de entrada/salida y auditoría local (`AUDIT.md`).
 *   🚀 **Subagentes en Paralelo**: Crea múltiples subagentes autónomos trabajando en paralelo, cada uno con configuraciones de modelo independientes.
 *   🌍 **Portabilidad Real**: Único binario autocontenido para arquitecturas RISC-V, ARM y x86.
 *   🦾 **Bootstrapped por IA**: Implementación core refinada mediante flujos de trabajo autónomos de agentes.
@@ -28,23 +28,36 @@
 *   📝 **Integración con Notion**: Crea, consulta y actualiza páginas y bases de datos para gestión de tareas y conocimiento.
 *   🤖 **Community Manager**: Genera automáticamente publicaciones atractivas para redes sociales desde contenido técnico o imágenes generadas.
 *   ⚡ **Slash Commands de "Fast-path"**: Comandos de sistema instantáneos vía `/` o `#` que saltan el LLM para aprobaciones, chequeos de estado y gestión de lotes (bundles) sin latencia. Funciona en Telegram, Discord y CLI (Terminal).
-*   🖇️ **Sincronización de Estado Global**: la v3.4.1 introduce el **Global ImageGenTracker**, un espacio de memoria compartido entre todos los agentes (PM y Subagentes) para asegurar una consistencia perfecta en flujos multi-agente.
-*   🚀 **Arquitectura de Skills Nativas**: la v3.4.2 compila skills directamente en el binario (`pkg/skills/queue_batch.go`), eliminando dependencias de archivos externos y mejorando la seguridad. Ver [docs/QUEUE_BATCH.es.md](docs/QUEUE_BATCH.es.md).
+*   🖇️ **Sincronización de Estado Global**: Global ImageGenTracker, un espacio de memoria compartido entre todos los agentes (PM y Subagentes) para asegurar una consistencia perfecta en flujos multi-agente.
+*   🚀 **Arquitectura de Skills Nativas**: Skills nativas compiladas directamente en el binario (`pkg/skills/queue_batch.go`), eliminando dependencias de archivos externos y mejorando la seguridad. Ver [docs/QUEUE_BATCH.es.md](docs/QUEUE_BATCH.es.md).
 
 ## 📢 Noticias
 
-2026-03-03 🎉 **PicoClaw v3.4.2 - Arquitectura de Skills Nativas**: Introducidas skills nativas compiladas directamente en el binario (`pkg/skills/queue_batch.go`), eliminando dependencias de archivos `.md` externos. Seguridad, rendimiento y type safety mejorados. Ver [docs/QUEUE_BATCH.es.md](docs/QUEUE_BATCH.es.md) y [local_work/crear_skill_interna.md](local_work/crear_skill_interna.md) para guía de desarrollador.
+2026-03-26 🎉 **Documentación de MCP Builder**: Documentación completa de MCP Builder Agent en inglés y español con referencia de API, casos de uso y ejemplos. Ver [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) y [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md).
 
-2026-03-02 🎉 **PicoClaw v3.4.1 - Fast-path y Global Tracker**: Añadidos comandos Slash instantáneos (`/bundle_approve`, `/status`, etc.) para interacción sin latencia. Unificado el `ImageGenTracker` en todos los agentes para consistencia total de estado. Consulta [docs/queue_batch.md](docs/queue_batch.md).
+2026-03-26 🎉 **Comandos Sandbox y Codegen**: Añadidos `sandbox init/status` para workspaces aislados y `util codegen` para generación de código Go. Ver [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-01 🎉 **PicoClaw v3.4 - Generación de Imágenes con IA y Community Manager**: Añadida generación nativa de imágenes (Gemini/Ideogram), flujos de script-a-imagen, menús interactivos post-generación, y agente community manager para generar automáticamente publicaciones en redes sociales. Consulta [docs/IMAGE_GEN_util.es.md](docs/IMAGE_GEN_util.es.md) para configuración completa y ejemplos de uso.
+2026-03-26 🎉 **Monitor de Tokens Auth**: Añadidos comandos `auth tokens` y `auth monitor` para seguimiento de expiración de tokens OAuth. Ver [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-01 🎉 **PicoClaw v3.3 - Integraciones Externas (Binance, Redes Sociales, Notion)**: Añadidas herramientas nativas para trading de criptomonedas (futuros y spot de Binance), publicación en redes sociales (Facebook y X/Twitter), y gestión de conocimiento (Notion). Configura vía `config.json` o variables de entorno. Consulta [SOCIAL_MEDIA.es.md](SOCIAL_MEDIA.es.md) y [docs/NOTION_util.es.md](docs/NOTION_util.es.md) para guías de configuración.
+2026-03-26 🎉 **Validador de Config y Secret Masking**: Añadido comando `config validate` para validación de schema y enmascarado de secretos en el wizard de onboard. Ver [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-01 🎉 **PicoClaw v3.2.2 - Sentinel de Skills Nativo**: Añadida una capa de seguridad interna (`skills_sentinel.go`) que proporciona protección en tiempo real contra inyecciones de prompts y filtraciones del sistema.
-2026-03-01 🎉 **PicoClaw v3.2.1 - Refuerzo de Seguridad y Estabilidad**: Manejo robusto del cierre del bus de mensajes, procesamiento en segundo plano resiliente para la App de WeCom y validación de inicialización reforzada para la herramienta de consola.
-2026-03-01 🎉 **PicoClaw v3.2 - Seguridad Fail-Close**: Política de seguridad robusta. La herramienta de ejecución de comandos ahora realiza una validación estricta de los patrones de denegación durante la inicialización.
-2026-02-27 🎉 **PicoClaw v3.1 - Recuperación ante Desastres y Task Locks**: Se han implementado Task Locks atómicos para prevenir colisiones entre agentes, "Boot Rehydration" para recuperarse de caídas abruptas, y un Compactador de Contexto (que eleva el límite a 32K tokens de forma segura) para erradicar las explosiones de contexto en tareas de código largas.
+2026-03-26 🎉 **Comando Doctor**: Añadido comando `doctor` para diagnóstico de entorno incluyendo detección de WSL y verificaciones de seguridad. Ver [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-12 🎉 **Soporte Antigravity y Estabilidad**: Soporte completo de Google Antigravity OAuth con saneamiento de schema, corrección de deadlock TokenBudget, mejoras de rehidratación de sesión, nuevo comando `picoclaw-agents clean`, y patrones de denegación reforzados. Ver [CHANGELOG.md](CHANGELOG.md) para más detalles.
+
+2026-03-03 🎉 **Arquitectura de Skills Nativas**: Introducidas skills nativas compiladas directamente en el binario (`pkg/skills/queue_batch.go`), eliminando dependencias de archivos `.md` externos. Seguridad, rendimiento y type safety mejorados. Ver [docs/QUEUE_BATCH.es.md](docs/QUEUE_BATCH.es.md) y [local_work/crear_skill_interna.md](local_work/crear_skill_interna.md) para guía de desarrollador.
+
+2026-03-02 🎉 **Fast-path y Global Tracker**: Añadidos comandos Slash instantáneos (`/bundle_approve`, `/status`, etc.) para interacción sin latencia. Unificado el `ImageGenTracker` en todos los agentes para consistencia total de estado. Consulta [docs/queue_batch.md](docs/queue_batch.md).
+
+2026-03-01 🎉 **Generación de Imágenes con IA y Community Manager**: Añadida generación nativa de imágenes (Gemini/Ideogram), flujos de script-a-imagen, menús interactivos post-generación, y agente community manager para generar automáticamente publicaciones en redes sociales. Consulta [docs/IMAGE_GEN_util.es.md](docs/IMAGE_GEN_util.es.md) para configuración completa y ejemplos de uso.
+
+2026-03-01 🎉 **Integraciones Externas (Binance, Redes Sociales, Notion)**: Añadidas herramientas nativas para trading de criptomonedas (futuros y spot de Binance), publicación en redes sociales (Facebook y X/Twitter), y gestión de conocimiento (Notion). Configura vía `config.json` o variables de entorno. Consulta [SOCIAL_MEDIA.es.md](SOCIAL_MEDIA.es.md) y [docs/NOTION_util.es.md](docs/NOTION_util.es.md) para guías de configuración.
+
+2026-03-01 🎉 **Sentinel de Skills Nativo**: Añadida una capa de seguridad interna (`skills_sentinel.go`) que proporciona protección en tiempo real contra inyecciones de prompts y filtraciones del sistema.
+2026-03-01 🎉 **Refuerzo de Seguridad y Estabilidad**: Manejo robusto del cierre del bus de mensajes, procesamiento en segundo plano resiliente para la App de WeCom y validación de inicialización reforzada para la herramienta de consola.
+2026-03-01 🎉 **Seguridad Fail-Close**: Política de seguridad robusta. La herramienta de ejecución de comandos ahora realiza una validación estricta de los patrones de denegación durante la inicialización.
+
+2026-02-27 🎉 **Recuperación ante Desastres y Task Locks**: Se han implementado Task Locks atómicos para prevenir colisiones entre agentes, "Boot Rehydration" para recuperarse de caídas abruptas, y un Compactador de Contexto (que eleva el límite a 32K tokens de forma segura) para erradicar las explosiones de contexto en tareas de código largas.
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -94,6 +107,136 @@ PicoClaw gestionará automáticamente la jerarquía: **PM ➔ Senior Dev ➔ Esp
 
 > [!TIP]
 > **Echa un vistazo a los ejemplos:** Mira `config_dev.example.json` para un equipo estándar de DeepSeek, `config_dev_multiple_models.example.json` para un equipo con modelos mixtos (OpenAI, Anthropic y DeepSeek), y `config_context_management.example.json` para optimizar el uso de tokens en sesiones de código extensas.
+
+---
+
+### 🛠️ MCP Builder Agent - Construye Herramientas de IA Personalizadas
+
+**MCP Builder Agent** (`specialized-mcp-builder`) es un skill especializado en construir servidores del **Model Context Protocol (MCP)**. Crea herramientas personalizadas que extienden las capacidades de tu agente de IA: desde integraciones con APIs hasta acceso a bases de datos y automatización de flujos de trabajo.
+
+#### ¿Qué Puedes Construir?
+
+- 🔌 **Integraciones con APIs**: Conecta con Stripe, GitHub, Slack o cualquier API REST
+- 🗄️ **Acceso a Bases de Datos**: Expón datos de forma segura desde PostgreSQL, MySQL, MongoDB
+- 📁 **Operaciones de Archivos**: Acceso controlado de lectura/escritura a sistemas de archivos
+- 🔄 **Automatización de Flujos**: Automatiza procesos de negocio (facturas, órdenes, notificaciones)
+- 🎯 **Herramientas Personalizadas**: ¡Cualquier herramienta que tu imaginación pueda diseñar!
+
+#### Ejemplo Rápido: Servidor MCP para GitHub
+
+**1. Invocar MCP Builder:**
+
+```bash
+picoclaw-agents agent -m "Construye un servidor MCP para GitHub API con herramientas para: buscar repos, obtener commits, crear issues"
+```
+
+**2. Código Generado:**
+
+```typescript
+// github-server.ts
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+import { Octokit } from "octokit";
+
+const server = new McpServer({ name: "github-server", version: "1.0.0" });
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+server.tool(
+  "search_repositories",
+  { 
+    query: z.string().describe("Término de búsqueda"),
+    per_page: z.number().default(10)
+  },
+  async ({ query, per_page }) => {
+    const { data } = await octokit.request('GET /search/repositories', {
+      q: query,
+      per_page: Math.min(per_page, 100)
+    });
+    
+    return { 
+      content: [{ 
+        type: "text", 
+        text: JSON.stringify(data.items.map(repo => ({
+          name: repo.full_name,
+          stars: repo.stargazers_count,
+          url: repo.html_url
+        })), null, 2) 
+      }] 
+    };
+  }
+);
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+**3. Configurar en PicoClaw:**
+
+```json
+{
+  "tools": {
+    "mcp": {
+      "github": {
+        "command": "node",
+        "args": ["/path/to/github-server.ts"],
+        "env": {
+          "GITHUB_TOKEN": "ghp_..."
+        }
+      }
+    }
+  }
+}
+```
+
+**4. Usar con tu Agente:**
+
+```
+@agent Busca repositorios de machine learning con más de 1000 estrellas
+```
+
+**Resultado:**
+```
+Encontrados 15 repositorios:
+- tensorflow/tensorflow (178k estrellas)
+- pytorch/pytorch (85k estrellas)
+- scikit-learn/scikit-learn (58k estrellas)
+...
+```
+
+#### Mejores Prácticas
+
+✅ **HACER:**
+- Usar nombres descriptivos: `search_users_by_email` no `query1`
+- Validar todos los inputs con schemas Zod
+- Proporcionar descripciones detalladas de parámetros
+- Manejar errores gracefulmente con mensajes accionables
+- Escribir unit tests para cada herramienta
+
+❌ **NO HACER:**
+- Usar nombres genéricos como `tool1`, `do_stuff`
+- Omitir validación de inputs
+- Retornar mensajes de error crípticos
+- Depender de estado entre llamadas (mantener herramientas stateless)
+
+#### Documentación
+
+📖 **Guía Completa:** Consulta [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md) para:
+- Referencia completa de API
+- Ejemplos paso a paso (GitHub, PostgreSQL, Stripe)
+- Mejores prácticas y patrones
+- Estrategias de testing
+
+#### Skills Disponibles
+
+MCP Builder es uno de los **158+ skills especializados** disponibles en PicoClaw:
+
+- **Specialized**: `mcp-builder`, `salesforce-architect`, `blockchain-security-auditor`
+- **Engineering**: `backend-architect`, `devops-automator`, `security-engineer`
+- **Marketing**: `seo-specialist`, `social-media-strategist`, `content-creator`
+- **Support**: `legal-compliance-checker`, `finance-tracker`, `infrastructure-maintainer`
+
+Ver lista completa en [CHANGELOG.md](CHANGELOG.md#370---2026-03-26).
 
 
 ### 📱 Ejecución en teléfonos Android antiguos
@@ -381,6 +524,42 @@ Para tareas de programación pesadas, el rendimiento y la lógica son clave. Rec
 *   **Anthropic**: `Claude Haiku 4.5` (Rápido y fiable)
 
 > **Nota**: Consulta `config.example.json` para una plantilla de configuración completa.
+
+### 🧠 Skills Nativos (Opcional)
+
+Los skills nativos inyectan personas de IA especializadas directamente en el system prompt del agente. Cuando se activan, el agente "se convierte" en ese rol — sin archivos externos, todo compilado en el binario.
+
+**Actívalos en `~/.picoclaw/config.json`:**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "skills": ["backend_developer", "researcher"]
+    }
+  }
+}
+```
+
+**Los 13 skills nativos disponibles:**
+
+| Skill | Descripción |
+|-------|-------------|
+| `queue_batch` | Procesamiento por lotes y gestión de colas |
+| `agent_team_workflow` | Orquesta flujos de trabajo de equipos multi-agente |
+| `fullstack_developer` | Desarrollo web full-stack (frontend + backend) |
+| `n8n_workflow` | Diseño de flujos de automatización n8n |
+| `binance_mcp` | Trading en Binance vía protocolo MCP |
+| `researcher` | Investigación profunda, análisis y síntesis |
+| `backend_developer` | APIs REST, bases de datos, microservicios |
+| `frontend_developer` | React, Vue, CSS, patrones de UX |
+| `devops_engineer` | CI/CD, Docker, Kubernetes, IaC |
+| `security_engineer` | Revisiones de seguridad, modelado de amenazas |
+| `qa_engineer` | Estrategias de testing, automatización, calidad |
+| `data_engineer` | Pipelines, ETL, almacenes de datos |
+| `ml_engineer` | Desarrollo y despliegue de modelos ML/IA |
+
+> **Skills vs Herramientas:** Los skills inyectan contexto en el system prompt (el agente *se convierte* en el rol). Las herramientas son acciones invocables (funciones que el LLM puede llamar). Se configuran por separado: `"skills"` para roles, `"tools_override"` para herramientas invocables. Ver [`docs/SKILLS.md`](docs/SKILLS.md) para más detalles.
 
 **4. Chatear**
 
@@ -761,7 +940,7 @@ Incluso con `restrict_to_workspace: false`, la herramienta `exec` bloquea estos 
 * `shutdown`, `reboot`, `poweroff` — Apagado del sistema
 * Bomba Fork `:(){ :|:& };:`
 
-#### Protecciones de Infraestructura Core (v3.4.3+)
+#### Protecciones de Infraestructura Core
 
 La arquitectura multi-agente de PicoClaw incorpora múltiples parches de seguridad upstream para asegurar operaciones concurrentes seguras:
 * **Guardados Atómicos de Estado**: `memory/jsonl.go` y `state/state.go` persisten datos usando archivos temporales estrictos con `fsync` seguido de un `rename` atómico, eliminando por completo la corrupción de JSONs durante apagones o fallos de subagentes.
@@ -1306,7 +1485,7 @@ Ejemplo de configuración `mcp_servers` (usa la ruta absoluta de `picoclaw-agent
 
 Consulta nuestro [Mapa de Ruta](ROADMAP.md) completo.
 
-**Próximos Pasos (v3.4.2):**
+**Próximos Pasos:**
 
 - [ ] **URGENTE:** Añadir logging en social_post_bundle para debuggear generación de imágenes
 - [ ] Test manual: Verificar generación de imágenes con logging habilitado *(pendiente confirmación)*
