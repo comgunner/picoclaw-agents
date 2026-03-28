@@ -69,6 +69,23 @@ endif
 
 BINARY_PATH=$(BUILD_DIR)/$(BINARY_NAME)-$(PLATFORM)-$(ARCH)
 
+# Web Launcher variables
+# CGO is required for systray GUI on macOS and FreeBSD.
+# On other platforms, systray uses a stub and CGO=0 is sufficient.
+WEB_GO?=$(GO)
+ifeq ($(PLATFORM),darwin)
+	WEB_GO=CGO_ENABLED=1 go
+endif
+ifeq ($(PLATFORM),freebsd)
+	WEB_GO=CGO_ENABLED=1 go
+endif
+
+CONFIG_PKG=github.com/comgunner/picoclaw/pkg/config
+WEB_LDFLAGS=-ldflags "-X $(CONFIG_PKG).Version=$(VERSION) \
+	-X $(CONFIG_PKG).GitCommit=$(GIT_COMMIT) \
+	-X $(CONFIG_PKG).BuildTime=$(BUILD_TIME) \
+	-X $(CONFIG_PKG).GoVersion=$(GO_VERSION) -s -w"
+
 # Default target
 all: build
 
@@ -103,6 +120,48 @@ build-all: generate
 	GOOS=darwin GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 ./$(CMD_DIR)
 	GOOS=windows GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe ./$(CMD_DIR)
 	@echo "All builds complete"
+
+## build-launcher-tui: Build the TUI launcher binary (picoclaw-agents-launcher-tui)
+build-launcher-tui:
+	@echo "Building picoclaw-agents-launcher-tui for $(PLATFORM)/$(ARCH)..."
+	@mkdir -p $(BUILD_DIR)
+	@$(GO) build $(GOFLAGS) \
+		-o $(BUILD_DIR)/picoclaw-agents-launcher-tui-$(PLATFORM)-$(ARCH) \
+		./cmd/picoclaw-launcher-tui
+	@ln -sf picoclaw-agents-launcher-tui-$(PLATFORM)-$(ARCH) \
+		$(BUILD_DIR)/picoclaw-agents-launcher-tui
+	@echo "Build complete: $(BUILD_DIR)/picoclaw-agents-launcher-tui"
+
+## build-launcher: Build the WebUI launcher binary (picoclaw-agents-launcher)
+## Requires: Node.js 20+ and pnpm. Builds frontend automatically if needed.
+build-launcher:
+	@echo "Building picoclaw-agents-launcher for $(PLATFORM)/$(ARCH)..."
+	@mkdir -p $(BUILD_DIR)
+	@if [ ! -f web/backend/dist/index.html ]; then \
+		echo "Frontend assets not found — building frontend first..."; \
+		cd web/frontend && pnpm install && pnpm build:backend; \
+	fi
+	@$(WEB_GO) build $(GOFLAGS) $(WEB_LDFLAGS) \
+		-o $(BUILD_DIR)/picoclaw-agents-launcher-$(PLATFORM)-$(ARCH) \
+		./web/backend
+	@ln -sf picoclaw-agents-launcher-$(PLATFORM)-$(ARCH) \
+		$(BUILD_DIR)/picoclaw-agents-launcher
+	@echo "Build complete: $(BUILD_DIR)/picoclaw-agents-launcher"
+
+## dev-launcher-tui: Run the TUI launcher in development mode (no build step)
+dev-launcher-tui:
+	@echo "Starting PicoClaw-Agents TUI Launcher..."
+	@$(GO) run $(GOFLAGS) ./cmd/picoclaw-launcher-tui
+
+## dev-launcher: Run the WebUI launcher in development mode
+## Starts Vite dev server (hot reload) and Go backend simultaneously.
+dev-launcher:
+	@echo "Starting PicoClaw-Agents WebUI Launcher in dev mode..."
+	@echo "Frontend: http://localhost:5173 (proxied to http://localhost:18800)"
+	@echo "Backend:  http://localhost:18800"
+	@cd web/frontend && pnpm dev &
+	@sleep 1
+	@cd web/backend && $(WEB_GO) run -ldflags "-X $(CONFIG_PKG).Version=dev" . --console
 
 ## install: Install picoclaw to system and copy builtin skills
 install: build

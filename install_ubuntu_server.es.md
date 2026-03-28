@@ -247,6 +247,101 @@ journalctl -u picoclaw-agents.service -n 50
 
 ---
 
+## WebUI Launcher (Opcional — Interfaz Visual)
+
+El WebUI launcher proporciona una interfaz en el navegador para gestionar agentes, ver conversaciones y monitorear el sistema. Es **opcional** e independiente del servicio gateway anterior — ambos pueden correr simultáneamente.
+
+> **Advertencia de seguridad — Despliegues en VM / Cloud:**
+> El WebUI escucha en el puerto **18800**. **NO** expongas este puerto directamente a internet.
+> Aíslalo detrás de una VPN como [Tailscale](https://tailscale.com/) para que solo dispositivos autorizados puedan acceder.
+> Accede mediante tu IP de Tailscale: `http://<tailscale-ip>:18800`
+
+### Inicio Rápido
+
+```bash
+# Ejecutar el WebUI launcher (modo accesible en red)
+./build/picoclaw-agents-launcher -public
+
+# Luego abre en tu navegador (desde un dispositivo en la misma VPN):
+# http://<tailscale-ip>:18800
+```
+
+Presiona `Ctrl+C` para detener.
+
+### Ejecutar como Servicio (Systemd)
+
+Para mantener el WebUI corriendo en segundo plano y que se reinicie automáticamente:
+
+#### 1. Crear el archivo del servicio
+
+```bash
+cat <<EOF | sudo tee /etc/systemd/system/picoclaw-agents-launcher.service
+[Unit]
+Description=PicoClaw-Agents WebUI Launcher
+After=network.target
+
+[Service]
+# Directorio donde vive el binario
+WorkingDirectory=/opt/picoclaw-agents
+
+# Ruta completa al binario — -public habilita acceso en red en el puerto 18800
+ExecStart=/opt/picoclaw-agents/picoclaw-agents-launcher -public
+
+# El usuario que lo ejecuta
+User=$USER
+Group=$(id -gn)
+
+# Reiniciar automáticamente si falla
+Restart=always
+RestartSec=5
+
+# Logs en journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=picoclaw-agents-launcher
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+#### 2. Habilitar e iniciar
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable picoclaw-agents-launcher.service
+sudo systemctl start picoclaw-agents-launcher.service
+```
+
+#### 3. Ver estado y logs
+
+```bash
+# Ver estado
+sudo systemctl status picoclaw-agents-launcher.service
+
+# Ver logs en tiempo real
+journalctl -u picoclaw-agents-launcher.service -f
+```
+
+#### 4. Comandos útiles
+
+```bash
+# Detener servicio
+sudo systemctl stop picoclaw-agents-launcher.service
+
+# Reiniciar servicio
+sudo systemctl restart picoclaw-agents-launcher.service
+```
+
+> **Configuración de Tailscale (recomendado para VMs):**
+> ```bash
+> curl -fsSL https://tailscale.com/install.sh | sh
+> sudo tailscale up
+> # Luego accede: http://$(tailscale ip -4):18800
+> ```
+
+---
+
 ## Actualización
 
 ### Si usas Releases (Método 1)

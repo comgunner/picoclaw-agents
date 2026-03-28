@@ -6,6 +6,7 @@ before:
   hooks:
     - go mod tidy
     - go generate ./cmd/picoclaw/...
+    - sh -c 'cd web/frontend && pnpm install && pnpm build:backend'
 
 builds:
   - id: picoclaw
@@ -35,6 +36,62 @@ builds:
       - "7"
     binary: picoclaw-agents
     main: ./cmd/picoclaw
+    ignore:
+      - goos: windows
+        goarch: arm
+
+  - id: picoclaw-agents-launcher
+    binary: picoclaw-agents-launcher
+    env:
+      - CGO_ENABLED=0
+    tags:
+      - stdjson
+    ldflags:
+      - -s -w
+      - -X github.com/comgunner/picoclaw/pkg/config.Version={{ .Version }}
+      - -X github.com/comgunner/picoclaw/pkg/config.GitCommit={{ .ShortCommit }}
+      - -X github.com/comgunner/picoclaw/pkg/config.BuildTime={{ .Date }}
+      - -X github.com/comgunner/picoclaw/pkg/config.GoVersion={{ .Env.GOVERSION }}
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+      - riscv64
+      - loong64
+      - arm
+    goarm:
+      - "7"
+    main: ./web/backend
+    ignore:
+      - goos: windows
+        goarch: arm
+
+  - id: picoclaw-agents-launcher-tui
+    binary: picoclaw-agents-launcher-tui
+    env:
+      - CGO_ENABLED=0
+    tags:
+      - stdjson
+    ldflags:
+      - -s -w
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+      - riscv64
+      - loong64
+      - arm
+    goarm:
+      - "7"
+    main: ./cmd/picoclaw-launcher-tui
     ignore:
       - goos: windows
         goarch: arm

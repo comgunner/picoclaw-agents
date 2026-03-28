@@ -25,28 +25,34 @@
 
 ## 📢 Tin tức
 
-26-03-2026 🎉 **Tài liệu MCP Builder**: Tài liệu MCP Builder Agent hoàn chỉnh bằng tiếng Anh và Tây Ban Nha với tham chiếu API, trường hợp sử dụng và ví dụ. Xem [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md).
+2026-03-26 🎉 **Tài liệu MCP Builder**: Tài liệu MCP Builder Agent hoàn chỉnh bằng tiếng Anh và Tây Ban Nha với tham chiếu API, trường hợp sử dụng và ví dụ. Xem [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md).
 
-26-03-2026 🎉 **Lệnh Sandbox và Codegen**: Đã thêm `sandbox init/status` cho không gian làm việc biệt lập và `util codegen` để tạo mã Go. Xem [CHANGELOG.md](CHANGELOG.md).
+2026-03-26 🎉 **Lệnh Sandbox và Codegen**: Đã thêm `sandbox init/status` cho không gian làm việc biệt lập và `util codegen` để tạo mã Go. Xem [CHANGELOG.md](CHANGELOG.md).
 
-26-03-2026 🎉 **Giám sát Token Auth**: Đã thêm lệnh `auth tokens` và `auth monitor` để theo dõi hết hạn token OAuth. Xem [CHANGELOG.md](CHANGELOG.md).
+2026-03-26 🎉 **Giám sát Token Auth**: Đã thêm lệnh `auth tokens` và `auth monitor` để theo dõi hết hạn token OAuth. Xem [CHANGELOG.md](CHANGELOG.md).
 
-26-03-2026 🎉 **Trình kiểm tra Config và Secret Masking**: Đã thêm lệnh `config validate` để kiểm tra schema và che secret trong wizard onboard. Xem [CHANGELOG.md](CHANGELOG.md).
+2026-03-27 🎉 **Cải thiện chất lượng build và kênh**: `go build ./...` hiện chạy sạch không lỗi. Đã thêm API group trigger vào `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender` và `ShouldRespondInGroup` — kiểm soát chi tiết chat nhóm (chỉ mention, trigger theo tiền tố). Xem [CHANGELOG.md](CHANGELOG.md).
 
-26-03-2026 🎉 **Lệnh Doctor**: Đã thêm lệnh `doctor` để chẩn đoán môi trường bao gồm phát hiện WSL và kiểm tra bảo mật. Xem [CHANGELOG.md](CHANGELOG.md).
+2026-03-27 🎉 **WebUI Launcher hoạt động đầy đủ**: `picoclaw-agents-launcher` hoạt động từ đầu đến cuối — nút Start Gateway, chat WebSocket qua PicoChannel, nội dung skill bản địa trong trang Skills, và tất cả các mục menu được xác nhận. Chạy với `./build/picoclaw-agents-launcher` hoặc `./build/picoclaw-agents-launcher -public` để truy cập mạng.
 
-12-03-2026 🎉 **Hỗ trợ Antigravity và Ổn định**: Hỗ trợ OAuth Google Antigravity đầy đủ với vệ sinh schema, sửa deadlock TokenBudget, cải thiện tái hydrat hóa phiên, lệnh `picoclaw-agents clean` mới và các mẫu từ chối được củng cố. Xem [CHANGELOG.md](CHANGELOG.md) để biết chi tiết.
+2026-03-27 🎉 **Pipeline release 3 nhị phân**: GoReleaser giờ tạo ra cả ba nhị phân — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI) và `picoclaw-agents-launcher-tui` (TUI). Kích hoạt bằng `./scripts/create-release.sh`.
 
-03-03-2026 🎉 **Kiến trúc Kỹ năng Bản địa**: Giới thiệu các kỹ năng bản địa được biên dịch trực tiếp vào nhị phân (`pkg/skills/queue_batch.go`), loại bỏ các phụ thuộc tệp `.md` bên ngoài. Bảo mật, hiệu suất và an toàn kiểu được tăng cường. Xem [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
+2026-03-26 🎉 **Trình kiểm tra Config và Secret Masking**: Đã thêm lệnh `config validate` để kiểm tra schema và che secret trong wizard onboard. Xem [CHANGELOG.md](CHANGELOG.md).
 
-02-03-2026 🎉 **Lệnh Slash Fast-path và Bộ theo dõi Toàn cầu**: Đã thêm lệnh Slash tức thì (`/bundle_approve`, `/status`, v.v.) để tương tác độ trễ bằng không. Thống nhất `ImageGenTracker` trên tất cả các agent để nhất quán trạng thái multi-agent hoàn hảo. Xem [docs/queue_batch.md](docs/queue_batch.md).
+2026-03-26 🎉 **Lệnh Doctor**: Đã thêm lệnh `doctor` để chẩn đoán môi trường bao gồm phát hiện WSL và kiểm tra bảo mật. Xem [CHANGELOG.md](CHANGELOG.md).
 
-01-03-2026 🎉 **Tạo ảnh AI và Quản lý Cộng đồng**: Đã thêm tạo ảnh gốc (Gemini/Ideogram), quy trình script-to-ảnh, menu tương tác sau tạo và agent quản lý cộng đồng để tự động tạo bài đăng truyền thông xã hội. Xem [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+2026-03-12 🎉 **Hỗ trợ Antigravity và Ổn định**: Hỗ trợ OAuth Google Antigravity đầy đủ với vệ sinh schema, sửa deadlock TokenBudget, cải thiện tái hydrat hóa phiên, lệnh `picoclaw-agents clean` mới và các mẫu từ chối được củng cố. Xem [CHANGELOG.md](CHANGELOG.md) để biết chi tiết.
 
-01-03-2026 🎉 **Sentinel Kỹ năng Bản địa**: Đã thêm lớp bảo mật nội bộ bản địa (`skills_sentinel.go`) cung cấp khả năng bảo vệ dựa trên mẫu thời gian thực chống lại việc chèn prompt và rò rỉ hệ thống.
-01-03-2026 🎉 **Bảo mật Fail-Close & Độ ổn định**: Chính sách bảo mật mạnh mẽ. Công cụ thực thi lệnh hiện thực hiện xác thực nghiêm ngặt các mẫu từ chối trong quá trình khởi tạo.
+2026-03-03 🎉 **Kiến trúc Kỹ năng Bản địa**: Giới thiệu các kỹ năng bản địa được biên dịch trực tiếp vào nhị phân (`pkg/skills/queue_batch.go`), loại bỏ các phụ thuộc tệp `.md` bên ngoài. Bảo mật, hiệu suất và an toàn kiểu được tăng cường. Xem [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
 
-27-02-2026 🎉 **Phục hồi sau sự cố & Khóa tác vụ**: Triển khai Khóa tác vụ nguyên tử để ngăn chặn xung đột agent, "Boot Rehydration" để phục hồi từ các lỗi dừng đột ngột, và Bộ nén ngữ cảnh (nâng giới hạn lên 32K token một cách an toàn) để xóa bỏ tình trạng bùng nổ ngữ cảnh trong các tác vụ lập trình dài.
+2026-03-02 🎉 **Lệnh Slash Fast-path và Bộ theo dõi Toàn cầu**: Đã thêm lệnh Slash tức thì (`/bundle_approve`, `/status`, v.v.) để tương tác độ trễ bằng không. Thống nhất `ImageGenTracker` trên tất cả các agent để nhất quán trạng thái multi-agent hoàn hảo. Xem [docs/queue_batch.md](docs/queue_batch.md).
+
+2026-03-01 🎉 **Tạo ảnh AI và Quản lý Cộng đồng**: Đã thêm tạo ảnh gốc (Gemini/Ideogram), quy trình script-to-ảnh, menu tương tác sau tạo và agent quản lý cộng đồng để tự động tạo bài đăng truyền thông xã hội. Xem [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+
+2026-03-01 🎉 **Sentinel Kỹ năng Bản địa**: Đã thêm lớp bảo mật nội bộ bản địa (`skills_sentinel.go`) cung cấp khả năng bảo vệ dựa trên mẫu thời gian thực chống lại việc chèn prompt và rò rỉ hệ thống.
+2026-03-01 🎉 **Bảo mật Fail-Close & Độ ổn định**: Chính sách bảo mật mạnh mẽ. Công cụ thực thi lệnh hiện thực hiện xác thực nghiêm ngặt các mẫu từ chối trong quá trình khởi tạo.
+
+2026-02-27 🎉 **Phục hồi sau sự cố & Khóa tác vụ**: Triển khai Khóa tác vụ nguyên tử để ngăn chặn xung đột agent, "Boot Rehydration" để phục hồi từ các lỗi dừng đột ngột, và Bộ nén ngữ cảnh (nâng giới hạn lên 32K token một cách an toàn) để xóa bỏ tình trạng bùng nổ ngữ cảnh trong các tác vụ lập trình dài.
 
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
@@ -76,51 +82,78 @@
   </tr>
 </table>
 
-### 🚀 Quy trình Đa tác vụ nâng cao (Đội hình trong mơ "Dream Team")
+### 🚀 Trình Khởi Động
 
-Tận dụng kiến trúc subagent để triển khai một đội ngũ đầy đủ cho vòng đời phát triển phần mềm.
-
-**Đội "DevOps & QA" (Được hỗ trợ bởi [DeepSeek Reasoner](https://platform.deepseek.com)):**
-
-*   **`project_manager` (Trưởng nhóm)**: Có quyền tạo bất kỳ agent nào. Giám sát mục tiêu tổng quát và ủy thác các nhiệm vụ cấp dưới.
-*   **`senior_dev` (Động cơ)**: Chuyên gia kỹ thuật. Tạo QA Specialist để đánh giá mã hoặc Junior Fixer cho các tác vụ lặp lại.
-*   **`qa_specialist` (Vận hành & Kiểm thử)**: Logic chất lượng. Kiểm thử mã, tìm lỗi, đề xuất bản vá và quản lý triển khai GitHub.
-*   **`junior_fixer` (Trợ lý)**: Tập trung vào các bản vá nhỏ, tái cấu trúc và tài liệu dưới sự giám sát.
-*   **`general_worker` (Nền tảng)**: Agent đa năng cho các tác vụ thông thường, truy xuất thông tin và hỗ trợ cho phần còn lại của đội.
-
-**Sử dụng như thế nào?**
-Chỉ cần gửi một lệnh cấp cao cho Trưởng nhóm qua Telegram hoặc CLI:
-> *"Trưởng nhóm, tôi cần Senior Dev khắc phục lỗi cơ sở dữ liệu và yêu cầu QA Specialist xác nhận bản dựng trước khi đẩy lên GitHub."*
-
-PicoClaw sẽ tự động quản lý phân cấp: **PM ➔ Senior Dev ➔ QA Specialist (Sửa lỗi & Xuất bản).**
-
-> [!TIP]
-> **Kiểm tra các ví dụ:** Xem `config_dev.example.json` cho đội hình DeepSeek tiêu chuẩn, `config_dev_multiple_models.example.json` cho đội hình kết hợp các mô hình (OpenAI, Anthropic và DeepSeek), và `config_context_management.example.json` để tối ưu hóa việc sử dụng token trong các phiên lập trình dài.
+PicoClaw-Agents bao gồm hai trình khởi động đồ họa tùy chọn cho người dùng thích giao diện trực quan.
 
 
-### 📱 Chạy trên điện thoại Android cũ
+### 💻 TUI Launcher (Khuyến nghị cho Headless / SSH)
 
-Hồi sinh chiếc điện thoại mười năm tuổi của bạn! Biến nó thành Trợ lý AI thông minh với PicoClaw. Bắt đầu nhanh:
+TUI (Giao diện Terminal) Launcher cung cấp giao diện terminal đầy đủ tính năng để cấu hình
+và quản lý. Lý tưởng cho máy chủ, Raspberry Pi và môi trường không có màn hình.
 
-1. **Cài đặt Termux** (Có sẵn trên F-Droid hoặc Google Play).
-2. **Chạy các lệnh**
-
+**Build:**
 ```bash
-# Lưu ý: Thay thế v0.1.1 bằng phiên bản mới nhất từ trang Releases
-wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-agents_Linux_arm64
-chmod +x picoclaw-agents_Linux_arm64
-pkg install proot
-termux-chroot ./picoclaw-agents_Linux_arm64 onboard
+make build-launcher-tui
 ```
 
-Và sau đó làm theo hướng dẫn trong phần "Bắt đầu nhanh" để hoàn tất cấu hình!
-<img src="assets/termux.jpg" alt="PicoClaw" width="512">
+**Chạy:**
+```bash
+./build/picoclaw-agents-launcher-tui
+# Hoặc ở chế độ development
+make dev-launcher-tui
+```
 
-### 🐜 Triển khai sáng tạo tiêu tốn ít tài nguyên
+**Tính năng:**
+- Menu terminal tương tác (phím mũi tên + phím tắt)
+- Cấu hình mô hình AI
+- Quản lý kênh (Telegram, Discord, v.v.)
+- Điều khiển Gateway (khởi động/dừng daemon)
+- Chat tương tác với AI
+- Cấu hình dựa trên TOML
 
-PicoClaw có thể được triển khai trên hầu hết mọi thiết bị Linux, từ các bo mạch nhúng đơn giản đến các máy chủ mạnh mẽ.
+![TUI Launcher](assets/launcher-tui.jpg)
 
-🌟 Nhiều trường hợp triển khai hơn sẽ sớm ra mắt!
+---
+
+### 🌐 WebUI Launcher
+
+WebUI Launcher cung cấp giao diện dựa trên trình duyệt để cấu hình và chat.
+Không cần kiến thức về dòng lệnh.
+
+**Build Frontend:**
+```bash
+cd web/frontend
+pnpm install
+pnpm build:backend
+# Assets trong: web/backend/dist/
+```
+
+**Tính năng:**
+- Giao diện cấu hình dựa trên trình duyệt
+- Quản lý kênh trực quan
+- Bảng điều khiển Gateway
+- Trình xem lịch sử phiên
+- Quản lý skills
+- Cấu hình mô hình
+- Hỗ trợ đa ngôn ngữ (English, 简体中文，Español)
+
+**Sử Dụng:**
+```bash
+make build-launcher
+./build/picoclaw-agents-launcher
+# Mở http://localhost:18800 trong trình duyệt của bạn
+```
+
+> **Mẹo — Truy cập từ xa / Docker / VM**: Thêm cờ `-public` để lắng nghe trên tất cả các giao diện:
+> ```bash
+> picoclaw-agents-launcher -public
+> ```
+
+![WebUI Launcher](assets/launcher-webui.jpg)
+
+
+---
 
 ## 📦 Cài đặt
 
@@ -1334,7 +1367,6 @@ Ví dụ cấu hình `mcp_servers` (dùng đường dẫn tuyệt đối của `
 
 Xem [Lộ trình (Roadmap)](ROADMAP.md) đầy đủ.
 
-Discord: [Sắp ra mắt / Coming Soon]
 
 
 ## 🐛 Xử lý sự cố

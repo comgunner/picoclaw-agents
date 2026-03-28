@@ -204,6 +204,7 @@ func gatewayCmd(debug bool) error {
 	}
 
 	healthServer := health.NewServer(cfg.Gateway.Host, cfg.Gateway.Port)
+	channelManager.RegisterWebhooks(healthServer)
 	go func() {
 		if err := healthServer.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.ErrorCF("health", "Health server error", map[string]any{"error": err.Error()})

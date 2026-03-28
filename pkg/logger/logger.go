@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -263,4 +264,46 @@ func FatalF(message string, fields map[string]any) {
 
 func FatalCF(component string, message string, fields map[string]any) {
 	logMessage(FATAL, component, message, fields)
+}
+
+// Printf-style convenience wrappers used by web/backend.
+
+func Debugf(format string, args ...any) {
+	logMessage(DEBUG, "", fmt.Sprintf(format, args...), nil)
+}
+
+func Infof(format string, args ...any) {
+	logMessage(INFO, "", fmt.Sprintf(format, args...), nil)
+}
+
+func Warnf(format string, args ...any) {
+	logMessage(WARN, "", fmt.Sprintf(format, args...), nil)
+}
+
+func Errorf(format string, args ...any) {
+	logMessage(ERROR, "", fmt.Sprintf(format, args...), nil)
+}
+
+func Fatalf(format string, args ...any) {
+	logMessage(FATAL, "", fmt.Sprintf(format, args...), nil)
+}
+
+// SetConsoleLevel adjusts the minimum level written to stdout/stderr.
+// It is equivalent to SetLevel for this logger implementation.
+func SetConsoleLevel(level LogLevel) {
+	SetLevel(level)
+}
+
+// InitPanic redirects Go runtime panics to a file so they survive process crashes.
+// Returns a cleanup function (deferred by caller) that restores stdout/stderr.
+func InitPanic(path string) (func(), error) {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return func() {}, fmt.Errorf("InitPanic: mkdir %s: %w", filepath.Dir(path), err)
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	if err != nil {
+		return func() {}, fmt.Errorf("InitPanic: open %s: %w", path, err)
+	}
+	cleanup := func() { f.Close() }
+	return cleanup, nil
 }

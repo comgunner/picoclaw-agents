@@ -11,6 +11,7 @@ import (
 
 type Server struct {
 	server    *http.Server
+	mux       *http.ServeMux
 	mu        sync.RWMutex
 	ready     bool
 	checks    map[string]Check
@@ -27,12 +28,14 @@ type Check struct {
 type StatusResponse struct {
 	Status string           `json:"status"`
 	Uptime string           `json:"uptime"`
+	Pid    int              `json:"pid,omitempty"`
 	Checks map[string]Check `json:"checks,omitempty"`
 }
 
 func NewServer(host string, port int) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
+		mux:       mux,
 		ready:     false,
 		checks:    make(map[string]Check),
 		startTime: time.Now(),
@@ -50,6 +53,18 @@ func NewServer(host string, port int) *Server {
 	}
 
 	return s
+}
+
+// Handle registers the handler for the given pattern on the health server's mux.
+// This allows external components (e.g., channel WebSocket handlers) to be mounted
+// on the same HTTP port as the health/ready endpoints.
+func (s *Server) Handle(pattern string, handler http.Handler) {
+	s.mux.Handle(pattern, handler)
+}
+
+// HandleFunc registers the handler function for the given pattern on the health server's mux.
+func (s *Server) HandleFunc(pattern string, handler http.HandlerFunc) {
+	s.mux.HandleFunc(pattern, handler)
 }
 
 func (s *Server) Start() error {

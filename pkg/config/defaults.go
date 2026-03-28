@@ -180,7 +180,12 @@ func DefaultConfig() *Config {
 		Providers: ProvidersConfig{
 			OpenAI: OpenAIProviderConfig{WebSearch: true},
 		},
-		ModelList: []ModelConfig{},
+		ModelList: []ModelConfig{
+			{
+				ModelName: "default",
+				Model:     "openai/gpt-4o",
+			},
+		},
 		Gateway: GatewayConfig{
 			Host: "127.0.0.1",
 			Port: 18790,
@@ -207,6 +212,8 @@ func DefaultConfig() *Config {
 				ExecTimeoutMinutes: 5,
 			},
 			Exec: ExecConfig{
+				Enabled:            true,
+				AllowRemote:        true,
 				EnableDenyPatterns: true,
 			},
 			Skills: SkillsToolsConfig{

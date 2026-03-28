@@ -31,6 +31,12 @@
 
 2026-03-26 🎉 **Auth Token 监控**: 添加 `auth tokens` 和 `auth monitor` 命令用于 OAuth token 过期跟踪。查看 [CHANGELOG.md](CHANGELOG.md)。
 
+2026-03-27 🎉 **构建质量与频道改进**: `go build ./...` 现已完全通过。为 `BaseChannel` 添加了 group trigger API：`WithGroupTrigger`、`IsAllowedSender` 和 `ShouldRespondInGroup` — 支持精细的群组聊天控制（仅@提及、前缀触发）。查看 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-27 🎉 **WebUI 启动器完全正常运行**: `picoclaw-agents-launcher` 端到端工作 — Start Gateway 按钮、通过 PicoChannel 的 WebSocket 聊天、Skills 页面的原生技能内容，以及所有菜单部分经过验证。使用 `./build/picoclaw-agents-launcher` 或 `./build/picoclaw-agents-launcher -public` 运行。
+
+2026-03-27 🎉 **三个二进制文件发布管道**: GoReleaser 现在生成所有三个二进制文件 — `picoclaw-agents`（CLI）、`picoclaw-agents-launcher`（WebUI）和 `picoclaw-agents-launcher-tui`（TUI）。使用 `./scripts/create-release.sh` 触发。
+
 2026-03-26 🎉 **Config 验证器和 Secret Masking**: 添加 `config validate` 命令用于 schema 验证，在 onboard wizard 中添加密钥掩码。查看 [CHANGELOG.md](CHANGELOG.md)。
 
 2026-03-26 🎉 **Doctor 命令**: 添加 `doctor` 命令用于环境诊断，包括 WSL 检测和安全检查。查看 [CHANGELOG.md](CHANGELOG.md)。
@@ -120,7 +126,77 @@ termux-chroot ./picoclaw-agents_Linux_arm64 onboard
 
 PicoClaw 几乎可以部署在任何 Linux 设备上，从嵌入式板卡到高性能服务器。
 
-🌟 更多部署案例敬请期待！
+
+## 🚀 启动器
+
+PicoClaw-Agents 提供两个可选的图形启动器，适合偏好可视化界面的用户。
+
+
+### 💻 TUI 启动器（推荐无头 / SSH 环境）
+
+TUI（终端 UI）启动器提供完整的终端界面，用于配置和管理。适合服务器、树莓派等无显示器环境。
+
+**构建：**
+```bash
+make build-launcher-tui
+```
+
+**运行：**
+```bash
+./build/picoclaw-agents-launcher-tui
+# 或开发模式
+make dev-launcher-tui
+```
+
+**功能：**
+- 交互式终端菜单（方向键 + 快捷键）
+- AI 模型配置
+- 频道管理（Telegram、Discord 等）
+- Gateway 控制（启动/停止守护进程）
+- 与 AI 的交互式聊天
+- 基于 TOML 的配置
+
+![TUI Launcher](assets/launcher-tui.jpg)
+
+---
+
+### 🌐 WebUI 启动器
+
+WebUI 启动器提供基于浏览器的配置和对话界面。无需命令行知识。
+
+**构建前端：**
+```bash
+cd web/frontend
+pnpm install
+pnpm build:backend
+# 输出：web/backend/dist/
+```
+
+**功能：**
+- 基于浏览器的配置界面
+- 可视化频道管理
+- Gateway 控制面板
+- 会话历史查看器
+- Skills 管理
+- 模型配置
+- 多语言支持（English, 简体中文，Español）
+
+**用法：**
+```bash
+make build-launcher
+./build/picoclaw-agents-launcher
+# 在浏览器中打开 http://localhost:18800
+```
+
+> **提示 — 远程访问 / Docker / 虚拟机**：添加 `-public` 参数监听所有网络接口：
+> ```bash
+> picoclaw-agents-launcher -public
+> ```
+
+![WebUI Launcher](assets/launcher-webui.jpg)
+
+
+---
 
 ## 📦 安装
 
@@ -1336,7 +1412,6 @@ picoclaw-agents util binance-mcp-server
 
 查看完整的 [路线图 (Roadmap)](ROADMAP.md)。
 
-Discord: [即将推出 / Coming Soon]
 
 
 ## 🐛 故障排除

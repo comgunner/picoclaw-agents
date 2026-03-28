@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=PicoClaw-Agents Launcher
+Comment=Web-based configuration and management UI for PicoClaw
+Exec=picoclaw-agents-launcher
+Icon=picoclaw-agents-launcher
+Terminal=true
+Type=Application
+Categories=Utility;Network;
+Keywords=picoclaw;ai;agent;bot;

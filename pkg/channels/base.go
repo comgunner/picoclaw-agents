@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/comgunner/picoclaw/pkg/bus"
+	"github.com/comgunner/picoclaw/pkg/config"
 )
 
 type Channel interface {
@@ -25,22 +26,43 @@ type Channel interface {
 	IsAllowed(senderID string) bool
 }
 
-type BaseChannel struct {
-	config    any
-	bus       *bus.MessageBus
-	running   bool
-	name      string
-	allowList []string
+// BaseChannelOption is a functional option for configuring a BaseChannel.
+type BaseChannelOption func(*BaseChannel)
+
+// WithGroupTrigger sets the group trigger configuration on the channel.
+func WithGroupTrigger(gt config.GroupTriggerConfig) BaseChannelOption {
+	return func(c *BaseChannel) {
+		c.groupTrigger = gt
+	}
 }
 
-func NewBaseChannel(name string, config any, bus *bus.MessageBus, allowList []string) *BaseChannel {
-	return &BaseChannel{
-		config:    config,
-		bus:       bus,
+type BaseChannel struct {
+	config       any
+	bus          *bus.MessageBus
+	running      bool
+	name         string
+	allowList    []string
+	groupTrigger config.GroupTriggerConfig
+}
+
+func NewBaseChannel(
+	name string,
+	cfg any,
+	msgBus *bus.MessageBus,
+	allowList []string,
+	opts ...BaseChannelOption,
+) *BaseChannel {
+	c := &BaseChannel{
+		config:    cfg,
+		bus:       msgBus,
 		name:      name,
 		allowList: allowList,
 		running:   false,
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 func (c *BaseChannel) Name() string {
@@ -109,4 +131,58 @@ func (c *BaseChannel) HandleMessage(senderID, chatID, content string, media []st
 
 func (c *BaseChannel) setRunning(running bool) {
 	c.running = running
+}
+
+// IsAllowedSender checks whether a structured SenderInfo is in the allowList.
+// Supports plain PlatformID, canonical "platform:id", @username, and "id|username" formats.
+func (c *BaseChannel) IsAllowedSender(sender bus.SenderInfo) bool {
+	if len(c.allowList) == 0 {
+		return true
+	}
+	for _, entry := range c.allowList {
+		if entry == sender.CanonicalID || entry == sender.PlatformID {
+			return true
+		}
+		if strings.HasPrefix(entry, "@") && strings.TrimPrefix(entry, "@") == sender.Username {
+			return true
+		}
+		if idx := strings.Index(entry, "|"); idx > 0 {
+			id, user := entry[:idx], entry[idx+1:]
+			if id == sender.PlatformID || id == sender.CanonicalID || user == sender.Username {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// ShouldRespondInGroup decides whether the bot should respond to a group message,
+// and returns the content to use (with any trigger prefix stripped).
+//
+// Rules:
+//  1. If isMentioned: always respond, content unchanged.
+//  2. If content matches a configured prefix: respond, strip prefix.
+//  3. If prefixes are configured or MentionOnly is set: do NOT respond (no match).
+//  4. Default (no restrictions): respond permissively.
+func (c *BaseChannel) ShouldRespondInGroup(isMentioned bool, content string) (bool, string) {
+	if isMentioned {
+		return true, content
+	}
+
+	gt := c.groupTrigger
+	for _, prefix := range gt.Prefixes {
+		if prefix == "" {
+			continue
+		}
+		if strings.HasPrefix(content, prefix) {
+			stripped := strings.TrimLeft(content[len(prefix):], " ")
+			return true, stripped
+		}
+	}
+
+	if len(gt.Prefixes) > 0 || gt.MentionOnly {
+		return false, content
+	}
+
+	return true, content
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/comgunner/picoclaw/pkg/bus"
 	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/constants"
+	"github.com/comgunner/picoclaw/pkg/health"
 	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
@@ -205,6 +206,19 @@ func (m *Manager) initChannels() error {
 		}
 	}
 
+	if m.config.Channels.Pico.Enabled && m.config.Channels.Pico.Token() != "" {
+		logger.DebugC("channels", "Attempting to initialize Pico channel")
+		picoCh, err := NewPicoChannel(m.config.Channels.Pico, m.bus)
+		if err != nil {
+			logger.ErrorCF("channels", "Failed to initialize Pico channel", map[string]any{
+				"error": err.Error(),
+			})
+		} else {
+			m.channels["pico"] = picoCh
+			logger.InfoC("channels", "Pico channel enabled successfully")
+		}
+	}
+
 	logger.InfoCF("channels", "Channel initialization completed", map[string]any{
 		"enabled_channels": len(m.channels),
 	})
@@ -370,4 +384,21 @@ func (m *Manager) SendToChannel(ctx context.Context, channelName, chatID, conten
 	}
 
 	return channel.Send(ctx, msg)
+}
+
+// RegisterWebhooks mounts all WebhookHandler channels onto the provided health server.
+// This allows channels such as PicoChannel to serve WebSocket connections on the same
+// HTTP port as the health/ready endpoints, with no separate listener required.
+func (m *Manager) RegisterWebhooks(srv *health.Server) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for name, ch := range m.channels {
+		if wh, ok := ch.(WebhookHandler); ok {
+			srv.Handle(wh.WebhookPath(), wh)
+			logger.InfoCF("channels", "Webhook handler registered", map[string]any{
+				"channel": name,
+				"path":    wh.WebhookPath(),
+			})
+		}
+	}
 }

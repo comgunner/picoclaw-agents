@@ -11,12 +11,17 @@ release_assets/
 *.out
 /picoclaw
 build/picoclaw
+build/picoclaw-agents
+build/picoclaw-agents-launcher
+build/picoclaw-agents-launcher-tui
 cmd/picoclaw/picoclaw
+cmd/picoclaw-launcher-tui/picoclaw-launcher-tui
 /picoclaw-test
 cmd/**/workspace
 
 # PicoClaw Specific
 .picoclaw/
+pkg/channels/weixin_stub_backup/
 sessions/
 *.session
 *.db
@@ -137,6 +142,9 @@ scripts/*.sh
 !scripts/update-changelog.sh
 !scripts/update-readmes.sh
 !scripts/create-release.sh
+!scripts/build-macos-app.sh
+!scripts/test-docker-mcp.sh
+!scripts/test-irc.sh
 scripts/*.tar.gz
 scripts/*.zip
 scripts/*.bin
@@ -167,3 +175,4 @@ coverage.html
 .nyc_output/
 dupl_report.json
 dupl_report.json
+web/backend/backend

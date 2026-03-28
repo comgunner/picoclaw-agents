@@ -31,6 +31,12 @@
 
 2026-03-26 🎉 **Monitor de Tokens Auth**: Adicionados comandos `auth tokens` e `auth monitor` para rastreamento de expiração de tokens OAuth. Veja [CHANGELOG.md](CHANGELOG.md).
 
+2026-03-27 🎉 **Qualidade de build e melhorias de canais**: `go build ./...` agora passa sem erros. Adicionada API de group trigger ao `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender` e `ShouldRespondInGroup` — controle granular de chats de grupo (apenas menções, triggers por prefixo). Veja [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-27 🎉 **WebUI Launcher totalmente operacional**: `picoclaw-agents-launcher` funciona de ponta a ponta — botão Start Gateway, chat WebSocket via PicoChannel, conteúdo de skills nativas na página de Skills, e todas as seções do menu validadas. Execute com `./build/picoclaw-agents-launcher` ou `./build/picoclaw-agents-launcher -public` para acesso à rede.
+
+2026-03-27 🎉 **Pipeline de release com 3 binários**: GoReleaser agora produz todos os três binários — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI) e `picoclaw-agents-launcher-tui` (TUI). Trigger com `./scripts/create-release.sh`.
+
 2026-03-26 🎉 **Validador de Config e Secret Masking**: Adicionado comando `config validate` para validação de schema e mascaramento de segredos no wizard onboard. Veja [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-26 🎉 **Comando Doctor**: Adicionado comando `doctor` para diagnóstico de ambiente incluindo detecção WSL e verificações de segurança. Veja [CHANGELOG.md](CHANGELOG.md).
@@ -76,51 +82,78 @@
   </tr>
 </table>
 
-### 🚀 Fluxo Avançado Multi-Agente (O "Dream Team")
+### 🚀 Launchers
 
-Aproveite a arquitetura de subagentes para implantar uma equipe completa para o ciclo de vida do desenvolvimento de software.
-
-**A Equipe "DevOps & QA" (Alimentada pelo [DeepSeek Reasoner](https://platform.deepseek.com)):**
-
-*   **`project_manager` (Líder)**: Tem permissão para criar qualquer agente. Supervisiona o objetivo global e delega subtarefas.
-*   **`senior_dev` (O Motor)**: Especialista técnico. Cria o Especialista em QA para revisar código ou o Junior Fixer para tarefas rotineiras.
-*   **`qa_specialist` (Ops & Testes)**: Lógica de qualidade. Testa código, encontra bugs, propõe correções e gerencia implantações no GitHub.
-*   **`junior_fixer` (O Assistente)**: Foca em pequenas correções, refatoração e documentação sob supervisão.
-*   **`general_worker` (A Base)**: Agente versátil para tarefas comuns, recuperação de informações e suporte para o resto da equipe.
-
-**Como usar isso?**
-Basta enviar uma ordem de alto nível ao Líder via Telegram ou CLI:
-> *"Líder, preciso que o Senior Dev corrija o bug do banco de dados e que o especialista em QA verifique a compilação antes de subir para o GitHub."*
-
-O PicoClaw gerenciará automaticamente a hierarquia: **PM ➔ Senior Dev ➔ Especialista QA (Fix & Publish).**
-
-> [!TIP]
-> **Confira os exemplos:** Veja `config_dev.example.json` para uma equipe padrão do DeepSeek, `config_dev_multiple_models.example.json` para uma equipe com modelos mistos (OpenAI, Anthropic e DeepSeek) e `config_context_management.example.json` para otimizar o uso de tokens durante sessões de codificação extensas.
+O PicoClaw-Agents inclui dois launchers gráficos opcionais para usuários que preferem uma interface visual.
 
 
-### 📱 Execução em telefones Android antigos
+### 💻 TUI Launcher (Recomendado para Headless / SSH)
 
-Dê uma segunda vida ao seu telefone de dez anos atrás! Transforme-o em um Assistente de IA inteligente com o PicoClaw. Início rápido:
+O TUI (Interface de Terminal) Launcher fornece uma interface de terminal completa para configuração
+e gerenciamento. Ideal para servidores, Raspberry Pi e ambientes sem monitor.
 
-1. **Instale o Termux** (Disponível no F-Droid ou Google Play).
-2. **Execute os comandos**
-
+**Compilar:**
 ```bash
-# Nota: Substitua v0.1.1 pela versão mais recente da página de Releases
-wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-agents_Linux_arm64
-chmod +x picoclaw-agents_Linux_arm64
-pkg install proot
-termux-chroot ./picoclaw-agents_Linux_arm64 onboard
+make build-launcher-tui
 ```
 
-E então siga as instruções na seção "Início Rápido" para completar a configuração!
-<img src="assets/termux.jpg" alt="PicoClaw" width="512">
+**Executar:**
+```bash
+./build/picoclaw-agents-launcher-tui
+# Ou em modo de desenvolvimento
+make dev-launcher-tui
+```
 
-### 🐜 Implantação Inovadora de Baixo Consumo
+**Funcionalidades:**
+- Menu interativo de terminal (setas + atalhos)
+- Configuração de modelos de IA
+- Gerenciamento de canais (Telegram, Discord, etc.)
+- Controle do Gateway (iniciar/parar daemon)
+- Chat interativo com IA
+- Configuração baseada em TOML
 
-O PicoClaw pode ser implantado em quase qualquer dispositivo Linux, desde simples placas embarcadas até servidores potentes.
+![TUI Launcher](assets/launcher-tui.jpg)
 
-🌟 Mais casos de implantação em breve!
+---
+
+### 🌐 WebUI Launcher
+
+O WebUI Launcher fornece uma interface baseada em navegador para configuração e chat.
+Não é necessário conhecimento de linha de comando.
+
+**Compilar o Frontend:**
+```bash
+cd web/frontend
+pnpm install
+pnpm build:backend
+# Assets em: web/backend/dist/
+```
+
+**Funcionalidades:**
+- Interface de configuração baseada em navegador
+- Gerenciamento visual de canais
+- Painel de controle do Gateway
+- Visualizador de histórico de sessões
+- Gerenciamento de skills
+- Configuração de modelos
+- Suporte multi-idioma (English, 简体中文，Español)
+
+**Uso:**
+```bash
+make build-launcher
+./build/picoclaw-agents-launcher
+# Abra http://localhost:18800 no seu navegador
+```
+
+> **Dica — Acesso remoto / Docker / VM**: Adicione a flag `-public` para escutar em todas as interfaces:
+> ```bash
+> picoclaw-agents-launcher -public
+> ```
+
+![WebUI Launcher](assets/launcher-webui.jpg)
+
+
+---
 
 ## 📦 Instalação
 
@@ -1334,7 +1367,6 @@ Exemplo de configuração `mcp_servers` (use o caminho absoluto do `picoclaw-age
 
 Veja nosso [Roadmap](ROADMAP.md) completo.
 
-Discord: [Próximamente / Coming Soon]
 
 ## 🐛 Solução De Problemas
 

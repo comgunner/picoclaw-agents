@@ -31,6 +31,12 @@
 
 2026-03-26 🎉 **Moniteur de Tokens Auth** : Ajout des commandes `auth tokens` et `auth monitor` pour le suivi d'expiration des tokens OAuth. Voir [CHANGELOG.md](CHANGELOG.md).
 
+2026-03-27 🎉 **Qualité de build et améliorations des canaux** : `go build ./...` passe désormais sans erreur. Ajout de l'API group trigger à `BaseChannel` : `WithGroupTrigger`, `IsAllowedSender` et `ShouldRespondInGroup` — contrôle fin des chats de groupe (mention uniquement, triggers par préfixe). Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-27 🎉 **WebUI Launcher entièrement opérationnel** : `picoclaw-agents-launcher` fonctionne de bout en bout — bouton Start Gateway, chat WebSocket via PicoChannel, contenu des skills natives dans la page Skills, et toutes les sections du menu validées. Exécuter avec `./build/picoclaw-agents-launcher` ou `./build/picoclaw-agents-launcher -public` pour l'accès réseau.
+
+2026-03-27 🎉 **Pipeline de release avec 3 binaires** : GoReleaser produit désormais les trois binaires — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI) et `picoclaw-agents-launcher-tui` (TUI) — correspondant à la structure de releases du projet original. Déclencher avec `./scripts/create-release.sh`.
+
 2026-03-26 🎉 **Validateur de Config et Secret Masking** : Ajout de la commande `config validate` pour la validation de schema et le masquage des secrets dans le wizard onboard. Voir [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-26 🎉 **Commande Doctor** : Ajout de la commande `doctor` pour le diagnostic d'environnement incluant la détection WSL et les vérifications de sécurité. Voir [CHANGELOG.md](CHANGELOG.md).
@@ -120,7 +126,79 @@ Ensuite, suivez les instructions de la section "Démarrage Rapide" pour terminer
 
 PicoClaw peut être déployé sur presque n'importe quel appareil Linux, des simples cartes embarquées aux serveurs puissants.
 
-🌟 Plus de cas de déploiement à venir !
+
+## 🚀 Lanceurs
+
+PicoClaw-Agents inclut deux lanceurs graphiques optionnels pour les utilisateurs préférant une interface visuelle.
+
+
+### 💻 Lanceur TUI (Recommandé pour Headless / SSH)
+
+Le lanceur TUI (Interface Terminal) offre une interface de terminal complète pour la configuration
+et la gestion. Idéal pour les serveurs, Raspberry Pi et environnements sans écran.
+
+**Compiler :**
+```bash
+make build-launcher-tui
+```
+
+**Exécuter :**
+```bash
+./build/picoclaw-agents-launcher-tui
+# Ou en mode développement
+make dev-launcher-tui
+```
+
+**Fonctionnalités :**
+- Menu interactif terminal (flèches + raccourcis)
+- Configuration des modèles d'IA
+- Gestion des canaux (Telegram, Discord, etc.)
+- Contrôle du Gateway (démarrer/arrêter daemon)
+- Chat interactif avec l'IA
+- Configuration basée sur TOML
+
+![Lanceur TUI](assets/launcher-tui.jpg)
+
+---
+
+### 🌐 Lanceur WebUI
+
+Le lanceur WebUI fournit une interface basée sur navigateur pour la configuration et le chat.
+Aucune connaissance de la ligne de commande n'est requise.
+
+**Compiler le Frontend :**
+```bash
+cd web/frontend
+pnpm install
+pnpm build:backend
+# Assets dans : web/backend/dist/
+```
+
+**Fonctionnalités :**
+- Interface de configuration basée sur navigateur
+- Gestion visuelle des canaux
+- Panneau de contrôle du Gateway
+- Visualiseur d'historique des sessions
+- Gestion des skills
+- Configuration des modèles
+- Support multi-langue (English, 简体中文，Español)
+
+**Usage :**
+```bash
+make build-launcher
+./build/picoclaw-agents-launcher
+# Ouvrez http://localhost:18800 dans votre navigateur
+```
+
+> **Astuce — Accès distant / Docker / VM** : Ajoutez le drapeau `-public` pour écouter sur toutes les interfaces :
+> ```bash
+> picoclaw-agents-launcher -public
+> ```
+
+![Lanceur WebUI](assets/launcher-webui.jpg)
+
+
+---
 
 ## 📦 Installation
 
@@ -1334,7 +1412,6 @@ Exemple de configuration `mcp_servers` (utilisez le chemin absolu de `picoclaw-a
 
 Voir notre [Feuille de Route](ROADMAP.md) complète.
 
-Discord : [Próximamente / Coming Soon]
 
 ## 🐛 Dépannage
 

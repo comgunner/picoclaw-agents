@@ -31,6 +31,12 @@
 
 2026-03-26 🎉 **Auth Token モニター**: OAuth トークンの有効期限追跡用の `auth tokens` および `auth monitor` コマンドを追加。[CHANGELOG.md](CHANGELOG.md) を参照。
 
+2026-03-27 🎉 **ビルド品質とチャンネルの改善**: `go build ./...` がクリーンに通るようになりました。`BaseChannel` にグループトリガー API を追加：`WithGroupTrigger`、`IsAllowedSender`、`ShouldRespondInGroup` — メンション限定・プレフィックストリガーなど、グループチャットの細かい制御が可能に。[CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-27 🎉 **WebUI ランチャーが完全に稼働**: `picoclaw-agents-launcher` がエンドツーエンドで動作 — Start Gateway ボタン、PicoChannel 経由の WebSocket チャット、Skills ページのネイティブスキルコンテンツ、すべてのメニューセクションを検証済み。`./build/picoclaw-agents-launcher` または `./build/picoclaw-agents-launcher -public` で実行。
+
+2026-03-27 🎉 **3バイナリリリースパイプライン**: GoReleaser がすべての 3 つのバイナリを生成 — `picoclaw-agents`（CLI）、`picoclaw-agents-launcher`（WebUI）、`picoclaw-agents-launcher-tui`（TUI）。`./scripts/create-release.sh` でトリガー。
+
 2026-03-26 🎉 **Config バリデーターと Secret Masking**: スキーマ検証用の `config validate` コマンドと onboard ウィザードのシークレットマスキングを追加。[CHANGELOG.md](CHANGELOG.md) を参照。
 
 2026-03-26 🎉 **Doctor コマンド**: WSL 検出とセキュリティチェックを含む環境診断用の `doctor` コマンドを追加。[CHANGELOG.md](CHANGELOG.md) を参照。
@@ -76,51 +82,78 @@
   </tr>
 </table>
 
-### 🚀 高度なマルチエージェント・ワークフロー（「ドリームチーム」）
+### 🚀 ランチャー
 
-サブエージェント・アーキテクチャを活用して、ソフトウェア開発ライフサイクル・チーム全体をデプロイします。
-
-**「DevOps & QA」チーム（[DeepSeek Reasoner](https://platform.deepseek.com) を採用）:**
-
-*   **`project_manager` (リーダー)**: すべてのエージェントを生成する権限を持ちます。グローバルな目標を監視し、サブタスクを委譲します。
-*   **`senior_dev` (エンジン)**: 技術エキスパート。コードをレビューするための QA スペシャリスト、またはボイラープレート用の Junior Fixer を生成します。
-*   **`qa_specialist` (運用 & テスト)**: 品質ロジック。コードのテスト、バグの発見、修正の提案、および GitHub デプロイメントの管理を行います。
-*   **`junior_fixer` (アシスタント)**: 監視下で小さな修正、リファクタリング、およびドキュメント作成に集中します。
-*   **`general_worker` (土台)**: 一般的なタスク、情報検索、およびチームの残りのメンバーをサポートするための多才なエージェント。
-
-**使い方は？**
-Telegram または CLI を介してリーダーにハイレベルなコマンドを送信するだけです：
-> *"リーダー、Senior Devにデータベースのバグを修正させ、QAスペシャリストにGitHubへプッシュする前にビルドを検証させてください。"*
-
-PicoClaw は階層を自動的に管理します：**PM ➔ Senior Dev ➔ QA スペシャリスト (修正 & 公開)。**
-
-> [!TIP]
-> **例をチェック:** 標準的な DeepSeek チームについては `config_dev.example.json` を、複数モデル（OpenAI、Anthropic、DeepSeek）混合チームについては `config_dev_multiple_models.example.json` を、大規模なコーディングセッション中のトークン使用最適化については `config_context_management.example.json` を参照してください。
+PicoClaw-Agents には、ビジュアルインターフェースを好むユーザー向けに 2 つのオプションのグラフィカルランチャーが含まれています。
 
 
-### 📱 古い Android スマートフォンで動かす
+### 💻 TUI ランチャー（ヘッドレス / SSH 推奨）
 
-10年前のスマートフォンに第2の人生を！PicoClaw でスマートな AI アシスタントに変身させましょう。クイックスタート：
+TUI（ターミナル UI）ランチャーは、設定と管理のためのフル機能のターミナルインターフェースを提供します。
+サーバー、Raspberry Pi、ヘッドレス環境に最適です。
 
-1. **Termux をインストール** (F-Droid または Google Play から入手可能)。
-2. **コマンドを実行**
-
+**ビルド：**
 ```bash
-# 注意: v0.1.1 を Releases ページの最新バージョンに置き換えてください
-wget https://github.com/comgunner/picoclaw-agents/releases/download/v0.1.1/picoclaw-agents_Linux_arm64
-chmod +x picoclaw-agents_Linux_arm64
-pkg install proot
-termux-chroot ./picoclaw-agents_Linux_arm64 onboard
+make build-launcher-tui
 ```
 
-その後、「クイックスタート」セクションの指示に従って構成を完了してください！
-<img src="assets/termux.jpg" alt="PicoClaw" width="512">
+**実行：**
+```bash
+./build/picoclaw-agents-launcher-tui
+# または開発モード
+make dev-launcher-tui
+```
 
-### 🐜 革新的な低フットプリント・デプロイ
+**機能：**
+- 対話型ターミナルメニュー（矢印キー + ショートカット）
+- AI モデル設定
+- チャンネル管理（Telegram、Discord など）
+- Gateway 制御（デーモンの開始/停止）
+- AI との対話型チャット
+- TOML ベースの設定
 
-PicoClaw は、シンプルな組み込みボードから強力なサーバーまで、ほぼすべての Linux デバイスにデプロイできます。
+![TUI ランチャー](assets/launcher-tui.jpg)
 
-🌟 さらなるデプロイ事例も近日公開！
+---
+
+### 🌐 WebUI ランチャー
+
+WebUI ランチャーは、設定とチャットのためのブラウザベースのインターフェースを提供します。
+コマンドラインの知識は不要です。
+
+**フロントエンドをビルド：**
+```bash
+cd web/frontend
+pnpm install
+pnpm build:backend
+# 出力：web/backend/dist/
+```
+
+**機能：**
+- ブラウザベースの設定インターフェース
+- 視覚的なチャンネル管理
+- Gateway コントロールパネル
+- セッション履歴ビューア
+- スキル管理
+- モデル設定
+- 多言語サポート (English, 简体中文，Español)
+
+**使い方：**
+```bash
+make build-launcher
+./build/picoclaw-agents-launcher
+# ブラウザで http://localhost:18800 を開く
+```
+
+> **ヒント — リモートアクセス / Docker / VM**：すべてのインターフェースでリッスンするには `-public` フラグを追加：
+> ```bash
+> picoclaw-agents-launcher -public
+> ```
+
+![WebUI ランチャー](assets/launcher-webui.jpg)
+
+
+---
 
 ## 📦 インストール
 
@@ -1334,7 +1367,6 @@ picoclaw-agents util binance-mcp-server
 
 詳細な [ロードマップ](ROADMAP.md) をご覧ください。
 
-Discord: [近日公開予定 / Coming Soon]
 
 
 ## 🐛 トラブルシューティング

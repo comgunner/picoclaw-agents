@@ -73,6 +73,7 @@ type SkillsLoader struct {
 	globalSkills    string // global skills (~/.picoclaw/skills)
 	builtinSkills   string // builtin skills
 	embeddedFS      fs.FS  // embedded skills (//go:embed)
+	includeNative   bool   // whether to include compiled-in native skills
 }
 
 func NewSkillsLoader(workspace string, globalSkills string, builtinSkills string) *SkillsLoader {
@@ -82,6 +83,20 @@ func NewSkillsLoader(workspace string, globalSkills string, builtinSkills string
 		globalSkills:    globalSkills, // ~/.picoclaw/skills
 		builtinSkills:   builtinSkills,
 		embeddedFS:      GetEmbeddedSkillsFS(),
+		includeNative:   true,
+	}
+}
+
+// NewSkillsLoaderFiles creates a loader that only scans the file system
+// (workspace, global, builtin) without embedded or native compiled-in skills.
+func NewSkillsLoaderFiles(workspace string, globalSkills string, builtinSkills string) *SkillsLoader {
+	return &SkillsLoader{
+		workspace:       workspace,
+		workspaceSkills: filepath.Join(workspace, "skills"),
+		globalSkills:    globalSkills,
+		builtinSkills:   builtinSkills,
+		embeddedFS:      nil,
+		includeNative:   false,
 	}
 }
 
@@ -90,10 +105,12 @@ func (sl *SkillsLoader) ListSkills() []SkillInfo {
 	seen := make(map[string]bool)
 
 	// Add native compiled-in skills first
-	nativeSkills := sl.listNativeSkills()
-	for _, skill := range nativeSkills {
-		seen[skill.Name] = true
-		skills = append(skills, skill)
+	if sl.includeNative {
+		nativeSkills := sl.listNativeSkills()
+		for _, skill := range nativeSkills {
+			seen[skill.Name] = true
+			skills = append(skills, skill)
+		}
 	}
 
 	addSkills := func(dir, source string) {
@@ -625,6 +642,43 @@ func (sl *SkillsLoader) LoadNativeOdooDeveloperSkill() string {
 func (sl *SkillsLoader) BuildNativeOdooDeveloperSummary() string {
 	skill := GetOdooDeveloperSkill(sl.workspace)
 	return skill.BuildSummary()
+}
+
+// NativeSkillContent returns the full skill context for a compiled-in native skill by name.
+// Returns the content string and true if found, or ("", false) if the name is not a registered native skill.
+func (sl *SkillsLoader) NativeSkillContent(name string) (string, bool) {
+	switch name {
+	case "queue_batch":
+		return sl.LoadNativeQueueBatchSkill(), true
+	case "binance_mcp":
+		return sl.LoadNativeBinanceMCPSkill(), true
+	case "fullstack_developer":
+		return sl.LoadNativeFullStackDeveloperSkill(), true
+	case "n8n_workflow":
+		return sl.LoadNativeN8NWorkflowSkill(), true
+	case "agent_team_workflow":
+		return sl.LoadNativeAgentTeamWorkflowSkill(), true
+	case "researcher":
+		return sl.LoadNativeResearcherSkill(), true
+	case "backend_developer":
+		return sl.LoadNativeBackendDeveloperSkill(), true
+	case "frontend_developer":
+		return sl.LoadNativeFrontendDeveloperSkill(), true
+	case "devops_engineer":
+		return sl.LoadNativeDevOpsEngineerSkill(), true
+	case "security_engineer":
+		return sl.LoadNativeSecurityEngineerSkill(), true
+	case "qa_engineer":
+		return sl.LoadNativeQAEngineerSkill(), true
+	case "data_engineer":
+		return sl.LoadNativeDataEngineerSkill(), true
+	case "ml_engineer":
+		return sl.LoadNativeMLEngineerSkill(), true
+	case "odoo_developer":
+		return sl.LoadNativeOdooDeveloperSkill(), true
+	default:
+		return "", false
+	}
 }
 
 // listNativeSkills returns all native compiled-in skills.

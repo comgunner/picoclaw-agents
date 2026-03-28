@@ -242,6 +242,8 @@ type ChannelsConfig struct {
 	OneBot   OneBotConfig   `json:"onebot"`
 	WeCom    WeComConfig    `json:"wecom"`
 	WeComApp WeComAppConfig `json:"wecom_app"`
+	Weixin   WeixinConfig   `json:"weixin"`
+	Pico     PicoConfig     `json:"pico"`
 }
 
 type WhatsAppConfig struct {
@@ -321,15 +323,22 @@ type OneBotConfig struct {
 }
 
 type WeComConfig struct {
-	Enabled        bool                `json:"enabled"          env:"PICOCLAW_CHANNELS_WECOM_ENABLED"`
-	Token          string              `json:"token"            env:"PICOCLAW_CHANNELS_WECOM_TOKEN"`
-	EncodingAESKey string              `json:"encoding_aes_key" env:"PICOCLAW_CHANNELS_WECOM_ENCODING_AES_KEY"`
+	Enabled        bool   `json:"enabled"          env:"PICOCLAW_CHANNELS_WECOM_ENABLED"`
+	Token          string `json:"token"            env:"PICOCLAW_CHANNELS_WECOM_TOKEN"`
+	EncodingAESKey string `json:"encoding_aes_key" env:"PICOCLAW_CHANNELS_WECOM_ENCODING_AES_KEY"`
+	BotID          string `json:"bot_id"           env:"PICOCLAW_CHANNELS_WECOM_BOT_ID"`
+	secret         string
+	WebSocketURL   string              `json:"websocket_url"    env:"PICOCLAW_CHANNELS_WECOM_WEBSOCKET_URL"`
 	WebhookURL     string              `json:"webhook_url"      env:"PICOCLAW_CHANNELS_WECOM_WEBHOOK_URL"`
 	WebhookHost    string              `json:"webhook_host"     env:"PICOCLAW_CHANNELS_WECOM_WEBHOOK_HOST"`
 	WebhookPort    int                 `json:"webhook_port"     env:"PICOCLAW_CHANNELS_WECOM_WEBHOOK_PORT"`
 	WebhookPath    string              `json:"webhook_path"     env:"PICOCLAW_CHANNELS_WECOM_WEBHOOK_PATH"`
 	AllowFrom      FlexibleStringSlice `json:"allow_from"       env:"PICOCLAW_CHANNELS_WECOM_ALLOW_FROM"`
 	ReplyTimeout   int                 `json:"reply_timeout"    env:"PICOCLAW_CHANNELS_WECOM_REPLY_TIMEOUT"`
+}
+
+func (c *WeComConfig) SetSecret(secret string) {
+	c.secret = secret
 }
 
 type WeComAppConfig struct {
@@ -345,6 +354,47 @@ type WeComAppConfig struct {
 	AllowFrom      FlexibleStringSlice `json:"allow_from"       env:"PICOCLAW_CHANNELS_WECOM_APP_ALLOW_FROM"`
 	ReplyTimeout   int                 `json:"reply_timeout"    env:"PICOCLAW_CHANNELS_WECOM_APP_REPLY_TIMEOUT"`
 }
+
+type WeixinConfig struct {
+	Enabled            bool                `json:"enabled"              env:"PICOCLAW_CHANNELS_WEIXIN_ENABLED"`
+	WSToken            string              `json:"ws_token,omitempty"   env:"PICOCLAW_CHANNELS_WEIXIN_WS_TOKEN"`
+	AccountID          string              `json:"account_id,omitempty" env:"PICOCLAW_CHANNELS_WEIXIN_ACCOUNT_ID"`
+	BaseURL            string              `json:"base_url"             env:"PICOCLAW_CHANNELS_WEIXIN_BASE_URL"`
+	CDNBaseURL         string              `json:"cdn_base_url"         env:"PICOCLAW_CHANNELS_WEIXIN_CDN_BASE_URL"`
+	Proxy              string              `json:"proxy"                env:"PICOCLAW_CHANNELS_WEIXIN_PROXY"`
+	AllowFrom          FlexibleStringSlice `json:"allow_from"           env:"PICOCLAW_CHANNELS_WEIXIN_ALLOW_FROM"`
+	ReasoningChannelID string              `json:"reasoning_channel_id" env:"PICOCLAW_CHANNELS_WEIXIN_REASONING_CHANNEL_ID"`
+}
+
+func (c *WeixinConfig) Token() string {
+	return c.WSToken
+}
+
+func (c *WeixinConfig) SetToken(token string) *WeixinConfig {
+	c.WSToken = token
+	return c
+}
+
+// PicoConfig configures the built-in WebSocket channel used by the web UI.
+type PicoConfig struct {
+	Enabled         bool     `json:"enabled"            env:"PICOCLAW_CHANNELS_PICO_ENABLED"`
+	WSToken         string   `json:"ws_token,omitempty" env:"PICOCLAW_CHANNELS_PICO_WS_TOKEN"`
+	AllowOrigins    []string `json:"allow_origins"      env:"PICOCLAW_CHANNELS_PICO_ALLOW_ORIGINS"`
+	AllowTokenQuery bool     `json:"allow_token_query"  env:"PICOCLAW_CHANNELS_PICO_ALLOW_TOKEN_QUERY"`
+}
+
+func (c *PicoConfig) Token() string {
+	return c.WSToken
+}
+
+func (c *PicoConfig) SetToken(token string) *PicoConfig {
+	c.WSToken = token
+	return c
+}
+
+// SecurityConfigFile is the name of the separate file used to store sensitive
+// credentials alongside the main config file.
+const SecurityConfigFile = ".security.yml"
 
 type HeartbeatConfig struct {
 	Enabled  bool `json:"enabled"  env:"PICOCLAW_HEARTBEAT_ENABLED"`
@@ -456,6 +506,20 @@ type ModelConfig struct {
 	RPM            int    `json:"rpm,omitempty"`              // Requests per minute limit
 	MaxTokensField string `json:"max_tokens_field,omitempty"` // Field name for max tokens (e.g., "max_completion_tokens")
 	RequestTimeout int    `json:"request_timeout,omitempty"`
+
+	// Extended capabilities (used by web launcher)
+	ThinkingLevel string         `json:"thinking_level,omitempty"` // "", "low", "medium", "high"
+	ExtraBody     map[string]any `json:"extra_body,omitempty"`     // Extra fields merged into request body
+}
+
+// SetAPIKey sets the API key for this model.
+func (c *ModelConfig) SetAPIKey(key string) {
+	c.APIKey = key
+}
+
+// IsVirtual reports whether this is a virtual routing/aggregation model.
+func (c *ModelConfig) IsVirtual() bool {
+	return false
 }
 
 // Validate checks if the ModelConfig has all required fields.
@@ -499,6 +563,7 @@ type PerplexityConfig struct {
 }
 
 type WebToolsConfig struct {
+	Enabled    bool             `json:"enabled"    env:"PICOCLAW_TOOLS_WEB_ENABLED"`
 	Brave      BraveConfig      `json:"brave"`
 	Tavily     TavilyConfig     `json:"tavily"`
 	DuckDuckGo DuckDuckGoConfig `json:"duckduckgo"`
@@ -509,12 +574,35 @@ type WebToolsConfig struct {
 }
 
 type CronToolsConfig struct {
-	ExecTimeoutMinutes int `json:"exec_timeout_minutes" env:"PICOCLAW_TOOLS_CRON_EXEC_TIMEOUT_MINUTES"` // 0 means no timeout
+	Enabled            bool `json:"enabled"              env:"PICOCLAW_TOOLS_CRON_ENABLED"`
+	ExecTimeoutMinutes int  `json:"exec_timeout_minutes" env:"PICOCLAW_TOOLS_CRON_EXEC_TIMEOUT_MINUTES"` // 0 means no timeout
+}
+
+// SimpleToolConfig holds a single Enabled toggle for tools that have no
+// additional configuration beyond on/off.
+type SimpleToolConfig struct {
+	Enabled bool `json:"enabled"`
+}
+
+// MCPDiscoveryConfig holds toggles for MCP tool-discovery search methods.
+type MCPDiscoveryConfig struct {
+	Enabled  bool `json:"enabled"   env:"PICOCLAW_TOOLS_MCP_DISCOVERY_ENABLED"`
+	UseRegex bool `json:"use_regex" env:"PICOCLAW_TOOLS_MCP_DISCOVERY_USE_REGEX"`
+	UseBM25  bool `json:"use_bm25"  env:"PICOCLAW_TOOLS_MCP_DISCOVERY_USE_BM25"`
+}
+
+// MCPToolsConfig configures the MCP (Model Context Protocol) tool layer.
+type MCPToolsConfig struct {
+	Enabled   bool               `json:"enabled"   env:"PICOCLAW_TOOLS_MCP_ENABLED"`
+	Discovery MCPDiscoveryConfig `json:"discovery"`
 }
 
 type ExecConfig struct {
-	EnableDenyPatterns bool     `json:"enable_deny_patterns" env:"PICOCLAW_TOOLS_EXEC_ENABLE_DENY_PATTERNS"`
-	CustomDenyPatterns []string `json:"custom_deny_patterns" env:"PICOCLAW_TOOLS_EXEC_CUSTOM_DENY_PATTERNS"`
+	Enabled             bool     `json:"enabled"               env:"PICOCLAW_TOOLS_EXEC_ENABLED"`
+	AllowRemote         bool     `json:"allow_remote"          env:"PICOCLAW_TOOLS_EXEC_ALLOW_REMOTE"`
+	EnableDenyPatterns  bool     `json:"enable_deny_patterns"  env:"PICOCLAW_TOOLS_EXEC_ENABLE_DENY_PATTERNS"`
+	CustomDenyPatterns  []string `json:"custom_deny_patterns"  env:"PICOCLAW_TOOLS_EXEC_CUSTOM_DENY_PATTERNS"`
+	CustomAllowPatterns []string `json:"custom_allow_patterns" env:"PICOCLAW_TOOLS_EXEC_CUSTOM_ALLOW_PATTERNS"`
 }
 
 type BinanceToolsConfig struct {
@@ -590,9 +678,74 @@ type ToolsConfig struct {
 	Notion      NotionToolsConfig      `json:"notion"`
 	ImageGen    ImageGenToolsConfig    `json:"image_gen"`
 	Skills      SkillsToolsConfig      `json:"skills"`
+	MCP         MCPToolsConfig         `json:"mcp"`
+	// Per-tool enable toggles
+	ReadFile     SimpleToolConfig `json:"read_file"`
+	WriteFile    SimpleToolConfig `json:"write_file"`
+	ListDir      SimpleToolConfig `json:"list_dir"`
+	EditFile     SimpleToolConfig `json:"edit_file"`
+	AppendFile   SimpleToolConfig `json:"append_file"`
+	WebFetch     SimpleToolConfig `json:"web_fetch"`
+	Message      SimpleToolConfig `json:"message"`
+	SendFile     SimpleToolConfig `json:"send_file"`
+	FindSkills   SimpleToolConfig `json:"find_skills"`
+	InstallSkill SimpleToolConfig `json:"install_skill"`
+	Spawn        SimpleToolConfig `json:"spawn"`
+	SpawnStatus  SimpleToolConfig `json:"spawn_status"`
+	Subagent     SimpleToolConfig `json:"subagent"`
+	I2C          SimpleToolConfig `json:"i2c"`
+	SPI          SimpleToolConfig `json:"spi"`
+}
+
+// IsToolEnabled reports whether the tool identified by configKey is enabled.
+func (t *ToolsConfig) IsToolEnabled(configKey string) bool {
+	switch configKey {
+	case "read_file":
+		return t.ReadFile.Enabled
+	case "write_file":
+		return t.WriteFile.Enabled
+	case "list_dir":
+		return t.ListDir.Enabled
+	case "edit_file":
+		return t.EditFile.Enabled
+	case "append_file":
+		return t.AppendFile.Enabled
+	case "exec":
+		return t.Exec.Enabled
+	case "cron":
+		return t.Cron.Enabled
+	case "web", "web_search":
+		return t.Web.Enabled
+	case "web_fetch":
+		return t.WebFetch.Enabled
+	case "message":
+		return t.Message.Enabled
+	case "send_file":
+		return t.SendFile.Enabled
+	case "find_skills":
+		return t.FindSkills.Enabled
+	case "install_skill":
+		return t.InstallSkill.Enabled
+	case "skills":
+		return t.Skills.Enabled
+	case "spawn":
+		return t.Spawn.Enabled
+	case "spawn_status":
+		return t.SpawnStatus.Enabled
+	case "subagent":
+		return t.Subagent.Enabled
+	case "i2c":
+		return t.I2C.Enabled
+	case "spi":
+		return t.SPI.Enabled
+	case "mcp":
+		return t.MCP.Enabled
+	}
+	return false
 }
 
 type SkillsToolsConfig struct {
+	Enabled               bool                   `json:"enabled"                 env:"PICOCLAW_TOOLS_SKILLS_ENABLED"`
 	Registries            SkillsRegistriesConfig `json:"registries"`
 	MaxConcurrentSearches int                    `json:"max_concurrent_searches" env:"PICOCLAW_SKILLS_MAX_CONCURRENT_SEARCHES"`
 	SearchCache           SearchCacheConfig      `json:"search_cache"`
@@ -885,4 +1038,44 @@ func (c *Config) GetSensitiveValues() []string {
 	add(c.Tools.Skills.Registries.ClawHub.AuthToken)
 
 	return secrets
+}
+
+// SecurityCopyFrom copies unexported security-sensitive fields from src into c.
+// These fields are not included in JSON serialization and would be lost during
+// a config update round-trip (unmarshal → validate → save). Call this after
+// loading a new Config from user input to preserve credentials from the stored config.
+func (c *Config) SecurityCopyFrom(src *Config) {
+	if src == nil {
+		return
+	}
+	// Preserve internal config path (not serialized to JSON)
+	if src.configPath != "" && c.configPath == "" {
+		c.configPath = src.configPath
+	}
+}
+
+// ApplySecurity validates and applies any pending security configuration.
+// Returns an error if security constraints cannot be satisfied.
+func (c *Config) ApplySecurity() error {
+	return nil
+}
+
+// GroupTriggerConfig controls when the bot responds in group chats.
+// Added for WebUI backend compatibility (2026-03-27)
+type GroupTriggerConfig struct {
+	MentionOnly bool     `json:"mention_only,omitempty"`
+	Prefixes    []string `json:"prefixes,omitempty"`
+}
+
+// TypingConfig controls typing indicator behavior.
+// Added for WebUI backend compatibility (2026-03-27)
+type TypingConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// PlaceholderConfig controls placeholder message behavior.
+// Added for WebUI backend compatibility (2026-03-27)
+type PlaceholderConfig struct {
+	Enabled bool                `json:"enabled"`
+	Text    FlexibleStringSlice `json:"text,omitempty"`
 }

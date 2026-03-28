@@ -33,6 +33,12 @@
 
 ## 📢 News
 
+2026-03-27 🎉 **Build quality & channel improvements**: `go build ./...` now passes cleanly. Added group trigger API to `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, and `ShouldRespondInGroup` — enabling fine-grained group chat control (mention-only, prefix-based triggers). See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-27 🎉 **WebUI Launcher fully operational**: `picoclaw-agents-launcher` now works end-to-end — Start Gateway button, WebSocket chat via PicoChannel, native skill content in Skills page, and all menu sections validated. Run with `./build/picoclaw-agents-launcher` or `./build/picoclaw-agents-launcher -public` for network access.
+
+2026-03-27 🎉 **3-binary release pipeline**: GoReleaser now produces all three binaries — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI), and `picoclaw-agents-launcher-tui` (TUI) — matching the original project's release structure. Trigger with `./scripts/create-release.sh`.
+
 2026-03-26 🎉 **MCP Builder Documentation**: Complete MCP Builder Agent documentation in English and Spanish with API reference, use cases, and examples. See [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) and [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md).
 
 2026-03-26 🎉 **Sandbox & Codegen Commands**: Added `sandbox init/status` for isolated workspaces and `util codegen` for Go boilerplate generation. See [CHANGELOG.md](CHANGELOG.md) for full details.
@@ -45,7 +51,7 @@
 
 2026-03-12 🎉 **Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw-agents clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
 
-2026-03-03 🎉 **Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md) and [local_work/crear_skill_interna.md](local_work/crear_skill_interna.md) for developer guide.
+2026-03-03 🎉 **Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
 
 2026-03-02 🎉 **Fast-path & Global Tracker**: Added instant Slash Commands (`/bundle_approve`, `/status`, etc.) for zero-latency interaction. Unified the `ImageGenTracker` across all agents for perfect multi-agent state consistency. See [docs/queue_batch.md](docs/queue_batch.md).
 
@@ -261,7 +267,79 @@ And then follow the instructions in the "Quick Start" section to complete the co
 
 PicoClaw can be deployed on almost any Linux device, from simple embedded boards to powerful servers.
 
-🌟 More Deployment Cases Await！
+
+## 🚀 Launchers
+
+PicoClaw-Agents includes two optional graphical launchers for users who prefer a visual interface.
+
+
+### 💻 TUI Launcher (Recommended for Headless / SSH)
+
+The TUI (Terminal UI) Launcher provides a full-featured terminal interface for configuration
+and management. Ideal for servers, Raspberry Pi, and headless environments.
+
+**Build:**
+```bash
+make build-launcher-tui
+```
+
+**Run:**
+```bash
+./build/picoclaw-agents-launcher-tui
+# Or in development mode
+make dev-launcher-tui
+```
+
+**Features:**
+- Interactive terminal menu (arrow keys + hotkeys)
+- Model configuration
+- Channel management (Telegram, Discord, etc.)
+- Gateway control (start/stop daemon)
+- Interactive chat with AI
+- TOML-based configuration
+
+![TUI Launcher](assets/launcher-tui.jpg)
+
+---
+
+### 🌐 WebUI Launcher
+
+The WebUI Launcher provides a browser-based interface for configuration and chat.
+No command-line knowledge required.
+
+**Build Frontend:**
+```bash
+cd web/frontend
+pnpm install
+pnpm build:backend
+# Assets in: web/backend/dist/
+```
+
+**Features:**
+- Browser-based configuration UI
+- Visual channel management
+- Gateway control panel
+- Session history viewer
+- Skills management
+- Model configuration
+- Multi-language support (English, 简体中文，Español)
+
+**Usage:**
+```bash
+make build-launcher
+./build/picoclaw-agents-launcher
+# Open http://localhost:18800 in your browser
+```
+
+> **Tip — Remote access / Docker / VM**: Add the `-public` flag to listen on all interfaces:
+> ```bash
+> picoclaw-agents-launcher -public
+> ```
+
+![WebUI Launcher](assets/launcher-webui.jpg)
+
+
+---
 
 ## 📦 Install
 
@@ -1498,7 +1576,6 @@ Example `mcp_servers` config (use the absolute `picoclaw-agents` path generated 
 
 See our full [Roadmap](ROADMAP.md).
 
-Discord: [Próximamente / Coming Soon]
 
 
 

@@ -6,6 +6,7 @@ import (
 
 func NewGatewayCommand() *cobra.Command {
 	var debug bool
+	var allowEmpty bool
 
 	cmd := &cobra.Command{
 		Use:     "gateway",
@@ -18,6 +19,8 @@ func NewGatewayCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&debug, "debug", "d", false, "Enable debug logging")
+	cmd.Flags().
+		BoolVarP(&allowEmpty, "allow-empty", "E", false, "Continue starting even when no default model is configured")
 
 	return cmd
 }
