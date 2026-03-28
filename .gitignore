@@ -35,8 +35,8 @@ config/config.json
 config/*.json
 !config/*.example.json
 !config/config.example*.json
-secrets/
-credentials/
+/secrets/
+/credentials/
 *.pem
 *.key
 *.p12
@@ -93,7 +93,7 @@ history.db
 
 # Logs
 *.log
-logs/
+/logs/
 *.log.*
 
 # OS & IDE
