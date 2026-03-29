@@ -10,7 +10,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### 🔐 Auth: OAuth Token Auto-Refresh in `auth status`
 
-**Archivo modificado:** `cmd/picoclaw/internal/auth/helpers.go`
+**File modified:** `cmd/picoclaw/internal/auth/helpers.go`
 
 - `auth status` now silently refreshes expired/expiring OAuth tokens before displaying status
 - Previously showed `Status: expired` even when a valid `refresh_token` existed (stale disk state)
@@ -20,7 +20,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### 🤖 Agent: `--model` Flag Now Overrides All Per-Agent Models
 
-**Archivo modificado:** `cmd/picoclaw/internal/agent/helpers.go`
+**File modified:** `cmd/picoclaw/internal/agent/helpers.go`
 
 - Fixed: `--model antigravity` (or any provider) was creating the correct provider but individual
   agents still passed their config model name (e.g. `openrouter/free`) to the LLM → 404 errors
@@ -29,7 +29,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### 📋 Model List Expanded
 
-**Archivo modificado:** `~/.picoclaw/config.json` (runtime, not in repo)
+**File modified:** `~/.picoclaw/config.json` (runtime, not in repo)
 
 - Added homologated aliases: `openai` → `openai/gpt-5.2` (OAuth), `anthropic` → `anthropic/claude-sonnet-4.6`
 - Added antigravity variants: `antigravity-flash`, `antigravity-flash-agent`, `antigravity-gemini-2.5-flash`, `antigravity-claude-sonnet`
@@ -39,9 +39,9 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### 📄 Research Documentation
 
-**Archivos nuevos en `local_work/`:**
-- `problema-google-antigravity-oauth.md` — Análisis del token expirado en auth status (post-fixes)
-- `problema-anthropic-oauth.md` — Investigación OAuth Anthropic en repos hermanos (ninguno lo logró)
+**New files in `local_work/`:**
+- `problema-google-antigravity-oauth.md` — Analysis of expired token in auth status (post-fixes)
+- `problema-anthropic-oauth.md` — Anthropic OAuth research in sibling repos (none achieved it)
 
 ---
 
@@ -49,39 +49,39 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 #### **README Updates — All Languages**
 
-**Archivos modificados:** `README.md`, `README.es.md`, `README.ja.md`, `README.zh.md`, `README.fr.md`, `README.pt-br.md`, `README.vi.md`
+**Files modified:** `README.md`, `README.es.md`, `README.ja.md`, `README.zh.md`, `README.fr.md`, `README.pt-br.md`, `README.vi.md`
 
-- **Nueva sección:** "Using Multiple Models and Providers" / "Uso de Múltiples Modelos y Proveedores"
-- **Contenido:**
-  - Paso 1: Configurar proveedores (3 opciones)
+- **New section:** "Using Multiple Models and Providers"
+- **Content:**
+  - Step 1: Configure providers (3 options)
     - OpenRouter Free Tier (`picoclaw-agents onboard --free`)
     - Google Antigravity OAuth (`auth login --provider google-antigravity`)
     - OpenAI Codex OAuth (`auth login --provider openai --device-code`)
-  - Paso 2: Listar modelos disponibles (`picoclaw-agents models list`)
-  - Paso 3: Usar diferentes modelos (CLI y config.json)
-  - Guía de selección de modelos por caso de uso
-  - Instrucciones para cambiar entre modelos
-- **Tabla de modelos documentados:**
+  - Step 2: List available models (`picoclaw-agents models list`)
+  - Step 3: Use different models (CLI and config.json)
+  - Model selection guide by use case
+  - Instructions for switching between models
+- **Documented models table:**
   - `openrouter-free` (OpenRouter free tier)
   - `antigravity` (Google Antigravity OAuth)
   - `antigravity-flash`, `antigravity-flash-agent`
   - `antigravity-gemini-2.5-flash`
   - `antigravity-claude-sonnet`
-- **Advertencias incluidas:**
-  - OpenAI Codex requiere habilitar device code authorization en chatgpt.com/#settings/Security
-  - OpenRouter recomendado para comenzar (gratis, sin configuración)
+- **Included warnings:**
+  - OpenAI Codex requires enabling device code authorization at chatgpt.com/#settings/Security
+  - OpenRouter recommended for getting started (free, no configuration)
 
 #### **Version Numbers Removed from All READMEs**
 
-**Archivos modificados:** `README.md`, `README.es.md`, `README.ja.md`, `README.zh.md`, `README.fr.md`, `README.pt-br.md`, `README.vi.md`
+**Files modified:** `README.md`, `README.es.md`, `README.ja.md`, `README.zh.md`, `README.fr.md`, `README.pt-br.md`, `README.vi.md`
 
-- **Eliminado:** Todas las referencias a "v1.3.0-alpha" y similares
-- **Razón:** Acordado previamente - las fechas son suficientes
-- **Preservado:** Todas las fechas, features y contenido técnico
+- **Removed:** All references to "v1.3.0-alpha" and similar
+- **Reason:** Previously agreed - dates are sufficient
+- **Preserved:** All dates, features, and technical content
 
 ### 🗑️ ChatGPT OAuth Provider Removal
 
-**Archivos modificados:**
+**Files modified:**
 - `cmd/picoclaw/internal/auth/helpers.go`
 - `cmd/picoclaw/internal/auth/login.go`
 - `pkg/providers/factory_provider.go`
@@ -91,49 +91,49 @@ All notable changes to the PicoClaw project will be documented in this file.
 - Todos los READMEs (7 idiomas)
 
 **Cambios:**
-- Eliminado `--provider chatgpt` del código
+- Removed `--provider chatgpt` from code
 - Eliminadas funciones: `authLoginChatGPT()`, `isChatGPTModel()`, `createChatGPTAuthProvider()`, `ChatGPTOAuthConfig()`
 - Actualizado help text: "openai, anthropic, google-antigravity"
-- Documentación actualizada explicando limitaciones
-- **Razón:** Tokens OAuth de ChatGPT no funcionan con api.openai.com/v1
+- Documentation updated explaining limitations
+- **Reason:** ChatGPT OAuth tokens do not work with api.openai.com/v1
 - **Alternativas recomendadas:**
   - OpenRouter free tier (`picoclaw-agents onboard --free`)
   - OpenAI API Key (configurar manualmente)
   - OpenAI Codex OAuth (`auth login --provider openai`)
 
-**Limpieza de configuración:**
+**Configuration cleanup:**
 - Eliminadas credenciales de chatgpt de `~/.picoclaw/auth.json`
-- Eliminado modelo `chatgpt-gpt-4o` de `~/.picoclaw/config.json`
+- Removed modelo `chatgpt-gpt-4o` de `~/.picoclaw/config.json`
 
 ### 📁 Local Work Documentation Created
 
-**Archivos nuevos en `local_work/`:**
+**Files added en `local_work/`:**
 - `START_HERE.md` — Punto de entrada bilingüe (ES/EN)
-- `INDEX.md` — Índice maestro de documentos
+- `INDEX.md` — Master index of documents
 - `README.md` — Hub del directorio local_work
 - `CHANGELOG.md` — Changelog de local_work
 - `RESUMEN_ELIMINACION_CHATGPT_OAUTH.md` — Resumen ejecutivo (ES)
-- `chatgpt_oauth_removal_2026-03-28.md` — Documentación completa (EN)
+- `chatgpt_oauth_removal_2026-03-28.md` — Complete documentation (EN)
 - `chatgpt_codex_oauth_research.md` — Investigación técnica (EN)
 - `DOCUMENTATION_COMPLETE_SUMMARY.md` — Resumen final (EN)
-- `ALL_READMES_UPDATED_MULTIPLE_MODELS.md` — Actualización de READMEs (EN)
+- `ALL_READMES_UPDATED_MULTIPLE_MODELS.md` — READMEs update (EN)
 - `README_UPDATE_MULTIPLE_MODELS.md` — Borrador inicial (EN)
-- `VERSION_NUMBERS_REMOVED.md` — Eliminación de versiones (EN)
-- `chatgpt_oauth_analysis.md` — Análisis histórico (ES, deprecated)
+- `VERSION_NUMBERS_REMOVED.md` — Version removal (EN)
+- `chatgpt_oauth_analysis.md` — Historical analysis (ES, deprecated)
 
-**Total:** ~77KB de documentación nueva
+**Total:** ~77KB of new documentation
 
 ### 📝 CHANGELOG.md Cleanup
 
 **Archivo modificado:** `CHANGELOG.md`
 
 **Cambios:**
-- Eliminado header "Current Version: v1.3.0-alpha"
-- Eliminados números de versión de títulos de sección
-- Eliminado "v1.3.0-alpha" de todas las entradas
-- Eliminado "v1.2.1", "v1.2.0" de entradas anteriores
+- Removed header "Current Version: v1.3.0-alpha"
+- Removed números de versión de títulos de sección
+- Removed "v1.3.0-alpha" de todas las entradas
+- Removed "v1.2.1", "v1.2.0" de entradas anteriores
 - Actualizada descripción: "Feature milestones are tracked by date, not version numbers"
-- **Razón:** Consistencia con READMEs - las fechas son suficientes
+- **Reason:** Consistency with READMEs - dates are sufficient
 
 ---
 
@@ -141,23 +141,23 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 #### **Context Pruning — Tool Result Truncation**
 
-**Archivos nuevos:** `pkg/agent/context_pruner.go`, `pkg/agent/context_pruner_test.go`
+**Files added:** `pkg/agent/context_pruner.go`, `pkg/agent/context_pruner_test.go`
 
 - **Feature:** Recorta tool results voluminosos antes de enviar al LLM (en memoria, no modifica JSONL)
-- **Configuración:** `context_management.pruning.enabled`, `max_tool_result_chars`, `exclude_tools`, `aggressive_tools`
+- **Configuration:** `context_management.pruning.enabled`, `max_tool_result_chars`, `exclude_tools`, `aggressive_tools`
 - **Impacto:** -60% tokens desperdiciados en tool results grandes
 - **Tests:** 9 tests unitarios cubriendo todos los casos
 
 #### **Advanced Compaction Config**
 
-**Archivos modificados:** `pkg/config/config.go`, `pkg/config/defaults.go`
+**Files modified:** `pkg/config/config.go`, `pkg/config/defaults.go`
 
 - **Nuevos campos:**
   - `compaction.model` — Modelo para compactación (mismo proveedor, vacío = mismo modelo)
-  - `compaction.max_summary_tokens` — Tokens máximos para resumen (512 → 2048)
+  - `compaction.max_summary_tokens` — Max tokens for summary (512 → 2048)
   - `compaction.recent_turns_preserve` — Turnos recientes a preservar verbatim
   - `compaction.min_summary_quality` — Quality guard threshold
-  - `compaction.max_retries` — Reintentos máximos
+  - `compaction.max_retries` — Max retries
 - **Defaults actualizados:**
   - `min_completion_tokens`: 512 → 1024
   - `preserve_messages`: 20 → 30
@@ -167,21 +167,21 @@ All notable changes to the PicoClaw project will be documented in this file.
 **Archivo modificado:** `pkg/agent/loop.go`
 
 - **Comando:** `/compact [instrucciones]`
-- **Uso:** Fuerza compactación inmediata del contexto
+- **Uso:** Force compaction inmediata del contexto
 - **Ejemplo:** `/compact focus on API changes`
 
 #### **Session Manager: SetHistory**
 
 **Archivo modificado:** `pkg/session/manager.go`
 
-- **Método:** `SetHistory(key, messages)` — Reemplaza historial con versión compactada
+- **Método:** `SetHistory(key, messages)` — Replaces history with compacted version
 - **Deep copy:** Preserva integridad del estado interno
 
 ### 🚀 Sprint 2: Migrate Multi-Source
 
 #### **NanoClaw Migration Support**
 
-**Archivos nuevos:** `pkg/migrate/nanoclaw.go`
+**Files added:** `pkg/migrate/nanoclaw.go`
 
 - **Feature:** Migración desde nanoclaw (`~/.nanoclaw` o `~/.config/nanoclaw`)
 - **Flag:** `--from nanoclaw`
@@ -194,12 +194,12 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 #### **Migrate Command Extended**
 
-**Archivos modificados:** `pkg/migrate/migrate.go`, `cmd/picoclaw/internal/migrate/command.go`
+**Files modified:** `pkg/migrate/migrate.go`, `cmd/picoclaw/internal/migrate/command.go`
 
 - **Nuevos flags:**
-  - `--from openclaw|nanoclaw` — Origen de migración
+  - `--from openclaw|nanoclaw` — Migration source
   - `--nanoclaw-home` — Override nanoclaw home
-  - `--show-diff` — Mostrar diff de config en dry-run (pendiente implementación)
+  - `--show-diff` — Show config diff in dry-run (pending implementation)
 - **Dispatch:** Soporte para múltiples orígenes vía switch
 
 ### 🚀 Sprint 2: Onboard Wizard — Team Mode & Skills
@@ -270,7 +270,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 **Archivos:** `pkg/agent/context_compactor.go`, `pkg/utils/summary_cache.go`
 
 - **Problema:** El caché de resúmenes se guardaba pero nunca se leía — cada compactación llamaba al LLM innecesariamente
-- **Solución:** Agregado lookup de caché antes de llamar a `GenerateSummary()`
+- **Solution:** Added lookup de caché antes de llamar a `GenerateSummary()`
 - **Impacto:** ~40% menos llamadas al LLM en conversaciones largas, menor latencia y costo
 
 #### **BUG-02: FindSimilarSummary ignora sessionID (cross-session contamination)**
@@ -278,16 +278,16 @@ All notable changes to the PicoClaw project will be documented in this file.
 **Archivos:** `pkg/utils/summary_cache.go`, `pkg/utils/summary_cache_test.go`
 
 - **Problema:** `FindSimilarSummary()` retornaba resúmenes de cualquier sesión, no solo la sesión actual
-- **Solución:** Agregado parámetro `sessionID` al método y filtro por `sessionID && topic`
+- **Solution:** Added parámetro `sessionID` al método y filtro por `sessionID && topic`
 - **Impacto:** Elimina contaminación de contexto entre sesiones diferentes
-- **Tests:** Agregado test de regresión para verificar aislamiento entre sesiones
+- **Tests:** Added test de regresión para verificar aislamiento entre sesiones
 
 #### **BUG-03: Wizard no guarda configuración de Telegram/Discord en config.json**
 
 **Archivos:** `cmd/picoclaw/internal/onboard/wizard.go`
 
 - **Problema:** El token y userID se guardaban en variables locales que se descartaban, la sección `"channels"` nunca se escribía
-- **Solución:** Agregados campos `channelType`, `channelToken`, `channelUserID` al struct Wizard, escritura condicional en `saveConfig()`
+- **Solution:** Addeds campos `channelType`, `channelToken`, `channelUserID` al struct Wizard, escritura condicional en `saveConfig()`
 - **Impacto:** 100% de los usuarios ahora tienen su canal configurado correctamente tras el onboard
 - **Bonus:** `printSuccess()` ahora muestra el estado del canal configurado
 
@@ -296,16 +296,16 @@ All notable changes to the PicoClaw project will be documented in this file.
 **Archivos:** `pkg/channels/pico.go`, `pkg/channels/pico_test.go`
 
 - **Problema:** La función trataba igual "sin conexiones" (esperado) que "todas las conexiones fallaron" (error real)
-- **Solución:** Check temprano de `len(connections) == 0` retorna `nil`, solo retorna error si todas fallan
+- **Solution:** Check temprano de `len(connections) == 0` retorna `nil`, solo retorna error si todas fallan
 - **Impacto:** Elimina log noise y reintentos innecesarios cuando el WebUI no está abierto
-- **Tests:** Agregados 2 tests de regresión para ambos casos
+- **Tests:** Addeds 2 tests de regresión para ambos casos
 
 #### **BUG-05: logger.file.Write ignora error de escritura**
 
 **Archivos:** `pkg/logger/logger.go`
 
 - **Problema:** Error de escritura de archivo se ignoraba — disco lleno o permisos incorrectos causaban pérdida silenciosa de logs
-- **Solución:** Check explícito de error con fallback a stderr: `fmt.Fprintf(os.Stderr, "logger: file write failed: %v\n", werr)`
+- **Solution:** Check explícito de error con fallback a stderr: `fmt.Fprintf(os.Stderr, "logger: file write failed: %v\n", werr)`
 - **Impacto:** Ahora se detecta inmediatamente problemas de escritura de logs, permite alerta temprana de disco lleno
 
 #### **BUG-06: health server JSON encode sin check de error (4 sitios)**
@@ -313,9 +313,9 @@ All notable changes to the PicoClaw project will be documented in this file.
 **Archivos:** `pkg/health/server.go`
 
 - **Problema:** `json.NewEncoder(w).Encode(resp)` se llamaba sin verificar error — health checks podían recibir respuestas truncadas/vacías
-- **Solución:** 4 llamadas fixeadas con check de error y log a stderr
+- **Solution:** 4 llamadas fixeadas con check de error y log a stderr
 - **Impacto:** Health checks ahora son más confiables, errores de serialización se loggean para debugging
-- **Bonus:** Agregado `import "os"` para stderr logging
+- **Bonus:** Added `import "os"` para stderr logging
 
 **Documentación:** 
 - `local_work/bugfix_compaction_cache.md` (BUG-01, BUG-02)
@@ -345,7 +345,7 @@ Interfaz interactiva en terminal (tview/tcell) para configurar y controlar el ag
 
 - Binario: `picoclaw-agents-launcher-tui` (`build/picoclaw-agents-launcher-tui-darwin-arm64`)
 - Menú con teclas rápidas: MODEL, CHANNELS, GATEWAY, CHAT
-- Configuración TOML en `~/.picoclaw/`
+- Configuration TOML en `~/.picoclaw/`
 - Modo de uso: `./build/picoclaw-agents-launcher-tui`
 
 #### **GoReleaser — 3 binarios por plataforma**
@@ -390,7 +390,7 @@ Añadida sección "WebUI Launcher (Optional — Visual Interface)" con:
 ### 📝 Documentación
 
 - `docs/LAUNCHERS_IMPLEMENTATION_STATUS.md` — Actualizado: WebUI ahora ✅ COMPLETE (antes ⚠️ PARTIAL)
-- `README.md` y 6 traducciones (ES, FR, ZH, JA, PT-BR, VI) — Entradas 2026-03-27 añadidas, contenido irrelevante eliminado
+- `README.md` y 6 traducciones (ES, FR, ZH, JA, PT-BR, VI) — Entries 2026-03-27 añadidas, contenido irrelevante eliminado
 - `install_ubuntu_server.md` / `.es.md` — Sección WebUI launcher añadida
 
 ---
@@ -416,23 +416,23 @@ El build completo (`./...`) fallaba con EXIT 1. `go vet ./...` tenía 3 errores 
 
 **Estado post-fixes:** `go build ./... EXIT: 0` | `go vet ./... EXIT: 0`
 
-**Archivos modificados:**
+**Files modified:**
 - `local_work/weixin_port_incomplete/api.go`, `auth.go`, `media.go`, `state.go`, `types.go`, `weixin_test.go`
 - `pkg/auth/oauth_test.go`
 - `pkg/channels/base.go`
 - `web/backend/api/weixin_test.go`
 
-#### **READMEs — Eliminado contenido irrelevante (7 idiomas)**
+#### **READMEs — Removed contenido irrelevante (7 idiomas)**
 
 Limpieza de todos los `README*.md` (EN, ES, ZH, FR, JA, PT-BR, VI):
 
-- Eliminados status badges de desarrollo (`TUI Launcher ✅ PRODUCTION READY | WebUI Launcher ✅ FULLY FUNCTIONAL (99%...)`)
+- Removed status badges de desarrollo (`TUI Launcher ✅ PRODUCTION READY | WebUI Launcher ✅ FULLY FUNCTIONAL (99%...)`)
 - Limpiados encabezados de sección con estado interno (`### 🌐 WebUI Launcher (✅ FUNCIONA - Características Avanzadas Opcionales)`)
 - Eliminadas líneas "Current Status: ✅ FULLY FUNCTIONAL"
 - Renombradas secciones "Working Features:" → "Features:" y eliminados los ✅ de cada ítem
 - Eliminadas notas "Optional Advanced Features:" que referenciaban `docs/LAUNCHERS_IMPLEMENTATION_STATUS.md`
-- Eliminados enlaces a `local_work/` desde items de noticias (archivos internos, no públicos)
-- Eliminado placeholder `Discord: [Próximamente / Coming Soon]` de todos los archivos
+- Removed enlaces a `local_work/` desde items de noticias (internal files, not public)
+- Removed placeholder `Discord: [Próximamente / Coming Soon]` de todos los archivos
 - Eliminadas líneas "🌟 More Deployment Cases Await！" y equivalentes
 
 ### 📦 Builds
@@ -484,7 +484,7 @@ Limpieza de todos los `README*.md` (EN, ES, ZH, FR, JA, PT-BR, VI):
 #### **Español en WebUI Launcher** (i18n)
 - **Soporte de idioma español** agregado al WebUI Launcher
   - `web/frontend/src/i18n/locales/es.json` — 531 líneas, ~325+ traducciones
-  - `web/frontend/src/i18n/index.ts` — Configuración i18n actualizada con locale español
+  - `web/frontend/src/i18n/index.ts` — Configuration i18n actualizada con locale español
   - `web/frontend/src/components/app-header.tsx` — Selector de idiomas actualizado
   - Selector muestra: **English**, **简体中文**, **Español**
   - DayJS locale switching para fechas en español
@@ -502,7 +502,7 @@ Limpieza de todos los `README*.md` (EN, ES, ZH, FR, JA, PT-BR, VI):
 - ✅ Selector de idiomas muestra 3 opciones (English, 简体中文，Español)
 - ✅ Al seleccionar "Español", toda la UI se traduce
 - ✅ Navegación entre páginas funciona
-- ✅ Configuración de modelos y canales accesible
+- ✅ Configuration de modelos y canales accesible
 
 ### 🛠️ Core Improvements
 
@@ -512,8 +512,8 @@ Limpieza de todos los `README*.md` (EN, ES, ZH, FR, JA, PT-BR, VI):
 - `pkg/media/` — Almacenamiento de medios (3 archivos)
 - `pkg/config/version.go` — Variables de versión build-time
 - `pkg/config/envkeys.go` — Constantes de entorno
-- `pkg/bus/types.go` — Agregado `SenderInfo` struct
-- `pkg/config/config.go` — Agregado `WeixinConfig` struct
+- `pkg/bus/types.go` — Added `SenderInfo` struct
+- `pkg/config/config.go` — Added `WeixinConfig` struct
 
 #### **Scripts Portados** (desde `picoclaw_original/scripts/`)
 - `scripts/build-macos-app.sh` — Crea bundle `.app` para macOS
@@ -543,12 +543,12 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
 - `docs/LAUNCHERS_IMPLEMENTATION_STATUS.md` — Estado técnico completo de launchers
   - Arquitectura y cambios estructurales
   - Dependencias agregadas
-  - Guía de uso para TUI y WebUI
+  - Guide de uso para TUI y WebUI
   - Próximos pasos para completar WebUI Backend
 
 - `local_work/IMPLEMENTACION_ESPANOL_WEBUI_2026-03-27.md` — Resumen ejecutivo del español
   - Objetivo y estado
-  - Resumen de cambios (archivos creados/modificados)
+  - Summary of changes (archivos creados/modificados)
   - Builds generados
   - Comandos de build
   - Testing checklist
@@ -562,7 +562,7 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
   - Checklist de aceptación
 
 - `local_work/SCRIPTS_PORTADOS_2026-03-27.md` — Scripts portados
-  - Resumen de cambios
+  - Summary of changes
   - Referencias actualizadas
   - Testing de scripts
 
@@ -572,7 +572,7 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
   - Build para macOS ARM64
   - Testing checklist
 
-- `local_work/DOCUMENTACION_ACTUALIZADA_2026-03-27.md` — Actualización de READMEs
+- `local_work/DOCUMENTACION_ACTUALIZADA_2026-03-27.md` — READMEs update
   - 7 READMEs actualizados (EN, ES, ZH, FR, JA, PT-BR, VI)
   - Sección de Launchers agregada
   - Status banner con fecha 2026-03-27
@@ -612,14 +612,14 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
 
 ### 📊 Métricas
 
-**Archivos Creados:**
+**Files Created:**
 - TUI Launcher: 9 archivos Go
 - WebUI Backend: 49 archivos Go
 - WebUI Frontend: 19 archivos (React app)
 - Scripts: 5 archivos
 - Documentación: 6 archivos técnicos
 
-**Archivos Modificados:**
+**Files Modified:**
 - `go.mod`, `go.sum` (7 dependencias nuevas)
 - `pkg/bus/types.go`, `pkg/config/config.go`
 - `Makefile` (4 targets nuevos)
@@ -636,7 +636,7 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
 
 ### ⚠️ Notas
 
-**WeChat (weixin):** Rutas deshabilitadas en `web/backend/api/router.go`. Stub funcional compila correctamente. No afecta a ningún canal fuera de China. Ver `local_work/SOLUCION_4_PAQUETES_PENDIENTES_WEBUI.md` para instrucciones de activación.
+**WeChat (weixin):** Rutas deshabilitadas en `web/backend/api/router.go`. Functional stub compila correctamente. Does not affect any channels outside China. Ver `local_work/SOLUCION_4_PAQUETES_PENDIENTES_WEBUI.md` para instrucciones de activación.
 
 ---
 
@@ -670,7 +670,7 @@ picoclaw-agents agent -m "Build an MCP server for GitHub API"
 - `docs/NATIVE_SKILLS_LIST.md` — Complete list of all 14 native skills (English)
 - `docs/NATIVE_SKILLS_LIST.es.md` — Lista completa de 14 skills nativas (Spanish)
 - `docs/SKILLS.md` — Updated to  with 14 skills (English)
-- `docs/SKILLS.es.md` — Guía actualizada  con 14 skills (Spanish)
+- `docs/SKILLS.es.md` — Guide actualizada  con 14 skills (Spanish)
 
 **Native Skills Catalog ():**
 
