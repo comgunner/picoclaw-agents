@@ -116,7 +116,13 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 		if len(cfg.ExtraBody) > 0 {
 			opts = append(opts, openai_compat.WithExtraBody(cfg.ExtraBody))
 		}
-		return &HTTPProvider{delegate: openai_compat.NewProvider(cfg.APIKey, apiBase, cfg.Proxy, opts...)}, modelID, nil
+		// For OpenRouter, pass the full model name (e.g., "openrouter/free") instead of just the model ID
+		// because normalizeModel() in openai_compat/provider.go preserves the full name when apiBase contains "openrouter.ai"
+		modelForProvider := modelID
+		if protocol == "openrouter" {
+			modelForProvider = cfg.Model
+		}
+		return &HTTPProvider{delegate: openai_compat.NewProvider(cfg.APIKey, apiBase, cfg.Proxy, opts...)}, modelForProvider, nil
 
 	case "anthropic":
 		if cfg.AuthMethod == "oauth" || cfg.AuthMethod == "token" {

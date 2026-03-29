@@ -357,6 +357,12 @@ func normalizeModel(model, apiBase string) string {
 		return model
 	}
 
+	// ALWAYS keep "openrouter/auto" and "openrouter/free" as they are special routing aliases
+	lowerModel := strings.ToLower(model)
+	if lowerModel == "openrouter/auto" || lowerModel == "openrouter/free" {
+		return lowerModel
+	}
+
 	// If apiBase is for OpenRouter, keep the full model name (e.g., "openrouter/auto")
 	if strings.Contains(strings.ToLower(apiBase), "openrouter.ai") {
 		return model

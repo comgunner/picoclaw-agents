@@ -57,6 +57,11 @@ func (r *RouteResolver) ResolveRoute(input RouteInput) ResolvedRoute {
 	if dmScope == "" {
 		dmScope = DMScopeMain
 	}
+	// Pico channel always uses per-channel-peer so each browser session
+	// gets its own history file, regardless of the global DMScope config.
+	if channel == "pico" {
+		dmScope = DMScopePerChannelPeer
+	}
 	identityLinks := r.cfg.Session.IdentityLinks
 
 	bindings := r.filterBindings(channel, accountID)

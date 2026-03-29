@@ -1375,7 +1375,7 @@ func OpenRouterDefaultConfig() *Config {
 
 // OpenRouterFreeDefaultConfig returns a configuration template that uses only
 // OpenRouter free-tier models — no API balance required.
-// Uses "openrouter/free" with require_parameters:true so OpenRouter routes only
+// Uses "openrouter/auto" with require_parameters:true so OpenRouter routes only
 // to free models that support function/tool calling.
 func OpenRouterFreeDefaultConfig() *Config {
 	cfg := TemplateDefaultConfig()
@@ -1388,7 +1388,7 @@ func OpenRouterFreeDefaultConfig() *Config {
 	cfg.ModelList = []ModelConfig{
 		{
 			ModelName: "openrouter-free",
-			Model:     "openrouter/free",
+			Model:     "openrouter/auto",
 			APIBase:   "https://openrouter.ai/api/v1",
 			APIKey:    "",
 			// require_parameters: true tells OpenRouter to route only to

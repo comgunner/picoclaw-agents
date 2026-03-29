@@ -59,35 +59,95 @@ type sessionMetaFile struct {
 // The sanitized filename replaces ':' with '_', so on disk it becomes:
 //
 //	agent_main_pico_direct_pico_<session-uuid>.json
+//
+// After the fix (2026-03-29), the format was simplified to:
+//
+//	agent:main:pico:direct:<session-uuid>
+//	agent_main_pico_direct_<session-uuid>.jsonl (on disk)
 const (
-	picoSessionPrefix          = "agent:main:pico:direct:pico:"
-	sanitizedPicoSessionPrefix = "agent_main_pico_direct_pico_"
+	// picoSessionPrefix is the session key prefix for the Pico WebSocket channel.
+	// Format: agent:<agentID>:pico:direct:<session-uuid>
+	// For the default single-agent config (agentID="main"):
+	//   agent:main:pico:direct:<session-uuid>
+	picoSessionPrefix          = "agent:main:pico:direct:"
+	sanitizedPicoSessionPrefix = "agent_main_pico_direct_"
 	maxSessionJSONLLineSize    = 10 * 1024 * 1024 // 10 MB
 	maxSessionTitleRunes       = 60
 )
 
 // extractPicoSessionID extracts the session UUID from a full session key.
-// Returns the UUID and true if the key matches the Pico session pattern.
+// Matches any agentID (e.g., "main", "engineering_manager").
+// Format: agent:<agentID>:pico:direct:<uuid>
 func extractPicoSessionID(key string) (string, bool) {
-	if strings.HasPrefix(key, picoSessionPrefix) {
-		return strings.TrimPrefix(key, picoSessionPrefix), true
+	const sep = ":pico:direct:"
+	if !strings.HasPrefix(key, "agent:") {
+		return "", false
 	}
-	return "", false
+	idx := strings.Index(key, sep)
+	if idx < 0 {
+		return "", false
+	}
+	uuid := key[idx+len(sep):]
+	if uuid == "" {
+		return "", false
+	}
+	return uuid, true
 }
 
+// extractPicoSessionIDFromSanitizedKey extracts the session UUID from a sanitized
+// filename base. Matches any agentID including those with underscores.
+// Format: agent_<agentID>_pico_direct_<uuid>
 func extractPicoSessionIDFromSanitizedKey(key string) (string, bool) {
-	if strings.HasPrefix(key, sanitizedPicoSessionPrefix) {
-		return strings.TrimPrefix(key, sanitizedPicoSessionPrefix), true
+	const sep = "_pico_direct_"
+	if !strings.HasPrefix(key, "agent_") {
+		return "", false
 	}
-	return "", false
+	idx := strings.Index(key, sep)
+	if idx < 0 {
+		return "", false
+	}
+	uuid := key[idx+len(sep):]
+	if uuid == "" {
+		return "", false
+	}
+	return uuid, true
 }
 
 func sanitizeSessionKey(key string) string {
 	return strings.ReplaceAll(key, ":", "_")
 }
 
+// picoSessionFileBase locates the base path (without extension) for a session by UUID.
+// It scans dir for a file matching *_pico_direct_<sessionID>.(jsonl|json).
+// Falls back to constructing with the default "main" agent prefix if not found.
+func picoSessionFileBase(dir, sessionID string) string {
+	suffix := "_pico_direct_" + sessionID
+	entries, err := os.ReadDir(dir)
+	if err == nil {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			name := entry.Name()
+			var base string
+			switch {
+			case strings.HasSuffix(name, ".jsonl"):
+				base = strings.TrimSuffix(name, ".jsonl")
+			case strings.HasSuffix(name, ".json") && !strings.HasSuffix(name, ".meta.json"):
+				base = strings.TrimSuffix(name, ".json")
+			default:
+				continue
+			}
+			if strings.HasSuffix(base, suffix) && strings.HasPrefix(base, "agent_") {
+				return filepath.Join(dir, base)
+			}
+		}
+	}
+	return filepath.Join(dir, sanitizeSessionKey(picoSessionPrefix+sessionID))
+}
+
 func (h *Handler) readLegacySession(dir, sessionID string) (sessionFile, error) {
-	path := filepath.Join(dir, sanitizeSessionKey(picoSessionPrefix+sessionID)+".json")
+	path := picoSessionFileBase(dir, sessionID) + ".json"
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return sessionFile{}, err
@@ -155,12 +215,11 @@ func (h *Handler) readSessionMessages(path string, skip int) ([]providers.Messag
 }
 
 func (h *Handler) readJSONLSession(dir, sessionID string) (sessionFile, error) {
-	sessionKey := picoSessionPrefix + sessionID
-	base := filepath.Join(dir, sanitizeSessionKey(sessionKey))
+	base := picoSessionFileBase(dir, sessionID)
 	jsonlPath := base + ".jsonl"
 	metaPath := base + ".meta.json"
 
-	meta, err := h.readSessionMeta(metaPath, sessionKey)
+	meta, err := h.readSessionMeta(metaPath, picoSessionPrefix+sessionID)
 	if err != nil {
 		return sessionFile{}, err
 	}
@@ -480,7 +539,7 @@ func (h *Handler) handleDeleteSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	base := filepath.Join(dir, sanitizeSessionKey(picoSessionPrefix+sessionID))
+	base := picoSessionFileBase(dir, sessionID)
 	jsonlPath := base + ".jsonl"
 	metaPath := base + ".meta.json"
 	legacyPath := base + ".json"

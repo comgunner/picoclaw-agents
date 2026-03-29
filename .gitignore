@@ -21,6 +21,7 @@ cmd/**/workspace
 
 # Web build artifacts (frontend backend dist)
 web/build/
+web/build/picoclaw-agents-launcher
 web/frontend/dist/
 web/backend/dist/
 

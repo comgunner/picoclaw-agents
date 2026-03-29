@@ -1,24 +1,113 @@
 {
+  "session": {
+    "dm_scope": "per-channel-peer"
+  },
   "agents": {
     "defaults": {
       "workspace": "~/.picoclaw/workspace",
       "restrict_to_workspace": true,
       "provider": "",
-      "model": "o3-mini-2025-01-31",
+      "model": "gpt-4o",
       "max_tokens": 8192,
       "max_tool_iterations": 20
     },
     "list": [
       {
+        "id": "engineering_manager",
+        "default": true,
+        "name": "Engineering Manager (Team Lead)",
+        "model": "gpt-4o",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "subagents": {
+          "allow_agents": [
+            "backend_dev",
+            "frontend_dev",
+            "devops_eng",
+            "qa_eng",
+            "security_eng",
+            "data_eng",
+            "ml_eng",
+            "researcher"
+          ],
+          "max_spawn_depth": 3,
+          "max_children_per_agent": 3
+        }
+      },
+      {
+        "id": "backend_dev",
+        "name": "Backend Developer",
+        "model": "gpt-4o",
+        "skills": ["backend_developer"],
+        "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "frontend_dev",
+        "name": "Frontend Developer",
+        "model": "gpt-4o",
+        "skills": ["frontend_developer"],
+        "tools_override": ["read_file", "write_file", "edit_file"],
+        "subagents": {}
+      },
+      {
+        "id": "devops_eng",
+        "name": "DevOps Engineer",
+        "model": "gpt-4o",
+        "skills": ["devops_engineer"],
+        "tools_override": ["read_file", "write_file", "exec"],
+        "subagents": {}
+      },
+      {
+        "id": "qa_eng",
+        "name": "QA Engineer",
+        "model": "gpt-4o",
+        "skills": ["qa_engineer"],
+        "tools_override": ["read_file", "write_file", "exec"],
+        "subagents": {}
+      },
+      {
+        "id": "security_eng",
+        "name": "Security Engineer",
+        "model": "gpt-4o",
+        "skills": ["security_engineer"],
+        "tools_override": ["read_file", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "data_eng",
+        "name": "Data Engineer",
+        "model": "gpt-4o",
+        "skills": ["data_engineer"],
+        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "ml_eng",
+        "name": "ML Engineer",
+        "model": "gpt-4o",
+        "skills": ["ml_engineer"],
+        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "subagents": {}
+      },
+      {
+        "id": "researcher",
+        "name": "Researcher",
+        "model": "gpt-4o",
+        "skills": ["researcher"],
+        "tools_override": ["read_file", "write_file", "web_search"],
+        "subagents": {}
+      },
+      {
         "id": "project_manager",
         "name": "Project Manager",
-        "default": true,
-        "model": "o3-mini-2025-01-31",
+        "model": "gpt-4o",
         "skills": ["fullstack_developer", "agent_team_workflow"],
         "subagents": {
           "allow_agents": [
             "*",
-            "general_worker",
+            "backend_dev",
+            "frontend_dev",
+            "qa_eng",
             "researcher"
           ],
           "max_spawn_depth": 3,
@@ -28,11 +117,11 @@
       {
         "id": "senior_dev",
         "name": "Senior Full-Stack Developer",
-        "model": "o3-mini-2025-01-31",
+        "model": "gpt-4o",
         "skills": ["backend_developer", "fullstack_developer"],
         "subagents": {
           "allow_agents": [
-            "qa_specialist",
+            "qa_eng",
             "junior_fixer"
           ],
           "max_spawn_depth": 2
@@ -41,49 +130,265 @@
       {
         "id": "qa_specialist",
         "name": "QA Specialist",
-        "model": "o3-mini-2025-01-31",
+        "model": "gpt-4o",
         "skills": ["qa_engineer"],
         "subagents": {}
       },
       {
         "id": "junior_fixer",
         "name": "Junior Code Fixer",
-        "model": "o3-mini-2025-01-31",
+        "model": "gpt-4o",
         "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": "o3-mini-2025-01-31",
+        "model": "gpt-4o",
         "skills": ["fullstack_developer"],
         "subagents": {}
       },
       {
-        "id": "researcher",
-        "name": "Researcher",
-        "model": "o3-mini-2025-01-31",
-        "skills": ["researcher"],
+        "id": "odoo_specialist",
+        "name": "Odoo Specialist",
+        "model": "gpt-4o",
+        "skills": ["odoo_developer"],
+        "subagents": {}
+      },
+      {
+        "id": "n8n_automation",
+        "name": "n8n Workflow Automation",
+        "model": "gpt-4o",
+        "skills": ["n8n_workflow"],
+        "subagents": {}
+      },
+      {
+        "id": "binance_trader",
+        "name": "Binance Trading Specialist",
+        "model": "gpt-4o",
+        "skills": ["binance_mcp"],
         "subagents": {}
       }
     ]
   },
-  "session": {
-    "dm_scope": "per-channel-peer"
+  "_examples": {
+    "_description": "Examples of specialized agents using engineering role skills (v3.6.0+)",
+    "_note": "Copy agents from this section to the 'list' array above to use them",
+    "_native_skills_reference": "See docs/NATIVE_SKILLS_LIST.md for complete list of 14 native skills",
+    "single_specialized_agent": {
+      "_description": "Example: Single agent with backend developer role",
+      "id": "backend_dev",
+      "name": "Backend Developer",
+      "model": "gpt-4o",
+      "skills": ["backend_developer"],
+      "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+      "subagents": {}
+    },
+    "orchestrator_with_specialized_subagents": {
+      "_description": "Example: Orchestrator with specialized engineering subagents",
+      "orchestrator": {
+        "id": "tech_lead",
+        "name": "Technical Lead",
+        "model": "gpt-4o",
+        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "subagents": {
+          "allow_agents": ["backend_dev", "frontend_dev", "devops_eng", "qa_eng", "security_eng", "data_eng", "ml_eng", "researcher"],
+          "max_spawn_depth": 2,
+          "max_children_per_agent": 3
+        }
+      },
+      "subagents": [
+        {
+          "id": "backend_dev",
+          "name": "Backend Developer",
+          "model": "gpt-4o",
+          "skills": ["backend_developer"],
+          "tools_override": ["read_file", "write_file", "edit_file", "exec"]
+        },
+        {
+          "id": "frontend_dev",
+          "name": "Frontend Developer",
+          "model": "gpt-4o",
+          "skills": ["frontend_developer"],
+          "tools_override": ["read_file", "write_file", "edit_file"]
+        },
+        {
+          "id": "devops_eng",
+          "name": "DevOps Engineer",
+          "model": "gpt-4o",
+          "skills": ["devops_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "qa_eng",
+          "name": "QA Engineer",
+          "model": "gpt-4o",
+          "skills": ["qa_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "security_eng",
+          "name": "Security Engineer",
+          "model": "gpt-4o",
+          "skills": ["security_engineer"],
+          "tools_override": ["read_file", "web_search"]
+        },
+        {
+          "id": "data_eng",
+          "name": "Data Engineer",
+          "model": "gpt-4o",
+          "skills": ["data_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "ml_eng",
+          "name": "ML Engineer",
+          "model": "gpt-4o",
+          "skills": ["ml_engineer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "researcher",
+          "name": "Researcher",
+          "model": "gpt-4o",
+          "skills": ["researcher"],
+          "tools_override": ["read_file", "write_file", "web_search"]
+        }
+      ]
+    },
+    "integration_specialists": {
+      "_description": "Example: Agents with integration skills (Binance, n8n, Odoo)",
+      "agents": [
+        {
+          "id": "binance_trader",
+          "name": "Binance Trading Specialist",
+          "model": "gpt-4o",
+          "skills": ["binance_mcp"],
+          "tools_override": ["read_file", "write_file", "web_search"]
+        },
+        {
+          "id": "n8n_automation",
+          "name": "n8n Workflow Automation",
+          "model": "gpt-4o",
+          "skills": ["n8n_workflow"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        },
+        {
+          "id": "odoo_specialist",
+          "name": "Odoo Specialist",
+          "model": "gpt-4o",
+          "skills": ["odoo_developer"],
+          "tools_override": ["read_file", "write_file", "exec"]
+        }
+      ]
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": false,
+      "bridge_url": "ws://localhost:3001",
+      "allow_from": []
+    },
+    "telegram": {
+      "enabled": false,
+      "token": "YOUR_TELEGRAM_BOT_TOKEN",
+      "proxy": "",
+      "allow_from": [
+        "YOUR_USER_ID"
+      ]
+    },
+    "feishu": {
+      "enabled": false,
+      "app_id": "",
+      "app_secret": "",
+      "encrypt_key": "",
+      "verification_token": "",
+      "allow_from": []
+    },
+    "discord": {
+      "enabled": false,
+      "token": "YOUR_DISCORD_BOT_TOKEN",
+      "allow_from": [],
+      "mention_only": false
+    },
+    "maixcam": {
+      "enabled": false,
+      "host": "0.0.0.0",
+      "port": 18790,
+      "allow_from": []
+    },
+    "qq": {
+      "enabled": false,
+      "app_id": "YOUR_QQ_APP_ID",
+      "app_secret": "YOUR_QQ_APP_SECRET",
+      "allow_from": []
+    },
+    "dingtalk": {
+      "enabled": false,
+      "client_id": "YOUR_CLIENT_ID",
+      "client_secret": "YOUR_CLIENT_SECRET",
+      "allow_from": []
+    },
+    "slack": {
+      "enabled": false,
+      "bot_token": "xoxb-YOUR-BOT-TOKEN",
+      "app_token": "xapp-YOUR-APP-TOKEN",
+      "allow_from": []
+    },
+    "line": {
+      "enabled": false,
+      "channel_secret": "YOUR_LINE_CHANNEL_SECRET",
+      "channel_access_token": "YOUR_LINE_CHANNEL_ACCESS_TOKEN",
+      "webhook_host": "0.0.0.0",
+      "webhook_port": 18791,
+      "webhook_path": "/webhook/line",
+      "allow_from": []
+    },
+    "onebot": {
+      "enabled": false,
+      "ws_url": "ws://127.0.0.1:3001",
+      "access_token": "",
+      "reconnect_interval": 5,
+      "group_trigger_prefix": [],
+      "allow_from": []
+    },
+    "wecom": {
+      "enabled": false,
+      "token": "YOUR_TOKEN",
+      "encoding_aes_key": "YOUR_43_CHAR_ENCODING_AES_KEY",
+      "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY",
+      "webhook_host": "0.0.0.0",
+      "webhook_port": 18793,
+      "webhook_path": "/webhook/wecom",
+      "allow_from": [],
+      "reply_timeout": 5
+    },
+    "wecom_app": {
+      "enabled": false,
+      "corp_id": "YOUR_CORP_ID",
+      "corp_secret": "YOUR_CORP_SECRET",
+      "agent_id": 1000002,
+      "token": "YOUR_TOKEN",
+      "encoding_aes_key": "YOUR_43_CHAR_ENCODING_AES_KEY",
+      "webhook_host": "0.0.0.0",
+      "webhook_port": 18792,
+      "webhook_path": "/webhook/wecom-app",
+      "allow_from": [],
+      "reply_timeout": 5
+    }
   },
   "model_list": [
     {
       "model_name": "glm-4.5-flash",
       "model": "zhipu/glm-4.5-flash",
       "api_base": "https://api.z.ai/api/paas/v4",
-      "api_key": "",
-      "_comment": "API Endpoint Z.ai Platform's general API endpoint is as follows: https://api.z.ai/api/paas/v4 referencia https://docs.z.ai/api-reference/introduction"
+      "api_key": ""
     },
     {
-      "model_name": "o3-mini-2025-01-31",
-      "model": "openai/o3-mini-2025-01-31",
+      "model_name": "gpt-4o",
+      "model": "openai/gpt-4o",
       "api_base": "https://api.openai.com/v1",
-      "api_key": ""
+      "api_key": "YOUR_OPENAI_API_KEY"
     },
     {
       "model_name": "claude-sonnet-4.6",
@@ -107,16 +412,7 @@
       "model_name": "qwen-plus",
       "model": "qwen/qwen-plus",
       "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      "api_key": "",
-      "_comment": [
-        "Method 1: In third-party tools (Chatbox, Cline, Claude Code, Dify, OpenClaw, Postman, Qwen Code)",
-        "  Base URL regions:",
-        "  - Singapore: https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
-        "  - US (Virginia): https://dashscope-us.aliyuncs.com/compatible-mode/v1",
-        "  - China (Beijing): https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "Method 2: Through code - set the API key as an environment variable.",
-        "Warning: Never share your API key publicly to avoid security risks or financial loss."
-      ]
+      "api_key": ""
     },
     {
       "model_name": "moonshot-v1-8k",
@@ -177,6 +473,36 @@
       "api_key": ""
     },
     {
+      "model_name": "gemini-3.1-pro-high",
+      "model": "antigravity/gemini-3.1-pro-high",
+      "api_key": "",
+      "auth_method": "oauth"
+    },
+    {
+      "model_name": "antigravity-gemini-3-flash",
+      "model": "antigravity/gemini-3-flash",
+      "api_key": "",
+      "auth_method": "oauth"
+    },
+    {
+      "model_name": "gemini-2.5-pro",
+      "model": "antigravity/gemini-2.5-pro",
+      "api_key": "",
+      "auth_method": "oauth"
+    },
+    {
+      "model_name": "claude-sonnet-4-6",
+      "model": "antigravity/claude-sonnet-4-6",
+      "api_key": "",
+      "auth_method": "oauth"
+    },
+    {
+      "model_name": "claude-opus-4-6-thinking",
+      "model": "antigravity/claude-opus-4-6-thinking",
+      "api_key": "",
+      "auth_method": "oauth"
+    },
+    {
       "model_name": "copilot-gpt-5.2",
       "model": "github-copilot/gpt-5.2",
       "api_base": "http://localhost:4321",
@@ -214,119 +540,32 @@
       "api_key": "ollama"
     }
   ],
-  "channels": {
-    "telegram": {
-      "enabled": false,
-      "token": "YOUR_TELEGRAM_BOT_TOKEN",
-      "proxy": "",
-      "allow_from": [
-        "YOUR_USER_ID"
-      ]
-    },
-    "discord": {
-      "enabled": false,
-      "token": "YOUR_DISCORD_BOT_TOKEN",
-      "allow_from": [],
-      "mention_only": false
-    },
-    "qq": {
-      "enabled": false,
-      "app_id": "YOUR_QQ_APP_ID",
-      "app_secret": "YOUR_QQ_APP_SECRET",
-      "allow_from": []
-    },
-    "maixcam": {
-      "enabled": false,
-      "host": "0.0.0.0",
-      "port": 18790,
-      "allow_from": []
-    },
-    "whatsapp": {
-      "enabled": false,
-      "bridge_url": "ws://localhost:3001",
-      "allow_from": []
-    },
-    "feishu": {
-      "enabled": false,
-      "app_id": "",
-      "app_secret": "",
-      "encrypt_key": "",
-      "verification_token": "",
-      "allow_from": []
-    },
-    "dingtalk": {
-      "enabled": false,
-      "client_id": "YOUR_CLIENT_ID",
-      "client_secret": "YOUR_CLIENT_SECRET",
-      "allow_from": []
-    },
-    "slack": {
-      "enabled": false,
-      "bot_token": "xoxb-YOUR-BOT-TOKEN",
-      "app_token": "xapp-YOUR-APP-TOKEN",
-      "allow_from": []
-    },
-    "line": {
-      "enabled": false,
-      "channel_secret": "YOUR_LINE_CHANNEL_SECRET",
-      "channel_access_token": "YOUR_LINE_CHANNEL_ACCESS_TOKEN",
-      "webhook_host": "0.0.0.0",
-      "webhook_port": 18791,
-      "webhook_path": "/webhook/line",
-      "allow_from": []
-    },
-    "onebot": {
-      "enabled": false,
-      "ws_url": "ws://127.0.0.1:3001",
-      "access_token": "",
-      "reconnect_interval": 5,
-      "group_trigger_prefix": [],
-      "allow_from": []
-    },
-    "wecom": {
-      "_comment": "WeCom Bot (\u667a\u80fd\u673a\u5668\u4eba) - Easier setup, supports group chats",
-      "enabled": false,
-      "token": "YOUR_TOKEN",
-      "encoding_aes_key": "YOUR_43_CHAR_ENCODING_AES_KEY",
-      "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY",
-      "webhook_host": "0.0.0.0",
-      "webhook_port": 18793,
-      "webhook_path": "/webhook/wecom",
-      "allow_from": [],
-      "reply_timeout": 5
-    },
-    "wecom_app": {
-      "_comment": "WeCom App (\u81ea\u5efa\u5e94\u7528) - More features, proactive messaging, private chat only. See docs/wecom-app-configuration.md",
-      "enabled": false,
-      "corp_id": "YOUR_CORP_ID",
-      "corp_secret": "YOUR_CORP_SECRET",
-      "agent_id": 1000002,
-      "token": "YOUR_TOKEN",
-      "encoding_aes_key": "YOUR_43_CHAR_ENCODING_AES_KEY",
-      "webhook_host": "0.0.0.0",
-      "webhook_port": 18792,
-      "webhook_path": "/webhook/wecom-app",
-      "allow_from": [],
-      "reply_timeout": 5
-    }
+  "gateway": {
+    "host": "127.0.0.1",
+    "port": 18790
   },
   "tools": {
     "web": {
-      "duckduckgo": {
-        "enabled": true,
-        "max_results": 5
-      },
       "brave": {
         "enabled": false,
         "api_key": "YOUR_BRAVE_API_KEY",
+        "max_results": 5
+      },
+      "tavily": {
+        "enabled": false,
+        "api_key": "",
+        "base_url": "",
+        "max_results": 0
+      },
+      "duckduckgo": {
+        "enabled": true,
         "max_results": 5
       },
       "perplexity": {
         "enabled": false,
         "api_key": "pplx-xxx",
         "max_results": 5
-      },
-      "proxy": ""
+      }
     },
     "cron": {
       "exec_timeout_minutes": 5
@@ -382,9 +621,13 @@
         "clawhub": {
           "enabled": true,
           "base_url": "https://clawhub.ai",
+          "auth_token": "",
           "search_path": "/api/v1/search",
           "skills_path": "/api/v1/skills",
-          "download_path": "/api/v1/download"
+          "download_path": "/api/v1/download",
+          "timeout": 0,
+          "max_zip_size": 0,
+          "max_response_size": 0
         }
       },
       "max_concurrent_searches": 2,
@@ -408,9 +651,5 @@
     "min_completion_tokens": 512,
     "preserve_messages": 20,
     "auto_compact_enabled": true
-  },
-  "gateway": {
-    "host": "127.0.0.1",
-    "port": 18790
   }
 }

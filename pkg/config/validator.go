@@ -227,8 +227,11 @@ func (v *Validator) modelExists(modelName string, modelList []ModelConfig) bool 
 // isFreeModel checks if a model is free and doesn't require an API key.
 func isFreeModel(model string) bool {
 	freeModels := []string{
+		"openrouter/auto",
 		"openrouter/free",
+		"openrouter-free",
 		"free",
+		"or-free",
 	}
 	for _, free := range freeModels {
 		if strings.Contains(model, free) {

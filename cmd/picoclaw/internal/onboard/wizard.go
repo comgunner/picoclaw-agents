@@ -157,7 +157,7 @@ func (w *Wizard) printSuccess() {
 	fmt.Println()
 
 	// Check if using free tier
-	if w.model == "openrouter/free" {
+	if w.model == "openrouter/auto" || w.model == "or-auto" {
 		fmt.Println("🆓 You're using FREE models via OpenRouter!")
 		fmt.Println()
 		fmt.Println("🚀 Try it now:")
@@ -340,13 +340,13 @@ func (w *Wizard) setupEasyFree() error {
 	}
 
 	// Configure free models
-	w.modelName = "or-free"
-	w.model = "openrouter/free"
+	w.modelName = "or-auto"
+	w.model = "openrouter/auto"
 	w.apiKey = apiKey
 
 	fmt.Println()
 	fmt.Println("  ✅ Easy Setup complete! Free model configured:")
-	fmt.Println("     • openrouter/free → auto-selects best free model with tool support")
+	fmt.Println("     • openrouter/auto → auto-selects best free model with tool support")
 	fmt.Println()
 	fmt.Println("  ℹ️  Free models have rate limits. Perfect for personal use.")
 	fmt.Println("  ℹ️  To upgrade later: picoclaw-agents onboard --openrouter")
@@ -553,7 +553,7 @@ func (w *Wizard) saveConfig() error {
 	var modelListJSON string
 
 	// Check if using free tier
-	if w.model == "openrouter/free" {
+	if w.model == "openrouter/auto" {
 		// Easy Setup: three free models with fallbacks
 		// FIX: Use "openrouter/auto" instead of "openrouter/free" (issue #901)
 		modelListJSON = fmt.Sprintf(`[
@@ -571,13 +571,13 @@ func (w *Wizard) saveConfig() error {
     },
     {
       "model_name": "or-free-deepseek",
-      "model": "deepseek/deepseek-v3.2-20251201",
+      "model": "deepseek/deepseek-v3.2",
       "api_base": "https://openrouter.ai/api/v1",
       "api_key": "%s"
     }
   ]`, w.apiKey, w.apiKey, w.apiKey)
+		w.model = "or-auto" // Use the alias as default
 	} else {
-		// Normal flow: single model
 		modelListJSON = fmt.Sprintf(`[
     {
       "model_name": "%s",

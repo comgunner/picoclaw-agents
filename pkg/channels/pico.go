@@ -427,6 +427,8 @@ func (c *PicoChannel) picoHandleMessageSend(pc *picoConn, msg PicoMessage) {
 		"platform":   "pico",
 		"session_id": sessionID,
 		"conn_id":    pc.id,
+		"peer_kind":  "direct",
+		"peer_id":    sessionID,
 	}
 
 	logger.DebugCF("pico", "Received message", map[string]any{

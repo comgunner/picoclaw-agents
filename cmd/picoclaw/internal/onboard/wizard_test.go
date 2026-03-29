@@ -201,10 +201,10 @@ func TestWizardGeneratesValidConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("openrouter/free produces three-model fallback config", func(t *testing.T) {
+	t.Run("openrouter/auto produces three-model fallback config", func(t *testing.T) {
 		w, _ := newTestWizard(t)
-		w.modelName = "or-free"
-		w.model = "openrouter/free"
+		w.modelName = "or-auto"
+		w.model = "openrouter/auto"
 		w.apiKey = "sk-or-v1-testkey1234567890abcdefgh"
 
 		if err := w.saveConfig(); err != nil {
@@ -226,7 +226,7 @@ func TestWizardGeneratesValidConfig(t *testing.T) {
 			t.Fatal("config missing 'model_list' array")
 		}
 		if len(modelList) != 3 {
-			t.Fatalf("expected 3 fallback models for openrouter/free, got %d", len(modelList))
+			t.Fatalf("expected 3 fallback models for openrouter/auto, got %d", len(modelList))
 		}
 
 		// All three entries must carry the same API key and point to OpenRouter.
@@ -449,11 +449,11 @@ func TestSetupEasyFree(t *testing.T) {
 		if err := w.setupEasyFree(); err != nil {
 			t.Fatalf("setupEasyFree failed: %v", err)
 		}
-		if w.model != "openrouter/free" {
-			t.Errorf("model = %q, want 'openrouter/free'", w.model)
+		if w.model != "openrouter/auto" {
+			t.Errorf("model = %q, want 'openrouter/auto'", w.model)
 		}
-		if w.modelName != "or-free" {
-			t.Errorf("modelName = %q, want 'or-free'", w.modelName)
+		if w.modelName != "or-auto" {
+			t.Errorf("modelName = %q, want 'or-auto'", w.modelName)
 		}
 		if w.apiKey != "sk-or-v1-validkey1234567890abcdefghij" {
 			t.Errorf("apiKey = %q, not stored correctly", w.apiKey)
@@ -466,8 +466,8 @@ func TestSetupEasyFree(t *testing.T) {
 		if err := w.setupEasyFree(); err != nil {
 			t.Fatalf("setupEasyFree failed: %v", err)
 		}
-		if w.model != "openrouter/free" {
-			t.Errorf("model = %q, want 'openrouter/free' even after warning", w.model)
+		if w.model != "openrouter/auto" {
+			t.Errorf("model = %q, want 'openrouter/auto' even after warning", w.model)
 		}
 	})
 

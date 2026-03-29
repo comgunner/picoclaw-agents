@@ -6,6 +6,41 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-03-29
+
+### 🤖 Agent: Global Model Normalization Fix (OpenRouter 404)
+
+**Files modified:** `pkg/providers/factory.go`, `pkg/providers/openai_compat/provider.go`
+
+- **Critical Fix:** Resolved `404: model 'free' not found` and `404: model 'auto' not found` errors.
+- Updated `NormalizeModelName` to map all free tier aliases (`free`, `or-free`, `openrouter-free`, `openrouter/free`) strictly to **`openrouter/auto`**.
+- Added **Prefix Protection** in `openai_compat/provider.go`: The system now ensures that `openrouter/auto` and `openrouter/free` are never stripped of their protocol prefix, even when the `api_base` doesn't explicitly match `openrouter.ai`. This ensures the correct model ID reaches the router.
+
+### ⚙️ Config: Defaults and Validator Sync
+
+**Files modified:** `pkg/config/defaults.go`, `pkg/config/validator.go`
+
+- Updated `OpenRouterFreeDefaultConfig` template to use `openrouter/auto` by default.
+- Expanded `isFreeModel` validator to include `openrouter/auto`, `openrouter-free`, and `or-free` as valid models that do not require an API key during initial validation.
+
+### 🚀 Onboard: Wizard Model Consistency
+
+**Files modified:** `cmd/picoclaw/internal/onboard/wizard.go`, `cmd/picoclaw/internal/onboard/helpers.go`, `cmd/picoclaw/internal/onboard/wizard_test.go`
+
+- The `onboard` wizard now generates configurations using `openrouter/auto` instead of the broken `openrouter/free`.
+- Updated helper text and status messages to reflect the new recommended model ID.
+- Updated unit tests to verify that `openrouter/auto` is correctly generated and assigned.
+
+### 🖥️ Launcher: Improved Visibility and Debugging
+
+**File modified:** `web/backend/main.go`
+
+- Changed default log level from `FATAL` to **`INFO`** for the launcher process.
+- Ensured `launcher.log` is written immediately on startup to help diagnose connectivity and LLM errors.
+- Added startup confirmation message: "File logging enabled: /Users/gunner/.picoclaw/logs/launcher.log".
+
+---
+
 ## 2026-03-28 — v1.2.1
 
 ### 🔐 Auth: OAuth Token Auto-Refresh in `auth status`

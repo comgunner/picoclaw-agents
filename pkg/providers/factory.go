@@ -26,9 +26,9 @@ var getCredential = auth.GetCredential
 func NormalizeModelName(model string) string {
 	lowerModel := strings.ToLower(model)
 
-	// OpenRouter free tier aliases → openrouter/free (NOT auto)
-	if lowerModel == "openrouter-free" || lowerModel == "free" || lowerModel == "or-free" {
-		return "openrouter/free"
+	// OpenRouter free tier aliases → openrouter/auto
+	if lowerModel == "openrouter-free" || lowerModel == "free" || lowerModel == "or-free" || lowerModel == "openrouter/free" {
+		return "openrouter/auto"
 	}
 
 	// Anthropic model aliases (add "anthropic/" prefix if missing)

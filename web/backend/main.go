@@ -88,14 +88,16 @@ func main() {
 	// If -console-logs flag is explicitly set, it overrides the detection
 	enableConsole := *console
 	if !enableConsole {
-		// Disable console logging by setting level to Fatal (no output)
-		logger.SetConsoleLevel(logger.FATAL)
+		// Set level to INFO to capture everything including 404s
+		logger.SetConsoleLevel(logger.INFO)
 
 		f := filepath.Join(picoHome, logPath, logFile)
 		if err = logger.EnableFileLogging(f); err != nil {
 			panic(fmt.Sprintf("error enabling file logging: %v", err))
 		}
+		// Ensure logs are flushed immediately
 		defer logger.DisableFileLogging()
+		logger.InfoC("web", "File logging enabled: "+f)
 	}
 
 	logger.InfoC("web", fmt.Sprintf("%s Launcher %s starting...", appName, appVersion))
