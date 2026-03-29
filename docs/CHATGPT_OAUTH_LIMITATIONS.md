@@ -84,7 +84,7 @@ Use a standard OpenAI API key:
   "model_list": [{
     "model_name": "gpt-4o-mini",
     "model": "openai/gpt-4o-mini",
-    "api_key": "sk-proj-..."  // pragma: allowlist secret
+    "api_key": "sk-proj-..."  # pragma: allowlist secret
   }]
 }
 ```
