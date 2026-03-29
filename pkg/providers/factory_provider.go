@@ -122,7 +122,9 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 		if protocol == "openrouter" {
 			modelForProvider = cfg.Model
 		}
-		return &HTTPProvider{delegate: openai_compat.NewProvider(cfg.APIKey, apiBase, cfg.Proxy, opts...)}, modelForProvider, nil
+		return &HTTPProvider{
+			delegate: openai_compat.NewProvider(cfg.APIKey, apiBase, cfg.Proxy, opts...),
+		}, modelForProvider, nil
 
 	case "anthropic":
 		if cfg.AuthMethod == "oauth" || cfg.AuthMethod == "token" {

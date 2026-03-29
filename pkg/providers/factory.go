@@ -27,7 +27,8 @@ func NormalizeModelName(model string) string {
 	lowerModel := strings.ToLower(model)
 
 	// OpenRouter free tier aliases → openrouter/auto
-	if lowerModel == "openrouter-free" || lowerModel == "free" || lowerModel == "or-free" || lowerModel == "openrouter/free" {
+	if lowerModel == "openrouter-free" || lowerModel == "free" || lowerModel == "or-free" ||
+		lowerModel == "openrouter/free" {
 		return "openrouter/auto"
 	}
 
