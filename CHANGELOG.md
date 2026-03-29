@@ -6,7 +6,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
-## 2026-03-28
+## 2026-03-28 — v1.2.1
 
 ### 🔐 Auth: OAuth Token Auto-Refresh in `auth status`
 
