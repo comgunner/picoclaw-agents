@@ -1,29 +1,29 @@
-# OpenRouter Free Tier con PicoClaw-Agents
+# OpenRouter Free Tier with PicoClaw-Agents
 
-**Última actualización:** 28 de marzo de 2026  
-**Versión:** v1.3.0-alpha-fix901
+**Last Updated:** March 28, 2026
+**Version:** v1.3.0-alpha-fix901
 
 ---
 
-## 🆓 Inicio Rápido — Gratis sin API Key
+## 🆓 Quick Start — Free without API Key
 
-PicoClaw-Agents soporta modelos **100% gratuitos** de OpenRouter sin necesidad de tarjeta de crédito.
+PicoClaw-Agents supports **100% free** models from OpenRouter without requiring a credit card.
 
-### Opción 1: Onboard Interactivo (Recomendado)
+### Option 1: Interactive Onboard (Recommended)
 
 ```bash
-# Ejecutar wizard de configuración
+# Run setup wizard
 picoclaw-agents onboard --free
 ```
 
-**El wizard te guiará:**
-1. Solicitará tu API key de OpenRouter (gratis)
-2. Configurarará modelos free automáticamente
-3. Creará tu espacio de trabajo
+**The wizard will guide you:**
+1. Request your OpenRouter API key (free)
+2. Configure free models automatically
+3. Create your workspace
 
-### Opción 2: Config Manual
+### Option 2: Manual Config
 
-Crea `~/.picoclaw/config.json`:
+Create `~/.picoclaw/config.json`:
 
 ```json
 {
@@ -39,7 +39,7 @@ Crea `~/.picoclaw/config.json`:
     {
       "model_name": "or-auto",
       "model": "openrouter/auto",
-      "api_key": "sk-or-v1-TU_API_KEY_AQUI"  // pragma: allowlist secret
+      "api_key": "sk-or-v1-YOUR_API_KEY_HERE"  // pragma: allowlist secret
     }
   ]
 }
@@ -47,57 +47,57 @@ Crea `~/.picoclaw/config.json`:
 
 ---
 
-## 🎯 Modelos Gratuitos Disponibles
+## 🎯 Available Free Models
 
-OpenRouter ofrece varios modelos gratuitos. PicoClaw los configura automáticamente:
+OpenRouter offers several free models. PicoClaw configures them automatically:
 
-### Configuración por Defecto (`onboard --free`)
+### Default Configuration (`onboard --free`)
 
-| Prioridad | Modelo | Contexto | Uso Recomendado |
-|-----------|--------|----------|-----------------|
-| **1** | `openrouter/auto` | Variable | Auto-selecciona el mejor free |
-| **2** | `stepfun/step-3.5-flash` | 256K | Contexto largo, razonamiento |
-| **3** | `deepseek/deepseek-v3.2-20251201` | 64K | Inferencia rápida |
+| Priority | Model | Context | Recommended Use |
+|----------|-------|---------|-----------------|
+| **1** | `openrouter/auto` | Variable | Auto-selects best free model |
+| **2** | `stepfun/step-3.5-flash` | 256K | Long context, reasoning |
+| **3** | `deepseek/deepseek-v3.2-20251201` | 64K | Fast inference |
 
-### ¿Qué es `openrouter/auto`?
+### What is `openrouter/auto`?
 
-- **Auto-selección:** OpenRouter elige automáticamente el mejor modelo free disponible
-- **Fallback automático:** Si un modelo falla, usa el siguiente
-- **Sin configuración:** No necesitas especificar modelos individuales
+- **Auto-selection:** OpenRouter automatically chooses the best available free model
+- **Automatic fallback:** If one model fails, uses the next one
+- **No configuration:** No need to specify individual models
 
 ---
 
-## 📝 Comandos Útiles
+## 📝 Useful Commands
 
-### Verificar Configuración
+### Check Configuration
 
 ```bash
-# Ver modelo actual
-picoclaw-agents agent --model "openrouter/auto" -m "¿Qué modelo estás usando?"
+# Check current model
+picoclaw-agents agent --model "openrouter/auto" -m "What model are you using?"
 
-# Ver estado de autenticación
+# Check auth status
 picoclaw-agents auth status
 ```
 
-### Probar Modelos Individuales
+### Test Individual Models
 
 ```bash
-# StepFun (256K contexto)
+# StepFun (256K context)
 picoclaw-agents agent --model "stepfun/step-3.5-flash" -m "Hello"
 
-# DeepSeek (rápido)
+# DeepSeek (fast)
 picoclaw-agents agent --model "deepseek/deepseek-v3.2-20251201" -m "Hello"
 ```
 
-### Cambiar Modelo por Defecto
+### Change Default Model
 
-Edita `~/.picoclaw/config.json`:
+Edit `~/.picoclaw/config.json`:
 
 ```json
 {
   "agents": {
     "defaults": {
-      "model": "stepfun/step-3.5-flash"  // ← Cambiar aquí
+      "model": "stepfun/step-3.5-flash"  // ← Change here
     }
   }
 }
@@ -105,133 +105,133 @@ Edita `~/.picoclaw/config.json`:
 
 ---
 
-## 🔑 Obtener API Key de OpenRouter
+## 🔑 Get OpenRouter API Key
 
-### Paso 1: Crear Cuenta
+### Step 1: Create Account
 
-1. Ve a https://openrouter.ai
-2. Click en "Sign Up"
-3. Regístrate con email (no requiere tarjeta)
+1. Go to https://openrouter.ai
+2. Click "Sign Up"
+3. Register with email (no card required)
 
-### Paso 2: Crear API Key
+### Step 2: Create API Key
 
-1. Ve a https://openrouter.ai/keys
+1. Go to https://openrouter.ai/keys
 2. Click "Create Key"
-3. Copia la key (empieza con `sk-or-v1-...`)
+3. Copy the key (starts with `sk-or-v1-...`)
 
-### Paso 3: Configurar en PicoClaw
+### Step 3: Configure in PicoClaw
 
 ```bash
-# Durante el onboard
+# During onboard
 picoclaw-agents onboard --free
-# → Pega tu API key cuando la solicite
+# → Paste your API key when prompted
 
-# O edita config.json manualmente
+# Or edit config.json manually
 nano ~/.picoclaw/config.json
-# → Pega tu API key en "api_key"
+# → Paste your API key in "api_key"
 ```
 
 ---
 
-## ⚠️ Problemas Comunes
+## ⚠️ Common Issues
 
 ### Error: "openrouter-free is not a valid model ID"
 
-**Causa:** Configuración antigua con nombre de modelo inválido.
+**Cause:** Old configuration with invalid model name.
 
-**Solución:** Actualiza tu config:
+**Solution:** Update your config:
 
 ```bash
-# Opción 1: Re-ejecutar onboard
+# Option 1: Re-run onboard
 picoclaw-agents onboard --free
 
-# Opción 2: Editar config manualmente
+# Option 2: Edit config manually
 sed -i 's|"openrouter/free"|"openrouter/auto"|g' ~/.picoclaw/config.json
 sed -i 's|"openrouter-free"|"openrouter/auto"|g' ~/.picoclaw/config.json
 ```
 
 ### Error: "401 Unauthorized"
 
-**Causa:** API key inválida o expirada.
+**Cause:** Invalid or expired API key.
 
-**Solución:**
-1. Verifica tu key en https://openrouter.ai/keys
-2. Actualiza en `~/.picoclaw/config.json`
-3. Re-ejecuta `picoclaw-agents onboard --free`
+**Solution:**
+1. Verify your key at https://openrouter.ai/keys
+2. Update in `~/.picoclaw/config.json`
+3. Re-run `picoclaw-agents onboard --free`
 
 ### Error: "Rate limit exceeded"
 
-**Causa:** Límite de requests gratuitos alcanzado.
+**Cause:** Free request limit reached.
 
-**Límites Free Tier:**
-- ~50 requests/minuto
-- ~1000 requests/día (varía por modelo)
+**Free Tier Limits:**
+- ~50 requests/minute
+- ~1000 requests/day (varies by model)
 
-**Solución:**
-- Espera unos minutos
-- Usa modelos más lentos pero con más límite
-- Considera upgrade a paid tier
+**Solution:**
+- Wait a few minutes
+- Use slower models with higher limits
+- Consider upgrading to paid tier
 
 ---
 
-## 📊 Límites del Free Tier
+## 📊 Free Tier Limits
 
 ### Rate Limits
 
-| Modelo | Requests/min | Requests/día | Contexto Max |
-|--------|--------------|--------------|--------------|
+| Model | Requests/min | Requests/day | Max Context |
+|-------|--------------|--------------|-------------|
 | `openrouter/auto` | ~50 | ~1000 | Variable |
 | `stepfun/step-3.5-flash` | ~20 | ~500 | 256K |
 | `deepseek/deepseek-v3.2` | ~30 | ~800 | 64K |
 
-### Mejores Prácticas
+### Best Practices
 
-1. **Usa `openrouter/auto`** — Mejor balance disponibilidad/velocidad
-2. **Evita polling** — No hagas requests muy frecuentes
-3. **Batch tasks** — Agrupa tareas cuando sea posible
-4. **Monitorea uso** — Revisa tu dashboard en openrouter.ai
-
----
-
-## 🚀 Ejemplos de Uso
-
-### Chat Simple
-
-```bash
-picoclaw-agents agent -m "¿Cuál es la capital de Francia?"
-```
-
-### Tarea de Código
-
-```bash
-picoclaw-agents agent -m "Crea una función Python que calcule Fibonacci"
-```
-
-### Búsqueda Web
-
-```bash
-picoclaw-agents agent -m "Busca las últimas noticias de IA"
-```
-
-### Tarea Compleja (Multi-agente)
-
-```bash
-# Con team mode configurado
-picoclaw-agents agent -m "Crea una API REST con Node.js y Express"
-```
+1. **Use `openrouter/auto`** — Best availability/speed balance
+2. **Avoid polling** — Don't make requests too frequently
+3. **Batch tasks** — Group tasks when possible
+4. **Monitor usage** — Check your dashboard at openrouter.ai
 
 ---
 
-## 📚 Recursos Adicionales
+## 🚀 Usage Examples
 
-### Enlaces Oficiales
+### Simple Chat
+
+```bash
+picoclaw-agents agent -m "What is the capital of France?"
+```
+
+### Code Task
+
+```bash
+picoclaw-agents agent -m "Create a Python function that calculates Fibonacci"
+```
+
+### Web Search
+
+```bash
+picoclaw-agents agent -m "Search for the latest AI news"
+```
+
+### Complex Task (Multi-agent)
+
+```bash
+# With team mode configured
+picoclaw-agents agent -m "Create a REST API with Node.js and Express"
+```
+
+---
+
+## 📚 Additional Resources
+
+### Official Links
 
 - **OpenRouter:** https://openrouter.ai
-- **Modelos Free:** https://openrouter.ai/models?order=-free
+- **Free Models:** https://openrouter.ai/models?order=-free
 - **API Docs:** https://openrouter.ai/docs
 - **Keys:** https://openrouter.ai/keys
 
-### Documentación PicoClaw
+### PicoClaw Documentation
 
 - **CHANGELOG:** [CHANGELOG.md](../CHANGELOG.md)
 - **README:** [README.md](../README.md)
@@ -241,28 +241,28 @@ picoclaw-agents agent -m "Crea una API REST con Node.js y Express"
 
 ## ❓ FAQ
 
-### ¿Es realmente gratis?
+### Is it really free?
 
-Sí. OpenRouter ofrece modelos free sin tarjeta de crédito. Hay límites de rate pero son suficientes para uso personal.
+Yes. OpenRouter offers free models without a credit card. There are rate limits but they're sufficient for personal use.
 
-### ¿Necesito configurar algo más?
+### Do I need to configure anything else?
 
-No. Con `picoclaw-agents onboard --free` todo se configura automáticamente.
+No. With `picoclaw-agents onboard --free` everything is configured automatically.
 
-### ¿Puedo cambiar a modelos paid después?
+### Can I switch to paid models later?
 
-Sí. Solo edita `config.json` y cambia el modelo o agrega tu tarjeta en OpenRouter.
+Yes. Just edit `config.json` and change the model or add your card in OpenRouter.
 
-### ¿Qué pasa si se agotan los free models?
+### What happens if free models run out?
 
-OpenRouter auto-selecciona otro modelo free disponible. Si todos están agotados, recibirás un error de rate limit.
+OpenRouter auto-selects another available free model. If all are exhausted, you'll receive a rate limit error.
 
-### ¿Funciona con todos los canales (Telegram, Discord)?
+### Does it work with all channels (Telegram, Discord)?
 
-Sí. El free tier funciona igual para CLI, Telegram, Discord, etc.
+Yes. The free tier works the same for CLI, Telegram, Discord, etc.
 
 ---
 
-**Documento creado:** 28 de marzo de 2026  
-**Versión:** v1.3.0-alpha-fix901  
-**Mantenimiento:** @comgunner
+**Document created:** March 28, 2026
+**Version:** v1.3.0-alpha-fix901
+**Maintainer:** @comgunner
