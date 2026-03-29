@@ -104,15 +104,17 @@ func (c *SummaryCache) StoreSummary(sessionID, topic, summary string, tokens int
 	c.save()
 }
 
-// FindSimilarSummary looks for a recent summary with the same topic
-// Simulates semantic search or topic-based retrieval for Phase 3.
-func (c *SummaryCache) FindSimilarSummary(topic string) (string, bool) {
+// FindSimilarSummary looks for a recent summary with the same topic and sessionID.
+// BUG-02 FIX: Added sessionID parameter to filter by session - previously returned
+// summaries from any session, causing incorrect context injection across different conversations.
+func (c *SummaryCache) FindSimilarSummary(sessionID, topic string) (string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	now := time.Now()
 	for _, entry := range c.entries {
-		if entry.Topic == topic && entry.ExpiresAt.After(now) {
+		// FIX: Now filters by both sessionID AND topic to avoid cross-session contamination
+		if entry.SessionID == sessionID && entry.Topic == topic && entry.ExpiresAt.After(now) {
 			return entry.Summary, true
 		}
 	}

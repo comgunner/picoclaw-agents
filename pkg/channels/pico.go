@@ -193,8 +193,20 @@ func (c *PicoChannel) broadcastToSession(chatID string, msg PicoMessage) error {
 	sessionID := strings.TrimPrefix(chatID, "pico:")
 	msg.SessionID = sessionID
 
+	// BUG-04 FIX: Distinguish between "no connections" (expected, not an error) and
+	// "all connections failed" (actual error). Previously, both cases returned an error.
+	connections := c.sessionConnectionsSnapshot(sessionID)
+	if len(connections) == 0 {
+		// No active WebSocket connections for this session — this is expected behavior
+		// when the WebUI is not open. The message was already enqueued upstream.
+		logger.DebugCF("pico", "No active connections for session", map[string]any{
+			"session_id": sessionID,
+		})
+		return nil
+	}
+
 	var sent bool
-	for _, pc := range c.sessionConnectionsSnapshot(sessionID) {
+	for _, pc := range connections {
 		if err := pc.writeJSON(msg); err != nil {
 			logger.DebugCF("pico", "Write to connection failed", map[string]any{
 				"conn_id": pc.id,
@@ -206,7 +218,8 @@ func (c *PicoChannel) broadcastToSession(chatID string, msg PicoMessage) error {
 	}
 
 	if !sent {
-		return fmt.Errorf("no active connections for session %s: %w", sessionID, ErrPicoSendFailed)
+		// All connections failed to receive the message — this is an actual error
+		return fmt.Errorf("all connections failed for session %s: %w", sessionID, ErrPicoSendFailed)
 	}
 	return nil
 }

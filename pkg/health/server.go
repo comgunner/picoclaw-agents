@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
@@ -128,7 +129,12 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 		Uptime: uptime.String(),
 	}
 
-	json.NewEncoder(w).Encode(resp)
+	// BUG-06 FIX: Check JSON encode error
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		// Log encode error but can't change HTTP status (already sent)
+		// This helps debugging serialization issues in production
+		fmt.Fprintf(os.Stderr, "health: encode response failed: %v\n", err)
+	}
 }
 
 func (s *Server) readyHandler(w http.ResponseWriter, r *http.Request) {
@@ -144,31 +150,40 @@ func (s *Server) readyHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !ready {
 		w.WriteHeader(http.StatusServiceUnavailable)
-		json.NewEncoder(w).Encode(StatusResponse{
+		// BUG-06 FIX: Check JSON encode error
+		if err := json.NewEncoder(w).Encode(StatusResponse{
 			Status: "not ready",
 			Checks: checks,
-		})
+		}); err != nil {
+			fmt.Fprintf(os.Stderr, "health: encode not-ready response failed: %v\n", err)
+		}
 		return
 	}
 
 	for _, check := range checks {
 		if check.Status == "fail" {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			json.NewEncoder(w).Encode(StatusResponse{
+			// BUG-06 FIX: Check JSON encode error
+			if err := json.NewEncoder(w).Encode(StatusResponse{
 				Status: "not ready",
 				Checks: checks,
-			})
+			}); err != nil {
+				fmt.Fprintf(os.Stderr, "health: encode fail response failed: %v\n", err)
+			}
 			return
 		}
 	}
 
 	w.WriteHeader(http.StatusOK)
 	uptime := time.Since(s.startTime)
-	json.NewEncoder(w).Encode(StatusResponse{
+	// BUG-06 FIX: Check JSON encode error
+	if err := json.NewEncoder(w).Encode(StatusResponse{
 		Status: "ready",
 		Uptime: uptime.String(),
 		Checks: checks,
-	})
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "health: encode ready response failed: %v\n", err)
+	}
 }
 
 func statusString(ok bool) string {

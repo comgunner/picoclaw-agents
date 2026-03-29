@@ -986,6 +986,17 @@ func (al *AgentLoop) runLLMIteration(
 				"tools_json":    formatToolsForLog(providerToolDefs),
 			})
 
+		// SPRINT 1 FEATURE: Apply pruning before calling LLM
+		// This trims large tool results in-memory (doesn't modify persisted history)
+		pruningConfig := al.cfg.ContextManagement.Pruning
+		prunedMessages := PruneMessages(messages, pruningConfig)
+		if len(prunedMessages) != len(messages) {
+			logger.DebugCF("agent", "Pruning applied", map[string]any{
+				"original_count": len(messages),
+				"pruned_count":   len(prunedMessages),
+			})
+		}
+
 		// Call LLM with fallback chain if candidates are configured.
 		var response *providers.LLMResponse
 		var err error
@@ -994,7 +1005,7 @@ func (al *AgentLoop) runLLMIteration(
 			if len(agent.Candidates) > 1 && al.fallback != nil {
 				fbResult, fbErr := al.fallback.Execute(ctx, agent.Candidates,
 					func(ctx context.Context, provider, model string) (*providers.LLMResponse, error) {
-						return agent.Provider.Chat(ctx, messages, providerToolDefs, model, map[string]any{
+						return agent.Provider.Chat(ctx, prunedMessages, providerToolDefs, model, map[string]any{
 							"max_tokens":       agent.MaxTokens,
 							"temperature":      agent.Temperature,
 							"prompt_cache_key": agent.ID,
@@ -1011,7 +1022,7 @@ func (al *AgentLoop) runLLMIteration(
 				}
 				return fbResult.Response, nil
 			}
-			return agent.Provider.Chat(ctx, messages, providerToolDefs, agent.Model, map[string]any{
+			return agent.Provider.Chat(ctx, prunedMessages, providerToolDefs, agent.Model, map[string]any{
 				"max_tokens":       agent.MaxTokens,
 				"temperature":      agent.Temperature,
 				"prompt_cache_key": agent.ID,
@@ -1562,8 +1573,16 @@ func (al *AgentLoop) summarizeSession(agent *AgentInstance, sessionKey string) {
 
 	history := agent.Sessions.GetHistory(sessionKey)
 
-	compactor := NewDefaultContextCompactor(al.summaryCache)
-	compacted, err := compactor.CompactMessages(ctx, agent.Provider, agent.Model, history, sessionKey)
+	compactModel := agent.Model
+	if al.cfg != nil && al.cfg.ContextManagement.Compaction.Model != "" {
+		compactModel = al.cfg.ContextManagement.Compaction.Model
+	}
+	var compactionCfg config.ContextCompactionConfig
+	if al.cfg != nil {
+		compactionCfg = al.cfg.ContextManagement.Compaction
+	}
+	compactor := NewDefaultContextCompactorWithCfg(al.summaryCache, compactionCfg)
+	compacted, err := compactor.CompactMessages(ctx, agent.Provider, compactModel, history, sessionKey)
 	if err == nil && len(compacted) < len(history) {
 		agent.Sessions.SetHistory(sessionKey, compacted)
 		agent.Sessions.Save(sessionKey)
@@ -1814,6 +1833,53 @@ func (al *AgentLoop) handleCommand(ctx context.Context, msg bus.InboundMessage) 
 			return "⚠️ Sentinel Status: **DISABLED** | Remaining: " + remaining, true
 		}
 		return "🛡️ Sentinel Status: " + status, true
+
+	// SPRINT 1 FEATURE: Manual context compaction command
+	case "/compact":
+		agent := al.registry.GetDefaultAgent()
+		if agent == nil {
+			return "No default agent configured", true
+		}
+
+		// Get optional focus instructions
+		instructions := strings.TrimSpace(strings.TrimPrefix(content, "/compact"))
+
+		// Load session history
+		history := agent.Sessions.GetHistory(msg.SessionKey)
+		if len(history) <= 6 {
+			return "Context is too short for compaction (need more than 6 messages)", true
+		}
+
+		// Trigger compaction
+		provider := agent.Provider
+		model := agent.Model
+
+		// Use compaction model if configured
+		if al.cfg != nil && al.cfg.ContextManagement.Compaction.Model != "" {
+			model = al.cfg.ContextManagement.Compaction.Model
+		}
+
+		// Build compactor if not exists
+		if al.summaryCache == nil {
+			al.summaryCache = utils.NewSummaryCache(agent.Workspace)
+		}
+		compactor := NewDefaultContextCompactor(al.summaryCache)
+
+		// Execute compaction
+		compacted, err := compactor.CompactMessages(ctx, provider, model, history, msg.SessionKey)
+		if err != nil {
+			return fmt.Sprintf("❌ Compaction failed: %v", err), true
+		}
+
+		// Replace session history with compacted version
+		agent.Sessions.SetHistory(msg.SessionKey, compacted)
+		agent.Sessions.Save(msg.SessionKey)
+
+		response := "✅ Context compacted successfully."
+		if instructions != "" {
+			response += fmt.Sprintf(" Focus: %s", instructions)
+		}
+		return response, true
 
 	case "/restrict_to_workspace":
 		if len(args) < 1 {

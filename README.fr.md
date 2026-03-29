@@ -25,6 +25,10 @@
 
 ## 📢 Actualités
 
+2026-03-28 🎉 **Migration Multi-Source + Mode Équipe Onboard**: Ajouté `picoclaw-agents migrate --from nanoclaw` pour migration depuis NanoClaw. Le wizard onboard inclut maintenant **Team Mode** avec templates pré-construits (Dev Team 9 agents, Research Team 3 agents, General Team 3 agents) et sélection de **14 native skills**. Améliorations Context Window: pruning tool results (-60% tokens), compaction avancée avec model override, et commande manuelle `/compact`. Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-27 🎉 **Qualité build et améliorations canaux**: `go build ./...` passe maintenant proprement. API group trigger ajoutée à `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — contrôle granulaire des chats de groupe. Voir [CHANGELOG.md](CHANGELOG.md).
+
 2026-03-26 🎉 **Documentation MCP Builder** : Documentation complète de MCP Builder Agent en anglais et espagnol avec référence API, cas d'utilisation et exemples. Voir [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md).
 
 2026-03-26 🎉 **Commandes Sandbox et Codegen** : Ajout de `sandbox init/status` pour les espaces de travail isolés et `util codegen` pour la génération de code Go. Voir [CHANGELOG.md](CHANGELOG.md).
@@ -378,11 +382,16 @@ L'option `--free` configure trois modèles gratuits OpenRouter avec basculement 
 
 | Priorité | Modèle | Contexte | Notes |
 |----------|--------|----------|-------|
-| Principal | `openrouter/free` | variable | Sélectionne automatiquement le meilleur modèle gratuit disponible |
+| Principal | `openrouter/auto` | variable | Sélectionne automatiquement le meilleur modèle gratuit disponible |
 | Repli 1 | `stepfun/step-3.5-flash` | 256K | Tâches à contexte long |
 | Repli 2 | `deepseek/deepseek-v3.2-20251201` | 64K | Repli rapide et fiable |
 
 Les trois sont acheminés via [OpenRouter](https://openrouter.ai) — une seule clé API les couvre tous.
+
+> [!IMPORTANT]
+> **Correction ID de Modèle:** Les versions précédentes utilisaient `openrouter/free` qui n'est pas un ID de modèle OpenRouter valide. Ceci a été corrigé en `openrouter/auto`. Si vous avez une config existante avec `openrouter-free` ou `openrouter/free`, mettez-la à jour vers `openrouter/auto` ou ré-exécutez `picoclaw-agents onboard --free`.
+
+**En savoir plus:** Voir [docs/OPENROUTER_FREE.md](docs/OPENROUTER_FREE.md) pour le guide complet de configuration, les limites et le dépannage.
 
 **2. Configurer** (`~/.picoclaw/config.json`)
 
@@ -438,7 +447,7 @@ Les trois sont acheminés via [OpenRouter](https://openrouter.ai) — une seule 
 }
 ```
 
-> **Nouveau dans la v3 (Architecture Multi-Agent)** : Vous pouvez maintenant lancer des **sous-agents** isolés pour effectuer des tâches parallèles en arrière-plan. Surtout, **chaque sous-agent peut utiliser un modèle LLM complètement différent**. Comme le montre la configuration ci-dessus, l'agent principal utilise `gpt4`, mais il peut créer un sous-agent `coder` dédié exécutant `claude-sonnet-4.6` pour gérer des tâches de programmation complexes simultanément !
+> **Nouveau (Architecture Multi-Agent)** : Vous pouvez maintenant lancer des **sous-agents** isolés pour effectuer des tâches parallèles en arrière-plan. Surtout, **chaque sous-agent peut utiliser un modèle LLM complètement différent**. Comme le montre la configuration ci-dessus, l'agent principal utilise `gpt4`, mais il peut créer un sous-agent `coder` dédié exécutant `claude-sonnet-4.6` pour gérer des tâches de programmation complexes simultanément !
 
 > **Nouveau** : Le format de configuration `model_list` permet l'ajout de fournisseurs sans code. Voir [Configuration du Modèle](#model-configuration-model_list) pour plus de détails.
 > `request_timeout` est facultatif et utilise des secondes. S'il est omis ou défini sur `<= 0`, PicoClaw utilise le délai d'expiration par défaut (120s).
@@ -502,6 +511,64 @@ picoclaw-agents agent -m "Combien font 2+2 ?"
 ```
 
 C'est tout ! Vous avez un assistant IA opérationnel en 2 minutes.
+
+---
+
+## 🔄 Migration depuis OpenClaw ou NanoClaw
+
+Si vous migrez depuis **OpenClaw** ou **NanoClaw** vers PicoClaw-Agents, utilisez la commande `migrate`:
+
+```bash
+# Migrer depuis OpenClaw (défaut)
+picoclaw-agents migrate
+
+# Migration explicite depuis OpenClaw
+picoclaw-agents migrate --from openclaw
+
+# Migrer depuis NanoClaw (~/.nanoclaw ou ~/.config/nanoclaw)
+picoclaw-agents migrate --from nanoclaw
+
+# Dry-run (prévisualiser sans appliquer)
+picoclaw-agents migrate --from nanoclaw --dry-run
+
+# Afficher diff JSON config en dry-run
+picoclaw-agents migrate --from nanoclaw --dry-run --show-diff
+
+# Répertoire home NanoClaw personnalisé
+picoclaw-agents migrate --from nanoclaw --nanoclaw-home /chemin/vers/nanoclaw
+
+# Répertoire home PicoClaw personnalisé
+picoclaw-agents migrate --from nanoclaw --picoclaw-home /chemin/vers/picoclaw
+
+# Forcer migration sans confirmation
+picoclaw-agents migrate --from nanoclaw --force
+```
+
+**Ce qui est migré:**
+
+| NanoClaw/OpenClaw | → | PicoClaw-Agents |
+|-------------------|---|-----------------|
+| `providers[].apiKey` | → | `providers.*.api_key` |
+| `agents[].model` | → | `agents.defaults.model_name` |
+| `channels[].telegram.token` | → | `channels.telegram.token` |
+| `groups/default/CLAUDE.md` | → | `workspace/AGENTS.md` |
+| `memory/` | → | `workspace/memory/` |
+| `skills/` | → | `workspace/skills/` |
+
+**Tous les flags migrate:**
+
+| Flag | Description |
+|------|-------------|
+| `--from openclaw\|nanoclaw` | Source à migrer (défaut: openclaw) |
+| `--dry-run` | Afficher ce qui serait migré sans changer |
+| `--show-diff` | Afficher diff JSON config en dry-run |
+| `--force` | Ignorer confirmations |
+| `--config-only` | Migrer seulement config, ignorer workspace |
+| `--workspace-only` | Migrer seulement workspace, ignorer config |
+| `--refresh` | Re-synchroniser workspace depuis source |
+| `--nanoclaw-home` | Override répertoire home NanoClaw |
+| `--openclaw-home` | Override répertoire home OpenClaw |
+| `--picoclaw-home` | Override répertoire home PicoClaw |
 
 ---
 
@@ -1017,6 +1084,140 @@ Le sous-agent a accès aux outils (message, web_search, etc.) et peut communique
 | `qwen`                 | LLM (Qwen direct)                          | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) |
 | `groq`                 | LLM + **Transcription vocale** (Whisper)   | [console.groq.com](https://console.groq.com)                         |
 | `cerebras`             | LLM (Cerebras direct)                      | [cerebras.ai](https://cerebras.ai)                                   |
+| `openai` (Codex OAuth)         | LLM + Code (OpenAI Codex — OAuth)          | `picoclaw-agents auth login --provider openai`                          |
+
+### 🎯 Utilisation de plusieurs modèles et fournisseurs
+
+PicoClaw prend en charge plusieurs fournisseurs LLM simultanément. Vous pouvez configurer et basculer entre différents modèles selon vos besoins.
+
+#### Étape 1 : Configurez vos fournisseurs
+
+**Option A : Niveau gratuit OpenRouter (recommandé pour débuter)**
+
+```bash
+# Configuration rapide avec des modèles gratuits
+picoclaw-agents onboard --free
+```
+
+Cela configure automatiquement le niveau gratuit d'OpenRouter. Aucune clé API n'est requise initialement.
+
+**Option B : Google Antigravity (niveau gratuit avec OAuth)**
+
+```bash
+# Connexion via OAuth
+picoclaw-agents auth login --provider google-antigravity
+```
+
+Cela vous donne accès aux modèles gratuits de Google via Cloud Code Assist.
+
+**Option C : OpenAI Codex (OAuth pour le codage)**
+
+```bash
+# Activer d'abord l'autorisation par code d'appareil :
+# Visitez https://chatgpt.com/#settings/Security
+# Activez "Device Code Authorization for Codex"
+
+# Puis connectez-vous
+picoclaw-agents auth login --provider openai --device-code
+```
+
+> ⚠️ **Important :** Pour OpenAI Codex OAuth, vous devez d'abord activer l'autorisation par code d'appareil dans vos paramètres ChatGPT.
+
+#### Étape 2 : Lister les modèles disponibles
+
+Après avoir configuré les fournisseurs, vérifiez les modèles disponibles :
+
+```bash
+picoclaw-agents models list
+```
+
+Exemple de sortie :
+```
+┌──────────────────────────────┬──────────────────────────────────┐
+│          model_name          │              modelo              │
+├──────────────────────────────┼──────────────────────────────────┤
+│ openrouter-free              │ openrouter/free                  │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity                  │ antigravity/gemini-3-flash       │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-flash            │ antigravity/gemini-3-flash       │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-flash-agent      │ antigravity/gemini-3-flash-agent │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-gemini-2.5-flash │ antigravity/gemini-2.5-flash     │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-claude-sonnet    │ antigravity/claude-sonnet-4-5    │
+└──────────────────────────────┴──────────────────────────────────┘
+```
+
+#### Étape 3 : Utiliser différents modèles
+
+**Utilisation en ligne de commande :**
+
+```bash
+# Utiliser le modèle gratuit OpenRouter
+./build/picoclaw-agents agent --model openrouter-free -m "Hello, world!"
+
+# Utiliser Google Antigravity (Gemini)
+./build/picoclaw-agents agent --model antigravity -m "Explique l'informatique quantique"
+
+# Utiliser un modèle Gemini spécifique
+./build/picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "Écris un poème"
+
+# Utiliser OpenAI Codex (pour les tâches de codage)
+./build/picoclaw-agents agent --model openai -m "Écris une fonction Python pour trier une liste"
+```
+
+**Dans config.json (modèles par agent) :**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "openrouter-free"
+    },
+    "list": [
+      {
+        "id": "general_assistant",
+        "model": "antigravity-gemini-2.5-flash"
+      },
+      {
+        "id": "coding_expert",
+        "model": "openai"
+      }
+    ]
+  }
+}
+```
+
+#### Guide de sélection des modèles
+
+| Cas d'utilisation | Modèle recommandé | Commande |
+|----------|------------------|---------|
+| **Chat général** | `openrouter-free` | `--model openrouter-free` |
+| **Réponses rapides** | `antigravity-flash` | `--model antigravity-flash` |
+| **Raisonnement complexe** | `antigravity-gemini-2.5-flash` | `--model antigravity-gemini-2.5-flash` |
+| **Tâches de codage** | `openai` (Codex) | `--model openai` |
+| **Modèles Claude** | `antigravity-claude-sonnet` | `--model antigravity-claude-sonnet` |
+
+#### Basculer entre les modèles
+
+Vous pouvez changer de modèle à tout moment :
+
+```bash
+# Mode interactif avec changement de modèle
+./build/picoclaw-agents interactive --model openrouter-free
+
+# Puis utilisez la commande /model pour basculer
+/model antigravity-gemini-2.5-flash
+```
+
+Ou spécifiez le modèle par message :
+
+```bash
+./build/picoclaw-agents agent --model antigravity -m "Premier message"
+./build/picoclaw-agents agent --model openrouter-free -m "Deuxième message"
+```
 
 ### Configuration du Modèle (model_list)
 
@@ -1049,6 +1250,7 @@ Cette conception permet également le **support multi-agent** avec une sélectio
 | **火山引擎**        | `volcengine/`     | `https://ark.cn-beijing.volces.com/api/v3`          | OpenAI    | [Obtenir Clé](https://console.volcengine.com)                        |
 | **神算云**          | `shengsuanyun/`   | `https://router.shengsuanyun.com/api/v1`            | OpenAI    | -                                                                    |
 | **Antigravity**     | `antigravity/`    | Google Cloud                                        | Custom    | OAuth uniquement                                                     |
+| **OpenAI Codex** (OAuth)       | `openai/` + `auth_method: oauth` | `https://chatgpt.com/backend-api/codex`             | Custom    | OAuth uniquement (`auth login --provider openai`)    |
 | **GitHub Copilot**  | `github-copilot/` | `localhost:4321`                                    | gRPC      | -                                                                    |
 
 #### Configuration de Base
@@ -1126,6 +1328,30 @@ Cette conception permet également le **support multi-agent** avec une sélectio
 ```
 
 > Exécutez `picoclaw-agents auth login --provider anthropic` pour coller votre jeton API.
+
+**Google Antigravity (OAuth — niveau gratuit)**
+
+```json
+{
+  "model_name": "antigravity-gemini-3-flash",
+  "model": "antigravity/gemini-3-flash",
+  "auth_method": "oauth"
+}
+```
+
+> Exécutez `picoclaw-agents auth login --provider google-antigravity` pour vous authentifier via le navigateur. Aucune clé API requise — utilise votre compte Google.
+
+**OpenAI Codex (OAuth — sans clé API)**
+
+```json
+{
+  "model_name": "gpt-5.2",
+  "model": "openai/gpt-5.2",
+  "auth_method": "oauth"
+}
+```
+
+> Exécutez `picoclaw-agents auth login --provider openai` pour vous authentifier via le navigateur. Sans clé API — utilise votre compte OpenAI. Se connecte au **backend Codex** (`chatgpt.com/backend-api/codex`), optimisé pour les tâches de programmation.
 
 **Ollama (local)**
 
@@ -1221,7 +1447,7 @@ PicoClaw route les fournisseurs par famille de protocole :
 
 - Protocole compatible OpenAI : OpenRouter, passerelles OpenAI-compatibles, Groq, Zhipu et points de terminaison de style vLLM.
 - Protocole Anthropic : Comportement de l'API native de Claude.
-- Chemin Codex/OAuth : Route d'authentification par jeton/OAuth OpenAI.
+- Chemin Codex/OAuth : Route OAuth OpenAI Codex (`chatgpt.com/backend-api/codex`) — utiliser `auth login --provider openai`.
 
 Cela maintient le runtime léger tout en rendant l'ajout de nouveaux backends compatibles OpenAI principalement une opération de configuration (`api_base` + `api_key`).
 

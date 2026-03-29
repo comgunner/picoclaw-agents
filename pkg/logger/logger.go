@@ -145,7 +145,11 @@ func logMessage(level LogLevel, component string, message string, fields map[str
 	if logger.file != nil {
 		jsonData, err := json.Marshal(entry)
 		if err == nil {
-			logger.file.Write(append(jsonData, '\n'))
+			// BUG-05 FIX: Check write error instead of ignoring it
+			if _, werr := logger.file.Write(append(jsonData, '\n')); werr != nil {
+				// If we can't write to the log file, stderr is our only option
+				fmt.Fprintf(os.Stderr, "logger: file write failed: %v\n", werr)
+			}
 		}
 	}
 

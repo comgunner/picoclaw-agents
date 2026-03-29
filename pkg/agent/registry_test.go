@@ -178,8 +178,9 @@ func TestAgentInstance_Model(t *testing.T) {
 	registry := NewAgentRegistry(cfg, &mockRegistryProvider{})
 
 	agent, _ := registry.GetAgent("custom")
-	if agent.Model != "claude-opus" {
-		t.Errorf("agent.Model = %q, want 'claude-opus'", agent.Model)
+	// NormalizeModelName adds "anthropic/" prefix to Claude models
+	if agent.Model != "anthropic/claude-opus" {
+		t.Errorf("agent.Model = %q, want 'anthropic/claude-opus'", agent.Model)
 	}
 }
 

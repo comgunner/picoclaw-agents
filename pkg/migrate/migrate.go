@@ -36,7 +36,10 @@ type Options struct {
 	WorkspaceOnly bool
 	Force         bool
 	Refresh       bool
+	From          string // "openclaw" | "nanoclaw" — SPRINT 2 FEATURE
+	ShowDiff      bool   // mostrar JSON diff en dry-run — SPRINT 2 FEATURE
 	OpenClawHome  string
+	NanoClawHome  string // SPRINT 2 FEATURE: default ~/.nanoclaw o ~/.config/nanoclaw
 	PicoClawHome  string
 }
 
@@ -66,37 +69,84 @@ func Run(opts Options) (*Result, error) {
 		opts.WorkspaceOnly = true
 	}
 
-	openclawHome, err := resolveOpenClawHome(opts.OpenClawHome)
-	if err != nil {
-		return nil, err
+	// SPRINT 2 FEATURE: Support migration from nanoclaw
+	source := opts.From
+	if source == "" {
+		source = "openclaw" // default
 	}
 
-	picoClawHome, err := resolvePicoClawHome(opts.PicoClawHome)
-	if err != nil {
-		return nil, err
+	var actions []Action
+	var warnings []string
+	var err error
+	var sourceHome, sourceName string
+
+	switch source {
+	case "nanoclaw":
+		sourceHome, err = ResolveNanoClawHome(opts.NanoClawHome)
+		sourceName = "NanoClaw"
+		if err != nil {
+			return nil, err
+		}
+		if _, err = os.Stat(sourceHome); os.IsNotExist(err) {
+			return nil, fmt.Errorf("NanoClaw installation not found at %s", sourceHome)
+		}
+		actions, warnings, err = PlanNanoClawMigration(opts, sourceHome, opts.PicoClawHome)
+		if err != nil {
+			return nil, err
+		}
+
+	case "openclaw", "":
+		sourceHome, err = resolveOpenClawHome(opts.OpenClawHome)
+		sourceName = "OpenClaw"
+		if err != nil {
+			return nil, err
+		}
+		if _, err = os.Stat(sourceHome); os.IsNotExist(err) {
+			return nil, fmt.Errorf("OpenClaw installation not found at %s", sourceHome)
+		}
+		picoClawHome, err := resolvePicoClawHome(opts.PicoClawHome)
+		if err != nil {
+			return nil, err
+		}
+		actions, warnings, err = Plan(opts, sourceHome, picoClawHome)
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, fmt.Errorf("unknown source: %s (use 'openclaw' or 'nanoclaw')", source)
 	}
 
-	if _, err = os.Stat(openclawHome); os.IsNotExist(err) {
-		return nil, fmt.Errorf("OpenClaw installation not found at %s", openclawHome)
-	}
+	picoClawHome, _ := resolvePicoClawHome(opts.PicoClawHome)
 
-	actions, warnings, err := Plan(opts, openclawHome, picoClawHome)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println("Migrating from OpenClaw to PicoClaw")
-	fmt.Printf("  Source:      %s\n", openclawHome)
+	fmt.Printf("Migrating from %s to PicoClaw\n", sourceName)
+	fmt.Printf("  Source:      %s\n", sourceHome)
 	fmt.Printf("  Destination: %s\n", picoClawHome)
 	fmt.Println()
 
 	if opts.DryRun {
-		PrintPlan(actions, warnings)
+		if source == "nanoclaw" {
+			PrintNanoClawPlan(actions, warnings)
+		} else {
+			PrintPlan(actions, warnings)
+		}
+		if opts.ShowDiff {
+			configPath, _ := findOpenClawConfig(sourceHome)
+			if source == "nanoclaw" {
+				PrintNanoClawConfigDiff(filepath.Join(sourceHome, "config.json"))
+			} else if configPath != "" {
+				PrintConfigDiff(configPath)
+			}
+		}
 		return &Result{Warnings: warnings}, nil
 	}
 
 	if !opts.Force {
-		PrintPlan(actions, warnings)
+		if source == "nanoclaw" {
+			PrintNanoClawPlan(actions, warnings)
+		} else {
+			PrintPlan(actions, warnings)
+		}
 		if !Confirm() {
 			fmt.Println("Aborted.")
 			return &Result{Warnings: warnings}, nil
@@ -104,7 +154,7 @@ func Run(opts Options) (*Result, error) {
 		fmt.Println()
 	}
 
-	result := Execute(actions, openclawHome, picoClawHome)
+	result := Execute(actions, sourceHome, picoClawHome)
 	result.Warnings = warnings
 	return result, nil
 }

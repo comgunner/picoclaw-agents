@@ -18,7 +18,29 @@ import (
 
 	"github.com/comgunner/picoclaw/pkg/auth"
 	"github.com/comgunner/picoclaw/pkg/cli"
+	"github.com/comgunner/picoclaw/pkg/config"
 )
+
+// skillInfo represents a native skill with its description
+type skillInfo struct {
+	id   string
+	name string
+	desc string
+}
+
+// nativeSkillsList returns the list of native skills available for selection
+func nativeSkillsList() []skillInfo {
+	allSkills := getNativeSkills()
+	result := make([]skillInfo, len(allSkills))
+	for i, skill := range allSkills {
+		result[i] = skillInfo{
+			id:   skill,
+			name: skill,
+			desc: getSkillDescription(skill),
+		}
+	}
+	return result
+}
 
 // Wizard orchestrates the interactive setup process
 type Wizard struct {
@@ -28,6 +50,16 @@ type Wizard struct {
 	apiKey     string
 	configPath string
 	workspace  string
+
+	// Channel configuration — BUG-03 FIX: persist channel config
+	channelType   string // "telegram" | "discord" | ""
+	channelToken  string // bot token
+	channelUserID string // user/server ID for allowed_users
+
+	// Agent mode — SPRINT 2 ONBOARD: team mode and skills
+	agentMode     string   // "solo" | "team"
+	agentTemplate string   // "dev" | "research" | "general" (for team mode)
+	customSkills  []string // skills chosen in solo/custom mode
 }
 
 // NewWizard creates a new interactive setup wizard
@@ -59,7 +91,12 @@ func (w *Wizard) Run() error {
 		return fmt.Errorf("channel setup failed: %w", err)
 	}
 
-	// Step 4: Generate configuration
+	// Step 4: Agent mode selection
+	if err := w.stepMode(); err != nil {
+		return fmt.Errorf("agent mode setup failed: %w", err)
+	}
+
+	// Step 5: Generate configuration
 	if err := w.stepGenerateConfig(); err != nil {
 		return fmt.Errorf("config generation failed: %w", err)
 	}
@@ -75,7 +112,7 @@ func (w *Wizard) Run() error {
 
 func (w *Wizard) printHeader() {
 	fmt.Println("\n╔════════════════════════════════════════════════════════╗")
-	fmt.Println("║           PicoClaw Setup Wizard v3.5.0                 ║")
+	fmt.Printf("║           PicoClaw Setup Wizard %-22s ║\n", config.Version)
 	fmt.Println("║     \"The AI that actually does things\"                 ║")
 	fmt.Println("╚════════════════════════════════════════════════════════╝")
 	fmt.Println()
@@ -88,6 +125,35 @@ func (w *Wizard) printSuccess() {
 	fmt.Println()
 	fmt.Println("📦 Configuration saved to:", w.configPath)
 	fmt.Println("📁 Workspace directory:", w.workspace)
+
+	// BUG-03 FIX: Show channel status in success message
+	if w.channelType == "telegram" && w.channelToken != "" {
+		fmt.Println("💬 Channel: Telegram ✅")
+	} else if w.channelType == "discord" && w.channelToken != "" {
+		fmt.Println("🎮 Channel: Discord ✅")
+	} else {
+		fmt.Println("💬 Channel: CLI-only mode")
+	}
+
+	// SPRINT 2 ONBOARD: Show agent mode and skills
+	if w.agentMode == "team" {
+		templateName := w.agentTemplate
+		switch w.agentTemplate {
+		case "dev":
+			templateName = "Dev Team (9 agents)"
+		case "research":
+			templateName = "Research Team (3 agents)"
+		case "general":
+			templateName = "General Team (3 agents)"
+		}
+		fmt.Printf("🤖 Mode:      %s\n", templateName)
+	} else {
+		if len(w.customSkills) > 0 {
+			fmt.Printf("🤖 Mode:      Solo Agent with skills: %s\n", strings.Join(w.customSkills, ", "))
+		} else {
+			fmt.Println("🤖 Mode:      Solo Agent")
+		}
+	}
 	fmt.Println()
 
 	// Check if using free tier
@@ -279,13 +345,11 @@ func (w *Wizard) setupEasyFree() error {
 	w.apiKey = apiKey
 
 	fmt.Println()
-	fmt.Println("  ✅ Easy Setup complete! Free models configured:")
-	fmt.Println("     • openrouter/free       → auto-selects best available free model")
-	fmt.Println("     • stepfun/step-3.5-flash → 256K context, reasoning + tools (fallback)")
-	fmt.Println("     • deepseek/deepseek-v3.2 → fast and capable (fallback)")
+	fmt.Println("  ✅ Easy Setup complete! Free model configured:")
+	fmt.Println("     • openrouter/free → auto-selects best free model with tool support")
 	fmt.Println()
-	fmt.Println("  ℹ️  Free models have rate limits (~50 req/min). Perfect for personal use.")
-	fmt.Println("  ℹ️  To upgrade later: picoclaw onboard --openrouter")
+	fmt.Println("  ℹ️  Free models have rate limits. Perfect for personal use.")
+	fmt.Println("  ℹ️  To upgrade later: picoclaw-agents onboard --openrouter")
 	fmt.Println()
 	return nil
 }
@@ -315,11 +379,13 @@ func (w *Wizard) stepChannels() error {
 func (w *Wizard) setupTelegram() error {
 	fmt.Println("\n📱 Setting up Telegram...")
 
-	token := w.promptSecret("Enter Telegram Bot Token: ")
-	_ = w.prompt("Enter your Telegram User ID: ")
+	// BUG-03 FIX: Store token and userID in wizard struct instead of local variables
+	w.channelToken = w.promptSecret("Enter Telegram Bot Token: ")
+	w.channelUserID = w.prompt("Enter your Telegram User ID: ")
+	w.channelType = "telegram"
 
 	// Basic validation
-	if len(token) < 40 {
+	if len(w.channelToken) < 40 {
 		fmt.Println("⚠️  Warning: Token seems short")
 		if !w.promptConfirm("  Continue anyway?") {
 			return fmt.Errorf("invalid token")
@@ -333,11 +399,13 @@ func (w *Wizard) setupTelegram() error {
 func (w *Wizard) setupDiscord() error {
 	fmt.Println("\n🎮 Setting up Discord...")
 
-	token := w.promptSecret("Enter Discord Bot Token: ")
-	_ = w.prompt("Enter your Discord User ID: ")
+	// BUG-03 FIX: Store token and userID in wizard struct instead of local variables
+	w.channelToken = w.promptSecret("Enter Discord Bot Token: ")
+	w.channelUserID = w.prompt("Enter your Discord User/Server ID: ")
+	w.channelType = "discord"
 
 	// Basic validation
-	if len(token) < 50 {
+	if len(w.channelToken) < 50 {
 		fmt.Println("⚠️  Warning: Token seems short")
 		if !w.promptConfirm("  Continue anyway?") {
 			return fmt.Errorf("invalid token")
@@ -348,9 +416,69 @@ func (w *Wizard) setupDiscord() error {
 	return nil
 }
 
+// stepMode lets the user choose between solo agent and team templates.
+func (w *Wizard) stepMode() error {
+	fmt.Println("\n🤖 Step 4/6: Agent Mode")
+	fmt.Println("─────────────────────────────────────")
+
+	mode := w.promptChoice("How do you want to use PicoClaw?", []string{
+		"Solo Agent       — One general-purpose agent (simple, recommended to start)",
+		"Dev Team         — Engineering team: manager + 8 specialists",
+		"Research Team    — Coordinator + researcher + analyst",
+		"General Team     — Orchestrator + 2 workers",
+	})
+
+	switch {
+	case strings.Contains(mode, "Dev Team"):
+		w.agentMode = "team"
+		w.agentTemplate = "dev"
+		fmt.Println("✅ Dev Team selected (engineering_manager + 8 specialists)")
+	case strings.Contains(mode, "Research"):
+		w.agentMode = "team"
+		w.agentTemplate = "research"
+		fmt.Println("✅ Research Team selected (coordinator + researcher + analyst)")
+	case strings.Contains(mode, "General"):
+		w.agentMode = "team"
+		w.agentTemplate = "general"
+		fmt.Println("✅ General Team selected (orchestrator + 2 workers)")
+	default:
+		w.agentMode = "solo"
+		w.agentTemplate = ""
+		w.customSkills = w.promptSkills()
+		if len(w.customSkills) > 0 {
+			fmt.Printf("✅ Solo Agent with skills: %s\n", strings.Join(w.customSkills, ", "))
+		} else {
+			fmt.Println("✅ Solo Agent (no extra skills)")
+		}
+	}
+	return nil
+}
+
+// promptSkills shows the native skills list and lets the user pick.
+func (w *Wizard) promptSkills() []string {
+	skills := nativeSkillsList()
+	fmt.Println("\n  Available native skills (optional):")
+	for i, s := range skills {
+		fmt.Printf("    %2d. %-28s — %s\n", i+1, s.name, s.desc)
+	}
+	fmt.Print("\n  Enter numbers (e.g. \"1 3\") or Enter to skip: ")
+	input := w.prompt("")
+	if strings.TrimSpace(input) == "" {
+		return nil
+	}
+	var chosen []string
+	for _, part := range strings.Fields(input) {
+		var n int
+		if _, err := fmt.Sscanf(part, "%d", &n); err == nil && n >= 1 && n <= len(skills) {
+			chosen = append(chosen, skills[n-1].id)
+		}
+	}
+	return chosen
+}
+
 // stepGenerateConfig generates the configuration file
 func (w *Wizard) stepGenerateConfig() error {
-	fmt.Println("\n⚙️  Step 4/5: Generating Configuration")
+	fmt.Println("\n⚙️  Step 5/6: Generating Configuration")
 	fmt.Println("─────────────────────────────────────")
 
 	// Create directory
@@ -384,7 +512,7 @@ func (w *Wizard) stepGenerateConfig() error {
 
 // stepVerify verifies the setup
 func (w *Wizard) stepVerify() error {
-	fmt.Println("\n🔍 Step 5/5: Verification")
+	fmt.Println("\n🔍 Step 6/6: Verification")
 	fmt.Println("─────────────────────────────────────")
 
 	// Verify config file exists
@@ -427,10 +555,11 @@ func (w *Wizard) saveConfig() error {
 	// Check if using free tier
 	if w.model == "openrouter/free" {
 		// Easy Setup: three free models with fallbacks
+		// FIX: Use "openrouter/auto" instead of "openrouter/free" (issue #901)
 		modelListJSON = fmt.Sprintf(`[
     {
-      "model_name": "or-free",
-      "model": "openrouter/free",
+      "model_name": "or-auto",
+      "model": "openrouter/auto",
       "api_base": "https://openrouter.ai/api/v1",
       "api_key": "%s"
     },
@@ -458,6 +587,29 @@ func (w *Wizard) saveConfig() error {
   ]`, w.modelName, w.model, w.apiKey)
 	}
 
+	// BUG-03 FIX: Generate channels JSON if channel is configured
+	channelsJSON := ""
+	if w.channelType == "telegram" && w.channelToken != "" {
+		channelsJSON = fmt.Sprintf(`,
+  "channels": {
+    "telegram": {
+      "token": "%s",
+      "allowed_users": ["%s"]
+    }
+  }`, w.channelToken, w.channelUserID)
+	} else if w.channelType == "discord" && w.channelToken != "" {
+		channelsJSON = fmt.Sprintf(`,
+  "channels": {
+    "discord": {
+      "token": "%s",
+      "allowed_users": ["%s"]
+    }
+  }`, w.channelToken, w.channelUserID)
+	}
+
+	// SPRINT 2 ONBOARD: Generate agents.list with skills and subagents
+	agentsListJSON := buildAgentListJSON(w.agentMode, w.agentTemplate, w.modelName, w.customSkills)
+
 	// Generate config JSON
 	data := fmt.Sprintf(`{
   "agents": {
@@ -468,11 +620,12 @@ func (w *Wizard) saveConfig() error {
       "max_tokens": 8192,
       "temperature": 0.7,
       "max_tool_iterations": 20
-    }
+    },
+    "list": %s
   },
-  "model_list": %s
+  "model_list": %s%s
 }
-`, w.workspace, w.modelName, modelListJSON)
+`, w.workspace, w.modelName, agentsListJSON, modelListJSON, channelsJSON)
 
 	return os.WriteFile(w.configPath, []byte(data), 0o600)
 }

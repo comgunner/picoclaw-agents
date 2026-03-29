@@ -20,12 +20,14 @@ func NewMigrateCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "migrate",
-		Short: "Migrate from OpenClaw to PicoClaw",
+		Short: "Migrate from OpenClaw or NanoClaw to PicoClaw",
 		Args:  cobra.NoArgs,
 		Example: `  picoclaw migrate
+  picoclaw migrate --from nanoclaw
   picoclaw migrate --dry-run
   picoclaw migrate --refresh
-  picoclaw migrate --force`,
+  picoclaw migrate --force
+  picoclaw migrate --from nanoclaw --dry-run --show-diff`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			result, err := migrate.Run(opts)
 			if err != nil {
@@ -41,17 +43,25 @@ func NewMigrateCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&opts.DryRun, "dry-run", false,
 		"Show what would be migrated without making changes")
 	cmd.Flags().BoolVar(&opts.Refresh, "refresh", false,
-		"Re-sync workspace files from OpenClaw (repeatable)")
+		"Re-sync workspace files from source (repeatable)")
 	cmd.Flags().BoolVar(&opts.ConfigOnly, "config-only", false,
 		"Only migrate config, skip workspace files")
 	cmd.Flags().BoolVar(&opts.WorkspaceOnly, "workspace-only", false,
 		"Only migrate workspace files, skip config")
 	cmd.Flags().BoolVar(&opts.Force, "force", false,
 		"Skip confirmation prompts")
+
+	// SPRINT 2 FEATURE: Multi-source migration
+	cmd.Flags().StringVar(&opts.From, "from", "openclaw",
+		"Source to migrate from: openclaw | nanoclaw")
+	cmd.Flags().StringVar(&opts.NanoClawHome, "nanoclaw-home", "",
+		"Override NanoClaw home directory (default: ~/.nanoclaw or ~/.config/nanoclaw)")
 	cmd.Flags().StringVar(&opts.OpenClawHome, "openclaw-home", "",
 		"Override OpenClaw home directory (default: ~/.openclaw)")
 	cmd.Flags().StringVar(&opts.PicoClawHome, "picoclaw-home", "",
 		"Override PicoClaw home directory (default: ~/.picoclaw)")
+	cmd.Flags().BoolVar(&opts.ShowDiff, "show-diff", false,
+		"Show JSON config diff in dry-run mode")
 
 	return cmd
 }

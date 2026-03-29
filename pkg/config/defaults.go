@@ -241,9 +241,26 @@ func DefaultConfig() *Config {
 		ContextManagement: ContextManagementConfig{
 			CompactThreshold:    0.75,
 			CriticalThreshold:   0.90,
-			MinCompletionTokens: 512,
-			PreserveMessages:    20,
+			MinCompletionTokens: 1024, // SPRINT 1: aumentado de 512 a 1024
+			PreserveMessages:    30,   // SPRINT 1: aumentado de 20 a 30
 			AutoCompactEnabled:  true,
+
+			// SPRINT 1 FEATURE: Pruning avanzado
+			Pruning: ContextPruningConfig{
+				Enabled:            true,
+				MaxToolResultChars: 8000, // truncar tool results > 8K chars
+				ExcludeTools:       []string{"memory_store", "memory_read"},
+				AggressiveTools:    []string{"shell", "web_fetch"},
+			},
+
+			// SPRINT 1 FEATURE: Compaction avanzado
+			Compaction: ContextCompactionConfig{
+				Model:               "",   // vacío = usar mismo modelo del agente
+				MaxSummaryTokens:    2048, // aumentado de 512 a 2048 (4x más contexto)
+				RecentTurnsPreserve: 6,    // preservar últimos 6 turnos verbatim
+				MinSummaryQuality:   0.0,  // desactivado por default
+				MaxRetries:          2,
+			},
 		},
 	}
 }
@@ -1358,16 +1375,14 @@ func OpenRouterDefaultConfig() *Config {
 
 // OpenRouterFreeDefaultConfig returns a configuration template that uses only
 // OpenRouter free-tier models — no API balance required.
-// Primary: openrouter/free (auto-selects best available free model)
-// Fallback 1: stepfun/step-3.5-flash (256K context window)
-// Fallback 2: deepseek/deepseek-v3.2-20251201 (fast, reliable fallback)
+// Uses "openrouter/free" with require_parameters:true so OpenRouter routes only
+// to free models that support function/tool calling.
 func OpenRouterFreeDefaultConfig() *Config {
 	cfg := TemplateDefaultConfig()
 	cfg.Agents.Defaults.Model = "openrouter-free"
 	for i := range cfg.Agents.List {
 		cfg.Agents.List[i].Model = &AgentModelConfig{
-			Primary:   "openrouter-free",
-			Fallbacks: []string{"stepfun-flash", "deepseek-v3-free"},
+			Primary: "openrouter-free",
 		}
 	}
 	cfg.ModelList = []ModelConfig{
@@ -1376,18 +1391,13 @@ func OpenRouterFreeDefaultConfig() *Config {
 			Model:     "openrouter/free",
 			APIBase:   "https://openrouter.ai/api/v1",
 			APIKey:    "",
-		},
-		{
-			ModelName: "stepfun-flash",
-			Model:     "stepfun/step-3.5-flash",
-			APIBase:   "https://openrouter.ai/api/v1",
-			APIKey:    "",
-		},
-		{
-			ModelName: "deepseek-v3-free",
-			Model:     "deepseek/deepseek-v3.2-20251201",
-			APIBase:   "https://openrouter.ai/api/v1",
-			APIKey:    "",
+			// require_parameters: true tells OpenRouter to route only to
+			// free models that support tool/function calling.
+			ExtraBody: map[string]any{
+				"provider": map[string]any{
+					"require_parameters": true,
+				},
+			},
 		},
 	}
 	return cfg

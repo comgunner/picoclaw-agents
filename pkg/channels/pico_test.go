@@ -121,6 +121,38 @@ func TestPicoBroadcastToSession_TargetsOnlyRequestedSession(t *testing.T) {
 	}
 }
 
+// BUG-04 REGRESSION TEST: No connections should NOT be an error
+func TestPicoBroadcast_NoConnectionsIsNotError(t *testing.T) {
+	ch := newTestPicoChannel(t)
+
+	// Don't add any connections — simulate WebUI not open
+	err := ch.broadcastToSession(
+		"pico:empty-session",
+		newPicoMessage(picoTypeMsgCreate, map[string]any{"content": "hello"}),
+	)
+	if err != nil {
+		t.Errorf("BUG-04 regression: expected no error when no connections, got %v", err)
+	}
+}
+
+// BUG-04 REGRESSION TEST: All connections failing SHOULD be an error
+func TestPicoBroadcast_AllConnectionsFailIsError(t *testing.T) {
+	ch := newTestPicoChannel(t)
+
+	// Add a closed connection — all writes will fail
+	closedConn := &picoConn{id: "closed-1", sessionID: "s-fail"}
+	closedConn.closed.Store(true)
+	ch.picoAddConnForTest(closedConn)
+
+	err := ch.broadcastToSession("pico:s-fail", newPicoMessage(picoTypeMsgCreate, map[string]any{"content": "hello"}))
+	if err == nil {
+		t.Fatal("expected error when all connections fail, got nil")
+	}
+	if !errors.Is(err, ErrPicoSendFailed) {
+		t.Fatalf("expected ErrPicoSendFailed, got %v", err)
+	}
+}
+
 // picoAddConnForTest inserts a picoConn directly into both connection indexes for testing.
 func (c *PicoChannel) picoAddConnForTest(pc *picoConn) {
 	c.connsMu.Lock()

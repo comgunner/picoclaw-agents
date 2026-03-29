@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/health"
 	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/comgunner/picoclaw/pkg/providers"
@@ -33,9 +34,10 @@ type ContextCompactor interface {
 }
 
 type DefaultContextCompactor struct {
-	Filter *MessageFilter
-	Ranker MessageRanker
-	Cache  *utils.SummaryCache
+	Filter        *MessageFilter
+	Ranker        MessageRanker
+	Cache         *utils.SummaryCache
+	CompactionCfg config.ContextCompactionConfig
 }
 
 func NewDefaultContextCompactor(cache *utils.SummaryCache) *DefaultContextCompactor {
@@ -43,6 +45,18 @@ func NewDefaultContextCompactor(cache *utils.SummaryCache) *DefaultContextCompac
 		Filter: NewMessageFilter(),
 		Ranker: NewDefaultMessageRanker(),
 		Cache:  cache,
+	}
+}
+
+func NewDefaultContextCompactorWithCfg(
+	cache *utils.SummaryCache,
+	cfg config.ContextCompactionConfig,
+) *DefaultContextCompactor {
+	return &DefaultContextCompactor{
+		Filter:        NewMessageFilter(),
+		Ranker:        NewDefaultMessageRanker(),
+		Cache:         cache,
+		CompactionCfg: cfg,
 	}
 }
 
@@ -97,6 +111,14 @@ func (c *DefaultContextCompactor) CompactMessages(
 		break
 	}
 
+	// RecentTurnsPreserve: cap mid so the last N×2 messages always stay in newerHalf verbatim.
+	if c.CompactionCfg.RecentTurnsPreserve > 0 {
+		preserveFrom := len(messagesToCompact) - (c.CompactionCfg.RecentTurnsPreserve * 2)
+		if preserveFrom > 0 && mid > preserveFrom {
+			mid = preserveFrom
+		}
+	}
+
 	olderHalf := messagesToCompact[:mid]
 	newerHalf := messagesToCompact[mid:]
 
@@ -120,8 +142,28 @@ func (c *DefaultContextCompactor) CompactMessages(
 	topic := "conversation_segment"
 	var summary string
 
+	// BUG-01 FIX: Check cache BEFORE calling LLM to generate summary
+	// Previously, summary was always empty string, so cache was NEVER read.
+	// Now we properly check the cache first, avoiding unnecessary LLM calls.
+	if c.Cache != nil {
+		if cached, ok := c.Cache.FindSimilarSummary(sessionKey, topic); ok {
+			summary = cached
+			logger.DebugCF(
+				"agent",
+				"Context compaction: using cached summary",
+				map[string]any{"session": sessionKey, "topic": topic},
+			)
+		}
+	}
+
+	// Only call LLM if no cached summary found
 	if summary == "" {
-		s, err := c.GenerateSummary(ctx, provider, model, filteredOlder)
+		// Use compaction model override if configured (same provider, cheaper model).
+		compactModel := model
+		if c.CompactionCfg.Model != "" {
+			compactModel = c.CompactionCfg.Model
+		}
+		s, err := c.GenerateSummary(ctx, provider, compactModel, filteredOlder)
 		if err != nil {
 			health.ContextMetrics.RecordError()
 			logger.WarnCF(
@@ -184,13 +226,17 @@ func (c *DefaultContextCompactor) GenerateSummary(
 	}
 
 	prompt := sb.String()
+	maxTokens := 2048
+	if c.CompactionCfg.MaxSummaryTokens > 0 {
+		maxTokens = c.CompactionCfg.MaxSummaryTokens
+	}
 	resp, err := provider.Chat(
 		ctx,
 		[]providers.Message{{Role: "user", Content: prompt}},
 		nil,
 		model,
 		map[string]any{
-			"max_tokens":  512,
+			"max_tokens":  maxTokens,
 			"temperature": 0.3,
 		},
 	)

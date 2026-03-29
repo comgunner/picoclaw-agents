@@ -412,6 +412,46 @@ type ContextManagementConfig struct {
 	MinCompletionTokens int     `json:"min_completion_tokens" env:"PICOCLAW_CONTEXT_MIN_COMPLETION_TOKENS"`
 	PreserveMessages    int     `json:"preserve_messages"     env:"PICOCLAW_CONTEXT_PRESERVE_MESSAGES"`
 	AutoCompactEnabled  bool    `json:"auto_compact_enabled"  env:"PICOCLAW_CONTEXT_AUTO_COMPACT"`
+
+	// SPRINT 1 FEATURE: Pruning avanzado de tool results
+	Pruning ContextPruningConfig `json:"pruning"`
+
+	// SPRINT 1 FEATURE: Compaction avanzado con modelo separado y quality guard
+	Compaction ContextCompactionConfig `json:"compaction"`
+}
+
+// ContextPruningConfig recorta tool results voluminosos en memoria.
+// No modifica el JSONL — solo lo que se envía al LLM en cada llamada.
+type ContextPruningConfig struct {
+	Enabled            bool     `json:"enabled"               env:"PICOCLAW_PRUNE_ENABLED"`
+	MaxToolResultChars int      `json:"max_tool_result_chars" env:"PICOCLAW_PRUNE_MAX_TOOL_CHARS"`
+	ExcludeTools       []string `json:"exclude_tools"`    // Tools a excluir del pruning (ej. ["memory_store"])
+	AggressiveTools    []string `json:"aggressive_tools"` // Tools a aplicar agresivamente (siempre truncar)
+}
+
+// ContextCompactionConfig controla cómo se compacta el contexto
+type ContextCompactionConfig struct {
+	// Modelo para compactación — MISMO PROVEEDOR que el agente, vacío = mismo modelo.
+	//
+	// ⚠️ IMPORTANTE: este campo usa el mismo provider ya configurado en el agente.
+	//    Si el agente usa deepseek → poner un modelo deepseek (ej. "deepseek-chat").
+	//    Si usa anthropic → modelo anthropic (ej. "claude-haiku-4-5-20251001").
+	//    Si usa openai → modelo openai (ej. "gpt-4o-mini").
+	//    NO mezclar: poner "claude-haiku" cuando el agente usa deepseek dará error 404.
+	Model string `json:"model" env:"PICOCLAW_COMPACT_MODEL"`
+
+	// Tokens máximos para el resumen generado (default: 2048, antes: 512)
+	MaxSummaryTokens int `json:"max_summary_tokens" env:"PICOCLAW_COMPACT_MAX_SUMMARY_TOKENS"`
+
+	// Número de turnos recientes a preservar verbatim (no resumir)
+	RecentTurnsPreserve int `json:"recent_turns_preserve" env:"PICOCLAW_COMPACT_RECENT_TURNS"`
+
+	// Si el resumen es menor a este % del MaxSummaryTokens, reintentar (quality guard)
+	// 0.0 = desactivado, 0.3 = 30%
+	MinSummaryQuality float64 `json:"min_summary_quality"`
+
+	// Reintentos máximos si quality guard falla
+	MaxRetries int `json:"max_retries"`
 }
 
 type ProvidersConfig struct {

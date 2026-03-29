@@ -10,12 +10,15 @@
 package onboard
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal"
+	"github.com/comgunner/picoclaw/pkg/cli"
 	"github.com/comgunner/picoclaw/pkg/config"
 )
 
@@ -49,6 +52,12 @@ func onboard(template string) {
 		cfg = config.GeminiDefaultConfig()
 	case "free":
 		cfg = config.OpenRouterFreeDefaultConfig()
+		apiKey := promptFreeAPIKey()
+		if apiKey != "" {
+			for i := range cfg.ModelList {
+				cfg.ModelList[i].APIKey = apiKey // pragma: allowlist secret
+			}
+		}
 	default:
 		cfg = config.TemplateDefaultConfig()
 	}
@@ -61,7 +70,7 @@ func onboard(template string) {
 	workspace := cfg.WorkspacePath()
 	createWorkspaceTemplates(workspace)
 
-	fmt.Printf("%s picoclaw is ready!\n", internal.Logo)
+	fmt.Printf("%s picoclaw-agents is ready!\n", internal.Logo)
 	fmt.Println("\nNext steps:")
 	fmt.Println("  1. Add your API key to", configPath)
 	fmt.Println("")
@@ -86,16 +95,58 @@ func onboard(template string) {
 		fmt.Println("     - Platform: https://aistudio.google.com/")
 		fmt.Println("     - Keys:     https://aistudio.google.com/app/apikey")
 	case "free":
+		fmt.Println("     - API key already saved ✅")
 		fmt.Println("     - Platform: https://openrouter.ai/")
-		fmt.Println("     - Keys:     https://openrouter.ai/settings/keys")
-		fmt.Println("     - Note:     Free tier models — no balance required, just sign up")
+		fmt.Println("     - Model: openrouter/free (routes to best free model with tool support)")
 	default:
 		fmt.Println("     Recommended:")
 		fmt.Println("     - OpenRouter: https://openrouter.ai/keys (access 100+ models)")
 		fmt.Println("     - Ollama:     https://ollama.com (local, free)")
 	}
 
-	fmt.Println("\n  2. Chat: picoclaw agent -m \"Hello!\"")
+	fmt.Println("\n  2. Chat: picoclaw-agents agent -m \"Hello!\"")
+}
+
+// promptFreeAPIKey asks for an OpenRouter API key interactively.
+// Returns the key, or empty string if the user skips.
+func promptFreeAPIKey() string {
+	fmt.Println()
+	fmt.Println("╔════════════════════════════════════════════════════════╗")
+	fmt.Println("║         Easy Setup: OpenRouter FREE Models             ║")
+	fmt.Println("║   No credit card · No billing · Just try it!          ║")
+	fmt.Println("╚════════════════════════════════════════════════════════╝")
+	fmt.Println()
+	fmt.Println("  OpenRouter requires an API key even for free models.")
+	fmt.Println("  Sign up at https://openrouter.ai (email only, no card).")
+	fmt.Println()
+	fmt.Println("  ➜  1. Open:  https://openrouter.ai/settings/keys")
+	fmt.Println("  ➜  2. Sign up (email only, no credit card)")
+	fmt.Println("  ➜  3. Create a free API key (sk-or-v1-...)")
+	fmt.Println()
+
+	scanner := bufio.NewScanner(os.Stdin)
+	apiKey, err := cli.ReadMaskedWithFallback("  Paste your OpenRouter API key (or Enter to skip): ", scanner)
+	fmt.Println() // newline after masked input
+	if err != nil || strings.TrimSpace(apiKey) == "" {
+		fmt.Println("  ⚠️  No key provided. Edit ~/.picoclaw/config.json later to add it.")
+		return ""
+	}
+
+	apiKey = strings.TrimSpace(apiKey)
+	fmt.Printf("  Key received: %s***%s\n", apiKey[:min(6, len(apiKey))], apiKey[max(0, len(apiKey)-4):])
+	if !strings.HasPrefix(apiKey, "sk-or-") {
+		fmt.Println("  ⚠️  Key doesn't look like an OpenRouter key (expected sk-or-v1-...).")
+		fmt.Print("  Continue anyway? (y/n): ")
+		var resp string
+		fmt.Scanln(&resp)
+		if strings.ToLower(strings.TrimSpace(resp)) != "y" {
+			return ""
+		}
+	} else {
+		fmt.Println("  ✅ Key format looks good!")
+	}
+	fmt.Println()
+	return apiKey
 }
 
 func createWorkspaceTemplates(workspace string) {

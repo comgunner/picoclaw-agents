@@ -39,7 +39,8 @@ type (
 type Provider struct {
 	apiKey         string
 	apiBase        string
-	maxTokensField string // Field name for max tokens (e.g., "max_completion_tokens" for o1/glm models)
+	maxTokensField string         // Field name for max tokens (e.g., "max_completion_tokens" for o1/glm models)
+	extraBody      map[string]any // Extra fields merged into every request body (e.g. OpenRouter routing hints)
 	httpClient     *http.Client
 }
 
@@ -58,6 +59,16 @@ func WithRequestTimeout(timeout time.Duration) Option {
 		if timeout > 0 {
 			p.httpClient.Timeout = timeout
 		}
+	}
+}
+
+// WithExtraBody merges extra key-value pairs into every request body.
+// Useful for provider-specific routing hints, e.g.:
+//
+//	WithExtraBody(map[string]any{"provider": map[string]any{"require_parameters": true}})
+func WithExtraBody(extra map[string]any) Option {
+	return func(p *Provider) {
+		p.extraBody = extra
 	}
 }
 
@@ -186,6 +197,11 @@ func (p *Provider) Chat(
 		if !strings.Contains(p.apiBase, "generativelanguage.googleapis.com") {
 			requestBody["prompt_cache_key"] = cacheKey
 		}
+	}
+
+	// Merge provider-specific extra fields (e.g. OpenRouter routing hints).
+	for k, v := range p.extraBody {
+		requestBody[k] = v
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -341,7 +357,13 @@ func normalizeModel(model, apiBase string) string {
 		return model
 	}
 
+	// If apiBase is for OpenRouter, keep the full model name (e.g., "openrouter/auto")
 	if strings.Contains(strings.ToLower(apiBase), "openrouter.ai") {
+		return model
+	}
+
+	// If apiBase is for OpenAI, keep the full model name (e.g., "gpt-4o")
+	if strings.Contains(strings.ToLower(apiBase), "api.openai.com") {
 		return model
 	}
 

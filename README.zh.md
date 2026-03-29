@@ -25,6 +25,10 @@
 
 ## 📢 新闻
 
+2026-03-28 🎉 **多源迁移 + 团队模式 onboard**: 添加 `picoclaw-agents migrate --from nanoclaw` 用于从 NanoClaw 迁移。onboard wizard 现在包含 **Team Mode**,预构建模板 (Dev Team 9 个代理，Research Team 3 个代理，General Team 3 个代理) 和 **14 个原生技能** 选择。上下文窗口改进：工具结果修剪 (-60% tokens),高级压缩与模型覆盖，以及手动 `/compact` 命令。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-27 🎉 **构建质量和频道改进**: `go build ./...` 现在干净通过。添加 group trigger API 到 `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — 细粒度群组聊天控制。参见 [CHANGELOG.md](CHANGELOG.md)。
+
 2026-03-26 🎉 **MCP Builder 文档**: 完整的 MCP Builder Agent 文档，包含 API 参考、用例和示例。查看 [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md)。
 
 2026-03-26 🎉 **Sandbox 和 Codegen 命令**: 添加 `sandbox init/status` 用于隔离工作区，`util codegen` 用于 Go 代码生成。查看 [CHANGELOG.md](CHANGELOG.md)。
@@ -378,11 +382,16 @@ picoclaw-agents onboard --gemini      # 使用 Gemini 模板 (gemini-2.5-flash)
 
 | 优先级 | 模型 | 上下文 | 说明 |
 |--------|------|--------|------|
-| 主要 | `openrouter/free` | 动态 | 自动选择当前最优免费模型 |
+| 主要 | `openrouter/auto` | 动态 | 自动选择当前最优免费模型 |
 | 备用 1 | `stepfun/step-3.5-flash` | 256K | 适合长上下文任务 |
 | 备用 2 | `deepseek/deepseek-v3.2-20251201` | 64K | 快速可靠的兜底模型 |
 
 三个模型均通过 [OpenRouter](https://openrouter.ai) 路由 — 一个 API 密钥即可覆盖全部。
+
+> [!IMPORTANT]
+> **模型 ID 修复:** 早期版本使用 `openrouter/free`，这不是有效的 OpenRouter 模型 ID。已修复为 `openrouter/auto`。如果您的现有配置包含 `openrouter-free` 或 `openrouter/free`，请更新为 `openrouter/auto` 或重新运行 `picoclaw-agents onboard --free`。
+
+**了解更多：** 查看 [docs/OPENROUTER_FREE.md](docs/OPENROUTER_FREE.md) 获取完整设置指南、限制和故障排除。
 
 **2. 配置** (`~/.picoclaw/config.json`)
 
@@ -438,7 +447,7 @@ picoclaw-agents onboard --gemini      # 使用 Gemini 模板 (gemini-2.5-flash)
 }
 ```
 
-> **v3 核心 (多智能体架构)**：您现在可以启动隔离的**子智能体 (Subagents)** 来执行并行的后台任务。至关重要的是，**每个子智能体都可以使用完全不同的 LLM 模型**。如上配置所示，主智能体运行 `gpt4`，但它可以创建一个专门运行 `claude-sonnet-4.6` 的 `coder` 子智能体来同时处理复杂的编程任务！
+> **核心 (多智能体架构)**：您现在可以启动隔离的**子智能体 (Subagents)** 来执行并行的后台任务。至关重要的是，**每个子智能体都可以使用完全不同的 LLM 模型**。如上配置所示，主智能体运行 `gpt4`，但它可以创建一个专门运行 `claude-sonnet-4.6` 的 `coder` 子智能体来同时处理复杂的编程任务！
 
 > **新特性**：`model_list` 配置格式支持零代码添加供应商。详见 [模型配置 (model_list)](#模型配置-model_list)。
 > `request_timeout` 是可选的，单位为秒。如果省略或设置为 `<= 0`，PicoClaw 将使用默认超时时间 (120s)。
@@ -502,6 +511,64 @@ picoclaw-agents agent -m "2+2等于几？"
 ```
 
 这就完成了！您在 2 分钟内就拥有了一个可以工作的 AI 助手。
+
+---
+
+## 🔄 从 OpenClaw 或 NanoClaw 迁移
+
+如果您正在从 **OpenClaw** 或 **NanoClaw** 迁移到 PicoClaw-Agents，请使用 `migrate` 命令：
+
+```bash
+# 从 OpenClaw 迁移（默认）
+picoclaw-agents migrate
+
+# 显式从 OpenClaw 迁移
+picoclaw-agents migrate --from openclaw
+
+# 从 NanoClaw 迁移 (~/.nanoclaw 或 ~/.config/nanoclaw)
+picoclaw-agents migrate --from nanoclaw
+
+# 预运行（预览更改而不应用）
+picoclaw-agents migrate --from nanoclaw --dry-run
+
+# 在 dry-run 模式下显示 JSON config diff
+picoclaw-agents migrate --from nanoclaw --dry-run --show-diff
+
+# 自定义 NanoClaw home 目录
+picoclaw-agents migrate --from nanoclaw --nanoclaw-home /path/to/nanoclaw
+
+# 自定义 PicoClaw home 目录
+picoclaw-agents migrate --from nanoclaw --picoclaw-home /path/to/picoclaw
+
+# 强制迁移无需确认
+picoclaw-agents migrate --from nanoclaw --force
+```
+
+**迁移内容:**
+
+| NanoClaw/OpenClaw | → | PicoClaw-Agents |
+|-------------------|---|-----------------|
+| `providers[].apiKey` | → | `providers.*.api_key` |
+| `agents[].model` | → | `agents.defaults.model_name` |
+| `channels[].telegram.token` | → | `channels.telegram.token` |
+| `groups/default/CLAUDE.md` | → | `workspace/AGENTS.md` |
+| `memory/` | → | `workspace/memory/` |
+| `skills/` | → | `workspace/skills/` |
+
+**所有 migrate flags:**
+
+| Flag | 描述 |
+|------|------|
+| `--from openclaw\|nanoclaw` | 迁移来源 (默认：openclaw) |
+| `--dry-run` | 显示将要迁移的内容而不做更改 |
+| `--show-diff` | 在 dry-run 模式下显示 JSON config diff |
+| `--force` | 跳过确认提示 |
+| `--config-only` | 仅迁移 config，跳过 workspace 文件 |
+| `--workspace-only` | 仅迁移 workspace 文件，跳过 config |
+| `--refresh` | 从源重新同步 workspace 文件 |
+| `--nanoclaw-home` | 覆盖 NanoClaw home 目录 |
+| `--openclaw-home` | 覆盖 OpenClaw home 目录 |
+| `--picoclaw-home` | 覆盖 PicoClaw home 目录 |
 
 ---
 
@@ -1017,6 +1084,140 @@ Agent 读取 HEARTBEAT.md
 | `qwen`               | LLM (通义千问直连)           | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) |
 | `groq`               | LLM + **语音转录** (Whisper) | [console.groq.com](https://console.groq.com)                         |
 | `cerebras`           | LLM (Cerebras 直连)          | [cerebras.ai](https://cerebras.ai)                                   |
+| `openai` (Codex OAuth)     | LLM + 编程（OpenAI Codex — OAuth）         | `picoclaw-agents auth login --provider openai`                       |
+
+### 🎯 使用多个模型和提供商
+
+PicoClaw 同时支持多个 LLM 提供商。您可以根据需要配置和切换不同的模型。
+
+#### 步骤 1：配置您的提供商
+
+**选项 A：OpenRouter 免费层（入门推荐）**
+
+```bash
+# 使用免费模型快速设置
+picoclaw-agents onboard --free
+```
+
+这将自动配置 OpenRouter 的免费层。最初不需要 API 密钥。
+
+**选项 B：Google Antigravity（带 OAuth 的免费层）**
+
+```bash
+# 通过 OAuth 登录
+picoclaw-agents auth login --provider google-antigravity
+```
+
+这使您可以通过 Cloud Code Assist 访问 Google 的免费层模型。
+
+**选项 C：OpenAI Codex（用于编码的 OAuth）**
+
+```bash
+# 首先启用设备代码授权：
+# 访问 https://chatgpt.com/#settings/Security
+# 启用 "Device Code Authorization for Codex"
+
+# 然后登录
+picoclaw-agents auth login --provider openai --device-code
+```
+
+> ⚠️ **重要：** 对于 OpenAI Codex OAuth，您必须先在 ChatGPT 设置中启用设备代码授权。
+
+#### 步骤 2：列出可用模型
+
+配置提供商后，检查可用模型：
+
+```bash
+picoclaw-agents models list
+```
+
+输出示例：
+```
+┌──────────────────────────────┬──────────────────────────────────┐
+│          model_name          │              modelo              │
+├──────────────────────────────┼──────────────────────────────────┤
+│ openrouter-free              │ openrouter/free                  │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity                  │ antigravity/gemini-3-flash       │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-flash            │ antigravity/gemini-3-flash       │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-flash-agent      │ antigravity/gemini-3-flash-agent │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-gemini-2.5-flash │ antigravity/gemini-2.5-flash     │
+├──────────────────────────────┼──────────────────────────────────┤
+│ antigravity-claude-sonnet    │ antigravity/claude-sonnet-4-5    │
+└──────────────────────────────┴──────────────────────────────────┘
+```
+
+#### 步骤 3：使用不同的模型
+
+**命令行使用：**
+
+```bash
+# 使用 OpenRouter 免费模型
+./build/picoclaw-agents agent --model openrouter-free -m "Hello, world!"
+
+# 使用 Google Antigravity (Gemini)
+./build/picoclaw-agents agent --model antigravity -m "解释量子计算"
+
+# 使用特定的 Gemini 模型
+./build/picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "写一首诗"
+
+# 使用 OpenAI Codex（用于编码任务）
+./build/picoclaw-agents agent --model openai -m "写一个 Python 函数来排序列表"
+```
+
+**在 config.json 中（每个代理的模型）：**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "openrouter-free"
+    },
+    "list": [
+      {
+        "id": "general_assistant",
+        "model": "antigravity-gemini-2.5-flash"
+      },
+      {
+        "id": "coding_expert",
+        "model": "openai"
+      }
+    ]
+  }
+}
+```
+
+#### 模型选择指南
+
+| 使用场景 | 推荐模型 | 命令 |
+|----------|----------|------|
+| **一般聊天** | `openrouter-free` | `--model openrouter-free` |
+| **快速响应** | `antigravity-flash` | `--model antigravity-flash` |
+| **复杂推理** | `antigravity-gemini-2.5-flash` | `--model antigravity-gemini-2.5-flash` |
+| **编码任务** | `openai` (Codex) | `--model openai` |
+| **Claude 模型** | `antigravity-claude-sonnet` | `--model antigravity-claude-sonnet` |
+
+#### 切换模型
+
+您可以随时切换模型：
+
+```bash
+# 带模型切换的交互模式
+./build/picoclaw-agents interactive --model openrouter-free
+
+# 然后使用 /model 命令切换
+/model antigravity-gemini-2.5-flash
+```
+
+或者每条消息指定模型：
+
+```bash
+./build/picoclaw-agents agent --model antigravity -m "第一条消息"
+./build/picoclaw-agents agent --model openrouter-free -m "第二条消息"
+```
 
 ### 模型配置 (model_list)
 
@@ -1049,6 +1250,7 @@ Agent 读取 HEARTBEAT.md
 | **火山引擎**        | `volcengine/`     | `https://ark.cn-beijing.volces.com/api/v3`          | OpenAI    | [获取 Key](https://console.volcengine.com)                        |
 | **神算云**          | `shengsuanyun/`   | `https://router.shengsuanyun.com/api/v1`            | OpenAI    | -                                                                 |
 | **Antigravity**     | `antigravity/`    | Google Cloud                                        | 自定义    | 仅限 OAuth                                                        |
+| **OpenAI Codex**（OAuth）  | `openai/` + `auth_method: oauth` | `https://chatgpt.com/backend-api/codex`             | Custom    | 仅限 OAuth（`auth login --provider openai`）         |
 | **GitHub Copilot**  | `github-copilot/` | `localhost:4321`                                    | gRPC      | -                                                                 |
 
 #### 基础配置
@@ -1126,6 +1328,30 @@ Agent 读取 HEARTBEAT.md
 ```
 
 > 运行 `picoclaw-agents auth login --provider anthropic` 粘贴您的 API token。
+
+**Google Antigravity（OAuth — 免费套餐）**
+
+```json
+{
+  "model_name": "antigravity-gemini-3-flash",
+  "model": "antigravity/gemini-3-flash",
+  "auth_method": "oauth"
+}
+```
+
+> 运行 `picoclaw-agents auth login --provider google-antigravity` 通过浏览器进行身份验证。无需 API 密钥 — 使用您的 Google 帐户。
+
+**OpenAI Codex（OAuth — 无需 API 密钥）**
+
+```json
+{
+  "model_name": "gpt-5.2",
+  "model": "openai/gpt-5.2",
+  "auth_method": "oauth"
+}
+```
+
+> 运行 `picoclaw-agents auth login --provider openai` 通过浏览器进行身份验证。无需 API 密钥 — 使用您的 OpenAI 帐户。连接到 **Codex 后端**（`chatgpt.com/backend-api/codex`），专为编程任务优化。
 
 **Ollama (本地)**
 
@@ -1221,7 +1447,7 @@ PicoClaw 按协议族路由供应商：
 
 - OpenAI 兼容协议：OpenRouter, 兼容 OpenAI 的网关, Groq, 智谱 AI 和 vLLM 风格端点。
 - Anthropic 协议：Claude 原生 API 行为。
-- Codex/OAuth 路径：OpenAI OAuth/token 认证路径。
+- Codex/OAuth 路径：OpenAI Codex OAuth 路由（`chatgpt.com/backend-api/codex`）— 使用 `auth login --provider openai`。
 
 这使得运行环境保持轻量，同时添加新的兼容 OpenAI 的后端仅需进行配置操作 (`api_base` + `api_key`)。
 

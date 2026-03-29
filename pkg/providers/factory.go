@@ -21,6 +21,24 @@ const defaultAnthropicAPIBase = "https://api.anthropic.com/v1"
 
 var getCredential = auth.GetCredential
 
+// NormalizeModelName maps deprecated/alias model names to valid model IDs.
+// FIX for issue #901: "openrouter-free is not a valid model ID"
+func NormalizeModelName(model string) string {
+	lowerModel := strings.ToLower(model)
+
+	// OpenRouter free tier aliases → openrouter/free (NOT auto)
+	if lowerModel == "openrouter-free" || lowerModel == "free" || lowerModel == "or-free" {
+		return "openrouter/free"
+	}
+
+	// Anthropic model aliases (add "anthropic/" prefix if missing)
+	if strings.HasPrefix(lowerModel, "claude-") && !strings.Contains(lowerModel, "/") {
+		return "anthropic/" + model
+	}
+
+	return model
+}
+
 type providerType int
 
 const (
@@ -45,7 +63,10 @@ type providerSelection struct {
 }
 
 func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
-	model := cfg.Agents.Defaults.GetModelName()
+	// FIX #901: Normalize model name (e.g., "openrouter-free" → "openrouter/auto")
+	rawModel := cfg.Agents.Defaults.GetModelName()
+	model := NormalizeModelName(rawModel)
+
 	providerName := strings.ToLower(cfg.Agents.Defaults.Provider)
 	lowerModel := strings.ToLower(model)
 
@@ -212,19 +233,7 @@ func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
 			if sel.apiBase == "" {
 				sel.apiBase = "https://api.moonshot.cn/v1"
 			}
-		case strings.HasPrefix(model, "openrouter/") ||
-			strings.HasPrefix(model, "anthropic/") ||
-			strings.HasPrefix(model, "openai/") ||
-			strings.HasPrefix(model, "meta-llama/") ||
-			strings.HasPrefix(model, "deepseek/") ||
-			strings.HasPrefix(model, "google/"):
-			sel.apiKey = cfg.Providers.OpenRouter.APIKey
-			sel.proxy = cfg.Providers.OpenRouter.Proxy
-			if cfg.Providers.OpenRouter.APIBase != "" {
-				sel.apiBase = cfg.Providers.OpenRouter.APIBase
-			} else {
-				sel.apiBase = "https://openrouter.ai/api/v1"
-			}
+		// Check Anthropic OAuth BEFORE OpenRouter fallback (issue: anthropic/* models were routed to OpenRouter)
 		case (strings.Contains(lowerModel, "claude") || strings.HasPrefix(model, "anthropic/")) &&
 			(cfg.Providers.Anthropic.APIKey != "" || cfg.Providers.Anthropic.AuthMethod != ""):
 			if cfg.Providers.Anthropic.AuthMethod == "oauth" || cfg.Providers.Anthropic.AuthMethod == "token" {
@@ -240,6 +249,18 @@ func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
 			sel.proxy = cfg.Providers.Anthropic.Proxy
 			if sel.apiBase == "" {
 				sel.apiBase = defaultAnthropicAPIBase
+			}
+		case strings.HasPrefix(model, "openrouter/") ||
+			strings.HasPrefix(model, "openai/") ||
+			strings.HasPrefix(model, "meta-llama/") ||
+			strings.HasPrefix(model, "deepseek/") ||
+			strings.HasPrefix(model, "google/"):
+			sel.apiKey = cfg.Providers.OpenRouter.APIKey
+			sel.proxy = cfg.Providers.OpenRouter.Proxy
+			if cfg.Providers.OpenRouter.APIBase != "" {
+				sel.apiBase = cfg.Providers.OpenRouter.APIBase
+			} else {
+				sel.apiBase = "https://openrouter.ai/api/v1"
 			}
 		case (strings.Contains(lowerModel, "gpt") || strings.HasPrefix(model, "openai/")) &&
 			(cfg.Providers.OpenAI.APIKey != "" || cfg.Providers.OpenAI.AuthMethod != ""):

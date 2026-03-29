@@ -26,8 +26,8 @@ func TestSummaryCache_StoreAndRetrieve(t *testing.T) {
 	// Test Store
 	cache.StoreSummary("session_1", "test_topic", "This is a summary", 10)
 
-	// Test Retrieve
-	summary, found := cache.FindSimilarSummary("test_topic")
+	// Test Retrieve - BUG-02 FIX: now requires sessionID parameter
+	summary, found := cache.FindSimilarSummary("session_1", "test_topic")
 	if !found {
 		t.Errorf("expected to find summary for topic")
 	}
@@ -36,8 +36,14 @@ func TestSummaryCache_StoreAndRetrieve(t *testing.T) {
 	}
 
 	// Invalid Topic
-	_, found = cache.FindSimilarSummary("invalid_topic")
+	_, found = cache.FindSimilarSummary("session_1", "invalid_topic")
 	if found {
 		t.Errorf("did not expect to find summary for invalid topic")
+	}
+
+	// BUG-02 REGRESSION TEST: Different session should not find the summary
+	_, found = cache.FindSimilarSummary("session_2", "test_topic")
+	if found {
+		t.Errorf("BUG-02 regression: should not return summary from different session")
 	}
 }

@@ -88,7 +88,7 @@ func TestResolveProviderSelection(t *testing.T) {
 		{
 			name: "anthropic oauth routes to claude auth provider",
 			setup: func(cfg *config.Config) {
-				cfg.Agents.Defaults.Model = "claude-sonnet-4.6"
+				cfg.Agents.Defaults.Model = "anthropic/claude-sonnet-4.6"
 				cfg.Providers.Anthropic.AuthMethod = "oauth"
 			},
 			wantType: providerTypeClaudeAuth,

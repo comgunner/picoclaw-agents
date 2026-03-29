@@ -134,10 +134,17 @@ func NewAgentInstance(
 		temperature = *defaults.Temperature
 	}
 
-	// Resolve fallback candidates
+	// Resolve fallback candidates.
+	// Model names may be model_list aliases (e.g. "openrouter-free") rather than
+	// real provider/model IDs (e.g. "openrouter/free").  Resolve them first so that
+	// ResolveCandidates receives the actual model strings.
+	var modelList []config.ModelConfig
+	if cfg != nil {
+		modelList = cfg.ModelList
+	}
 	modelCfg := providers.ModelConfig{
-		Primary:   model,
-		Fallbacks: fallbacks,
+		Primary:   resolveModelAlias(model, modelList),
+		Fallbacks: resolveModelAliases(fallbacks, modelList),
 	}
 	candidates := providers.ResolveCandidates(modelCfg, defaults.Provider)
 
@@ -151,7 +158,7 @@ func NewAgentInstance(
 	return &AgentInstance{
 		ID:             agentID,
 		Name:           agentName,
-		Model:          model,
+		Model:          modelCfg.Primary, // FIX: Use resolved model (e.g. "gpt-4o") not alias (e.g. "chatgpt-gpt-4o")
 		Fallbacks:      fallbacks,
 		Workspace:      workspace,
 		MaxIterations:  maxIter,
@@ -193,11 +200,20 @@ func resolveAgentWorkspace(agentCfg *config.AgentConfig, defaults *config.AgentD
 }
 
 // resolveAgentModel resolves the primary model for an agent.
+// FIX #901: Normalize model names (openrouter-free → openrouter/auto)
 func resolveAgentModel(agentCfg *config.AgentConfig, defaults *config.AgentDefaults) string {
+	var model string
+
+	// First, get the raw model name (without normalization)
 	if agentCfg != nil && agentCfg.Model != nil && strings.TrimSpace(agentCfg.Model.Primary) != "" {
-		return strings.TrimSpace(agentCfg.Model.Primary)
+		model = strings.TrimSpace(agentCfg.Model.Primary)
+	} else {
+		model = defaults.GetModelName()
 	}
-	return defaults.GetModelName()
+
+	// Then normalize (openrouter-free → openrouter/auto, etc.)
+	// FIX #901: Normalize the model name
+	return providers.NormalizeModelName(model)
 }
 
 // resolveAgentFallbacks resolves the fallback models for an agent.
@@ -220,4 +236,27 @@ func expandHome(path string) string {
 		return home
 	}
 	return path
+}
+
+// resolveModelAlias looks up a model_name alias in the model_list and returns
+// the actual model string (e.g. "openrouter/auto").  If not found, the original
+// name is returned unchanged so existing provider/model strings pass through.
+// FIX #901: Also normalizes deprecated model names (openrouter-free → openrouter/auto)
+func resolveModelAlias(name string, modelList []config.ModelConfig) string {
+	for _, m := range modelList {
+		if m.ModelName == name {
+			// FIX #901: Normalize the model string from model_list
+			return providers.NormalizeModelName(m.Model)
+		}
+	}
+	// FIX #901: Normalize if not found in model_list
+	return providers.NormalizeModelName(name)
+}
+
+func resolveModelAliases(names []string, modelList []config.ModelConfig) []string {
+	resolved := make([]string, len(names))
+	for i, n := range names {
+		resolved[i] = resolveModelAlias(n, modelList)
+	}
+	return resolved
 }

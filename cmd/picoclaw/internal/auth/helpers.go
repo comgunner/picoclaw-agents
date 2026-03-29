@@ -148,17 +148,31 @@ func authLoginGoogleAntigravity() error {
 			}
 		}
 
-		// If no antigravity in ModelList, add it
+		// If no antigravity in ModelList, add primary + fallback entries
 		if !foundAntigravity {
-			appCfg.ModelList = append(appCfg.ModelList, config.ModelConfig{
-				ModelName:  "antigravity-gemini-3-flash",
-				Model:      "antigravity/gemini-3-flash",
-				AuthMethod: "oauth",
-			})
+			appCfg.ModelList = append(appCfg.ModelList,
+				config.ModelConfig{
+					ModelName:  "antigravity-gemini-3-flash-agent",
+					Model:      "antigravity/gemini-3-flash-agent",
+					AuthMethod: "oauth",
+				},
+				config.ModelConfig{
+					ModelName:  "antigravity-gemini-2-5-flash",
+					Model:      "antigravity/gemini-2.5-flash",
+					AuthMethod: "oauth",
+				},
+			)
 		}
 
-		// Update default model
-		appCfg.Agents.Defaults.ModelName = "antigravity-gemini-3-flash"
+		// Update default model and add fallback to all agents
+		appCfg.Agents.Defaults.ModelName = "antigravity-gemini-3-flash-agent"
+		for i := range appCfg.Agents.List {
+			if appCfg.Agents.List[i].Model == nil {
+				appCfg.Agents.List[i].Model = &config.AgentModelConfig{}
+			}
+			appCfg.Agents.List[i].Model.Primary = "antigravity-gemini-3-flash-agent"
+			appCfg.Agents.List[i].Model.Fallbacks = []string{"antigravity-gemini-2-5-flash"}
+		}
 
 		if err := config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
 			fmt.Printf("Warning: could not update config: %v\n", err)
@@ -166,8 +180,8 @@ func authLoginGoogleAntigravity() error {
 	}
 
 	fmt.Println("\n✓ Google Antigravity login successful!")
-	fmt.Println("Default model set to: antigravity-gemini-3-flash")
-	fmt.Println("Try it: picoclaw agent -m \"Hello world\"")
+	fmt.Println("Default model set to: antigravity-gemini-3-flash-agent (fallback: antigravity-gemini-2-5-flash)")
+	fmt.Println("Try it: picoclaw-agents agent -m \"Hello world\"")
 
 	return nil
 }
@@ -347,6 +361,21 @@ func authStatusCmd() error {
 	fmt.Println("\nAuthenticated Providers:")
 	fmt.Println("------------------------")
 	for provider, cred := range store.Credentials {
+		// For OAuth providers with an expired or soon-to-expire token, attempt a
+		// silent refresh so the displayed status reflects the real usable state.
+		if cred.AuthMethod == "oauth" && (cred.IsExpired() || cred.NeedsRefresh()) && cred.RefreshToken != "" {
+			cfg := oauthConfigForProvider(provider)
+			if refreshed, refreshErr := auth.RefreshAccessToken(cred, cfg); refreshErr == nil {
+				refreshed.Email = cred.Email
+				if refreshed.ProjectID == "" {
+					refreshed.ProjectID = cred.ProjectID
+				}
+				if saveErr := auth.SetCredential(provider, refreshed); saveErr == nil {
+					cred = refreshed
+				}
+			}
+		}
+
 		status := "active"
 		if cred.IsExpired() {
 			status = "expired"
@@ -372,6 +401,20 @@ func authStatusCmd() error {
 	}
 
 	return nil
+}
+
+// oauthConfigForProvider returns the OAuth config for known providers.
+// Returns an empty config for unknown providers (refresh will be skipped by
+// RefreshAccessToken when client_id is missing).
+func oauthConfigForProvider(provider string) auth.OAuthProviderConfig {
+	switch provider {
+	case "google-antigravity", "antigravity":
+		return auth.GoogleAntigravityOAuthConfig()
+	case "openai":
+		return auth.OpenAIOAuthConfig()
+	default:
+		return auth.OAuthProviderConfig{}
+	}
 }
 
 func authModelsCmd() error {

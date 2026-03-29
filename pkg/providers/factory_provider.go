@@ -12,8 +12,10 @@ package providers
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/comgunner/picoclaw/pkg/config"
+	"github.com/comgunner/picoclaw/pkg/providers/openai_compat"
 )
 
 // createClaudeAuthProvider creates a Claude provider using OAuth credentials from auth store.
@@ -107,13 +109,14 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 		if apiBase == "" {
 			apiBase = getDefaultAPIBase(protocol)
 		}
-		return NewHTTPProviderWithMaxTokensFieldAndRequestTimeout(
-			cfg.APIKey,
-			apiBase,
-			cfg.Proxy,
-			cfg.MaxTokensField,
-			cfg.RequestTimeout,
-		), modelID, nil
+		opts := []openai_compat.Option{
+			openai_compat.WithMaxTokensField(cfg.MaxTokensField),
+			openai_compat.WithRequestTimeout(time.Duration(cfg.RequestTimeout) * time.Second),
+		}
+		if len(cfg.ExtraBody) > 0 {
+			opts = append(opts, openai_compat.WithExtraBody(cfg.ExtraBody))
+		}
+		return &HTTPProvider{delegate: openai_compat.NewProvider(cfg.APIKey, apiBase, cfg.Proxy, opts...)}, modelID, nil
 
 	case "anthropic":
 		if cfg.AuthMethod == "oauth" || cfg.AuthMethod == "token" {

@@ -44,6 +44,11 @@ func agentCmd(message, sessionKey, model string, debug bool) error {
 
 	if model != "" {
 		cfg.Agents.Defaults.ModelName = model
+		// Clear per-agent model overrides so all agents use the provider
+		// and model selected by the --model flag instead of their config defaults.
+		for i := range cfg.Agents.List {
+			cfg.Agents.List[i].Model = nil
+		}
 	}
 
 	provider, modelID, err := providers.CreateProvider(cfg)

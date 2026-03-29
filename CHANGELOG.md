@@ -2,13 +2,330 @@
 
 All notable changes to the PicoClaw project will be documented in this file.
 
-> **Current Version:** v1.2.0 (as of March 2026)
->
-> This changelog documents all changes by date. Version numbers in internal references (e.g., v3.4.2) refer to feature milestones, not release versions.
+> This changelog documents all changes by date. Feature milestones are tracked by date, not version numbers.
 
 ---
 
-## 2026-03-28 — v1.2.0
+## 2026-03-28
+
+### 🔐 Auth: OAuth Token Auto-Refresh in `auth status`
+
+**Archivo modificado:** `cmd/picoclaw/internal/auth/helpers.go`
+
+- `auth status` now silently refreshes expired/expiring OAuth tokens before displaying status
+- Previously showed `Status: expired` even when a valid `refresh_token` existed (stale disk state)
+- Added `oauthConfigForProvider()` helper to centralize OAuth config lookup per provider
+- If refresh fails (no network, revoked token), falls back gracefully to showing `expired`
+- Affected providers: `google-antigravity`, `openai`
+
+### 🤖 Agent: `--model` Flag Now Overrides All Per-Agent Models
+
+**Archivo modificado:** `cmd/picoclaw/internal/agent/helpers.go`
+
+- Fixed: `--model antigravity` (or any provider) was creating the correct provider but individual
+  agents still passed their config model name (e.g. `openrouter/free`) to the LLM → 404 errors
+- When `--model` is explicitly passed, per-agent model overrides are cleared so all agents use
+  the selected provider and model consistently
+
+### 📋 Model List Expanded
+
+**Archivo modificado:** `~/.picoclaw/config.json` (runtime, not in repo)
+
+- Added homologated aliases: `openai` → `openai/gpt-5.2` (OAuth), `anthropic` → `anthropic/claude-sonnet-4.6`
+- Added antigravity variants: `antigravity-flash`, `antigravity-flash-agent`, `antigravity-gemini-2.5-flash`, `antigravity-claude-sonnet`
+- Provider → model_name mapping now mirrors `auth login --provider <name>` for consistency:
+  - `auth login --provider openai` → `agent --model openai`
+  - `auth login --provider google-antigravity` → `agent --model antigravity`
+
+### 📄 Research Documentation
+
+**Archivos nuevos en `local_work/`:**
+- `problema-google-antigravity-oauth.md` — Análisis del token expirado en auth status (post-fixes)
+- `problema-anthropic-oauth.md` — Investigación OAuth Anthropic en repos hermanos (ninguno lo logró)
+
+---
+
+### 📚 Documentation Updates — Multiple Models and Providers
+
+#### **README Updates — All Languages**
+
+**Archivos modificados:** `README.md`, `README.es.md`, `README.ja.md`, `README.zh.md`, `README.fr.md`, `README.pt-br.md`, `README.vi.md`
+
+- **Nueva sección:** "Using Multiple Models and Providers" / "Uso de Múltiples Modelos y Proveedores"
+- **Contenido:**
+  - Paso 1: Configurar proveedores (3 opciones)
+    - OpenRouter Free Tier (`picoclaw-agents onboard --free`)
+    - Google Antigravity OAuth (`auth login --provider google-antigravity`)
+    - OpenAI Codex OAuth (`auth login --provider openai --device-code`)
+  - Paso 2: Listar modelos disponibles (`picoclaw-agents models list`)
+  - Paso 3: Usar diferentes modelos (CLI y config.json)
+  - Guía de selección de modelos por caso de uso
+  - Instrucciones para cambiar entre modelos
+- **Tabla de modelos documentados:**
+  - `openrouter-free` (OpenRouter free tier)
+  - `antigravity` (Google Antigravity OAuth)
+  - `antigravity-flash`, `antigravity-flash-agent`
+  - `antigravity-gemini-2.5-flash`
+  - `antigravity-claude-sonnet`
+- **Advertencias incluidas:**
+  - OpenAI Codex requiere habilitar device code authorization en chatgpt.com/#settings/Security
+  - OpenRouter recomendado para comenzar (gratis, sin configuración)
+
+#### **Version Numbers Removed from All READMEs**
+
+**Archivos modificados:** `README.md`, `README.es.md`, `README.ja.md`, `README.zh.md`, `README.fr.md`, `README.pt-br.md`, `README.vi.md`
+
+- **Eliminado:** Todas las referencias a "v1.3.0-alpha" y similares
+- **Razón:** Acordado previamente - las fechas son suficientes
+- **Preservado:** Todas las fechas, features y contenido técnico
+
+### 🗑️ ChatGPT OAuth Provider Removal
+
+**Archivos modificados:**
+- `cmd/picoclaw/internal/auth/helpers.go`
+- `cmd/picoclaw/internal/auth/login.go`
+- `pkg/providers/factory_provider.go`
+- `pkg/auth/oauth.go`
+- `pkg/providers/codex_provider.go`
+- `docs/CHATGPT_OAUTH_LIMITATIONS.md`
+- Todos los READMEs (7 idiomas)
+
+**Cambios:**
+- Eliminado `--provider chatgpt` del código
+- Eliminadas funciones: `authLoginChatGPT()`, `isChatGPTModel()`, `createChatGPTAuthProvider()`, `ChatGPTOAuthConfig()`
+- Actualizado help text: "openai, anthropic, google-antigravity"
+- Documentación actualizada explicando limitaciones
+- **Razón:** Tokens OAuth de ChatGPT no funcionan con api.openai.com/v1
+- **Alternativas recomendadas:**
+  - OpenRouter free tier (`picoclaw-agents onboard --free`)
+  - OpenAI API Key (configurar manualmente)
+  - OpenAI Codex OAuth (`auth login --provider openai`)
+
+**Limpieza de configuración:**
+- Eliminadas credenciales de chatgpt de `~/.picoclaw/auth.json`
+- Eliminado modelo `chatgpt-gpt-4o` de `~/.picoclaw/config.json`
+
+### 📁 Local Work Documentation Created
+
+**Archivos nuevos en `local_work/`:**
+- `START_HERE.md` — Punto de entrada bilingüe (ES/EN)
+- `INDEX.md` — Índice maestro de documentos
+- `README.md` — Hub del directorio local_work
+- `CHANGELOG.md` — Changelog de local_work
+- `RESUMEN_ELIMINACION_CHATGPT_OAUTH.md` — Resumen ejecutivo (ES)
+- `chatgpt_oauth_removal_2026-03-28.md` — Documentación completa (EN)
+- `chatgpt_codex_oauth_research.md` — Investigación técnica (EN)
+- `DOCUMENTATION_COMPLETE_SUMMARY.md` — Resumen final (EN)
+- `ALL_READMES_UPDATED_MULTIPLE_MODELS.md` — Actualización de READMEs (EN)
+- `README_UPDATE_MULTIPLE_MODELS.md` — Borrador inicial (EN)
+- `VERSION_NUMBERS_REMOVED.md` — Eliminación de versiones (EN)
+- `chatgpt_oauth_analysis.md` — Análisis histórico (ES, deprecated)
+
+**Total:** ~77KB de documentación nueva
+
+### 📝 CHANGELOG.md Cleanup
+
+**Archivo modificado:** `CHANGELOG.md`
+
+**Cambios:**
+- Eliminado header "Current Version: v1.3.0-alpha"
+- Eliminados números de versión de títulos de sección
+- Eliminado "v1.3.0-alpha" de todas las entradas
+- Eliminado "v1.2.1", "v1.2.0" de entradas anteriores
+- Actualizada descripción: "Feature milestones are tracked by date, not version numbers"
+- **Razón:** Consistencia con READMEs - las fechas son suficientes
+
+---
+
+### 🚀 Sprint 1: Context Window Management
+
+#### **Context Pruning — Tool Result Truncation**
+
+**Archivos nuevos:** `pkg/agent/context_pruner.go`, `pkg/agent/context_pruner_test.go`
+
+- **Feature:** Recorta tool results voluminosos antes de enviar al LLM (en memoria, no modifica JSONL)
+- **Configuración:** `context_management.pruning.enabled`, `max_tool_result_chars`, `exclude_tools`, `aggressive_tools`
+- **Impacto:** -60% tokens desperdiciados en tool results grandes
+- **Tests:** 9 tests unitarios cubriendo todos los casos
+
+#### **Advanced Compaction Config**
+
+**Archivos modificados:** `pkg/config/config.go`, `pkg/config/defaults.go`
+
+- **Nuevos campos:**
+  - `compaction.model` — Modelo para compactación (mismo proveedor, vacío = mismo modelo)
+  - `compaction.max_summary_tokens` — Tokens máximos para resumen (512 → 2048)
+  - `compaction.recent_turns_preserve` — Turnos recientes a preservar verbatim
+  - `compaction.min_summary_quality` — Quality guard threshold
+  - `compaction.max_retries` — Reintentos máximos
+- **Defaults actualizados:**
+  - `min_completion_tokens`: 512 → 1024
+  - `preserve_messages`: 20 → 30
+
+#### **Manual Compaction Command**
+
+**Archivo modificado:** `pkg/agent/loop.go`
+
+- **Comando:** `/compact [instrucciones]`
+- **Uso:** Fuerza compactación inmediata del contexto
+- **Ejemplo:** `/compact focus on API changes`
+
+#### **Session Manager: SetHistory**
+
+**Archivo modificado:** `pkg/session/manager.go`
+
+- **Método:** `SetHistory(key, messages)` — Reemplaza historial con versión compactada
+- **Deep copy:** Preserva integridad del estado interno
+
+### 🚀 Sprint 2: Migrate Multi-Source
+
+#### **NanoClaw Migration Support**
+
+**Archivos nuevos:** `pkg/migrate/nanoclaw.go`
+
+- **Feature:** Migración desde nanoclaw (`~/.nanoclaw` o `~/.config/nanoclaw`)
+- **Flag:** `--from nanoclaw`
+- **Convierte:**
+  - `providers[].apiKey` → `providers.*.api_key`
+  - `agents[].model` → `agents.defaults.model_name`
+  - `channels[].telegram.token` → `channels.telegram.token`
+  - `groups/default/CLAUDE.md` → `workspace/AGENTS.md`
+- **Tests:** Pendientes
+
+#### **Migrate Command Extended**
+
+**Archivos modificados:** `pkg/migrate/migrate.go`, `cmd/picoclaw/internal/migrate/command.go`
+
+- **Nuevos flags:**
+  - `--from openclaw|nanoclaw` — Origen de migración
+  - `--nanoclaw-home` — Override nanoclaw home
+  - `--show-diff` — Mostrar diff de config en dry-run (pendiente implementación)
+- **Dispatch:** Soporte para múltiples orígenes vía switch
+
+### 🚀 Sprint 2: Onboard Wizard — Team Mode & Skills
+
+#### **Agent Templates (templates.go)**
+
+**Archivo nuevo:** `cmd/picoclaw/internal/onboard/templates.go`
+
+- **Templates predefinidos:**
+  - **Dev Team**: Engineering Manager + 8 specialists (backend, frontend, devops, qa, security, data, ml, researcher)
+  - **Research Team**: Coordinator + Researcher + Analyst
+  - **General Team**: Orchestrator + 2 Workers
+- **Skills nativas:** 14 skills disponibles (fullstack_developer, agent_team_workflow, binance_mcp, etc.)
+- **Funciones:**
+  - `buildAgentListJSON(mode, template, model, skills)` — Genera agents.list
+  - `devTeamAgents()`, `researchTeamAgents()`, `generalTeamAgents()` — Templates
+  - `getNativeSkills()`, `getSkillDescription()` — Catálogo de skills
+
+#### **Wizard Step 4: Agent Mode Selection**
+
+**Archivo modificado:** `cmd/picoclaw/internal/onboard/wizard.go`
+
+- **Nuevo paso:** Step 4/6 — Agent Mode
+- **Opciones:**
+  1. Solo Agent — Un agente general-purpose
+  2. Dev Team — Equipo de ingeniería completo
+  3. Research Team — Equipo de investigación
+  4. General Team — Equipo multi-propósito
+- **Selección de skills:** Para modo Solo, muestra lista de 14 skills nativas y permite seleccionar
+- **Struct Wizard extendido:** `agentMode`, `agentTemplate`, `customSkills`
+
+#### **saveConfig() con agents.list**
+
+**Archivo modificado:** `cmd/picoclaw/internal/onboard/wizard.go`
+
+- **Generación:** `buildAgentListJSON()` produce agents.list completo
+- **Incluye:**
+  - Skills por agente
+  - Subagentes configurados (allow_agents, max_spawn_depth)
+  - Tools override por agente
+- **printSuccess() actualizado:** Muestra modo de agente y skills seleccionadas
+
+#### **Tests**
+
+**Archivo nuevo:** `cmd/picoclaw/internal/onboard/templates_test.go`
+
+- **10 tests:**
+  - `TestBuildAgentListJSON_Solo_NoSkills`
+  - `TestBuildAgentListJSON_Solo_WithSkills`
+  - `TestBuildAgentListJSON_DevTeam` (9 agentes)
+  - `TestBuildAgentListJSON_ResearchTeam` (3 agentes)
+  - `TestBuildAgentListJSON_GeneralTeam` (3 agentes)
+  - `TestDevTeamAgents_HasOrchestrator`
+  - `TestDevTeamAgents_SubagentsConfigured`
+  - `TestGetNativeSkills_ReturnsAllSkills`
+  - `TestGetSkillDescription_ReturnsDescriptions`
+
+**Tests passing:** ✅ 10/10
+
+---
+
+## 2026-03-28 — Sprint 0: Bug Fixes
+
+### 🐛 Bug Fixes
+
+#### **BUG-01: Context compaction cache never read**
+
+**Archivos:** `pkg/agent/context_compactor.go`, `pkg/utils/summary_cache.go`
+
+- **Problema:** El caché de resúmenes se guardaba pero nunca se leía — cada compactación llamaba al LLM innecesariamente
+- **Solución:** Agregado lookup de caché antes de llamar a `GenerateSummary()`
+- **Impacto:** ~40% menos llamadas al LLM en conversaciones largas, menor latencia y costo
+
+#### **BUG-02: FindSimilarSummary ignora sessionID (cross-session contamination)**
+
+**Archivos:** `pkg/utils/summary_cache.go`, `pkg/utils/summary_cache_test.go`
+
+- **Problema:** `FindSimilarSummary()` retornaba resúmenes de cualquier sesión, no solo la sesión actual
+- **Solución:** Agregado parámetro `sessionID` al método y filtro por `sessionID && topic`
+- **Impacto:** Elimina contaminación de contexto entre sesiones diferentes
+- **Tests:** Agregado test de regresión para verificar aislamiento entre sesiones
+
+#### **BUG-03: Wizard no guarda configuración de Telegram/Discord en config.json**
+
+**Archivos:** `cmd/picoclaw/internal/onboard/wizard.go`
+
+- **Problema:** El token y userID se guardaban en variables locales que se descartaban, la sección `"channels"` nunca se escribía
+- **Solución:** Agregados campos `channelType`, `channelToken`, `channelUserID` al struct Wizard, escritura condicional en `saveConfig()`
+- **Impacto:** 100% de los usuarios ahora tienen su canal configurado correctamente tras el onboard
+- **Bonus:** `printSuccess()` ahora muestra el estado del canal configurado
+
+#### **BUG-04: broadcastToSession retorna error cuando no hay conexiones WebSocket**
+
+**Archivos:** `pkg/channels/pico.go`, `pkg/channels/pico_test.go`
+
+- **Problema:** La función trataba igual "sin conexiones" (esperado) que "todas las conexiones fallaron" (error real)
+- **Solución:** Check temprano de `len(connections) == 0` retorna `nil`, solo retorna error si todas fallan
+- **Impacto:** Elimina log noise y reintentos innecesarios cuando el WebUI no está abierto
+- **Tests:** Agregados 2 tests de regresión para ambos casos
+
+#### **BUG-05: logger.file.Write ignora error de escritura**
+
+**Archivos:** `pkg/logger/logger.go`
+
+- **Problema:** Error de escritura de archivo se ignoraba — disco lleno o permisos incorrectos causaban pérdida silenciosa de logs
+- **Solución:** Check explícito de error con fallback a stderr: `fmt.Fprintf(os.Stderr, "logger: file write failed: %v\n", werr)`
+- **Impacto:** Ahora se detecta inmediatamente problemas de escritura de logs, permite alerta temprana de disco lleno
+
+#### **BUG-06: health server JSON encode sin check de error (4 sitios)**
+
+**Archivos:** `pkg/health/server.go`
+
+- **Problema:** `json.NewEncoder(w).Encode(resp)` se llamaba sin verificar error — health checks podían recibir respuestas truncadas/vacías
+- **Solución:** 4 llamadas fixeadas con check de error y log a stderr
+- **Impacto:** Health checks ahora son más confiables, errores de serialización se loggean para debugging
+- **Bonus:** Agregado `import "os"` para stderr logging
+
+**Documentación:** 
+- `local_work/bugfix_compaction_cache.md` (BUG-01, BUG-02)
+- `local_work/bugfix_wizard_channel.md` (BUG-03, BUG-07)
+- `local_work/bugfix_broadcast_session.md` (BUG-04)
+- `local_work/bugfix_ignored_errors.md` (BUG-05, BUG-06)
+
+---
+
+## 2026-03-28
 
 ### 🚀 Features
 
@@ -761,7 +1078,7 @@ Each skill includes:
   - Testing requirements and examples
 
 #### **Updated Documentation**
-- **`CHANGELOG.md`**: This file, with complete v3.6.0 release notes
+- **`CHANGELOG.md`**: This file, with complete release notes
 - **`config/config.example.json`**: Added extensive examples section
 
 ### 📦 Skills Import Report
