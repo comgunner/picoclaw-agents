@@ -106,18 +106,18 @@ ollama run llama3.2:1b
 
 Visit **https://ollama.com/library** for the full catalog. Current top models:
 
-| # | Model | Highlights |
-|---|-------|-----------|
-| 1 | `gemma3` | Google Gemma 3, multilingual |
-| 2 | `llama3.2` | Meta Llama 3.2, fast & capable |
-| 3 | `qwen2.5` | Alibaba Qwen 2.5, strong at code |
-| 4 | `phi4` | Microsoft Phi-4, small but smart |
-| 5 | `mistral` | Mistral 7B, strong reasoning |
-| 6 | `deepseek-r1` | DeepSeek R1, chain-of-thought |
-| 7 | `llava` | Multimodal (text + images) |
-| 8 | `codellama` | Meta CodeLlama, code-focused |
-| 9 | `deepseek-coder-v2` | DeepSeek Coder V2, top coding |
-| 10 | `nomic-embed-text` | Text embeddings, RAG use cases |
+| # | Model | Highlights | Min RAM | Recommended RAM |
+|---|-------|-----------|---------|-----------------|
+| 1 | `gemma3` | Google Gemma 3, multilingual | 2 GB (1b) | 4 GB (4b) |
+| 2 | `llama3.2` | Meta Llama 3.2, fast & capable | 2 GB (1b) | 4 GB (3b) |
+| 3 | `qwen2.5` | Alibaba Qwen 2.5, strong at code | 1 GB (0.5b) | 6 GB (7b) |
+| 4 | `phi4` | Microsoft Phi-4, small but smart | 8 GB (14b) | 16 GB (14b) |
+| 5 | `mistral` | Mistral 7B, strong reasoning | 4 GB (7b) | 8 GB (7b) |
+| 6 | `deepseek-r1` | DeepSeek R1, chain-of-thought | 2 GB (1.5b) | 8 GB (7b) |
+| 7 | `llava` | Multimodal (text + images) | 4 GB (7b) | 8 GB (13b) |
+| 8 | `codellama` | Meta CodeLlama, code-focused | 4 GB (7b) | 8 GB (13b) |
+| 9 | `deepseek-coder-v2` | DeepSeek Coder V2, top coding | 8 GB (16b) | 16 GB (16b) |
+| 10 | `nomic-embed-text` | Text embeddings, RAG use cases | 1 GB | 2 GB |
 
 ---
 
