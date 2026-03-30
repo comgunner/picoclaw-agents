@@ -175,6 +175,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# External Projects/Absolute Paths
+/Users/gunner/Desktop/AGENTE_BKP/scripts_gunner/GIT_CLONE/PanterBots/SuperTrendFree
+
 # Coverage
 coverage.txt
 coverage.html
