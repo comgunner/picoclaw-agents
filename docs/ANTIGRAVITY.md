@@ -1,7 +1,8 @@
 # Antigravity Provider Guide
 
-**Last Updated:** March 29, 2026  
-**Status:** ✅ Production Ready (v3.4.4)
+**Last Updated:** March 30, 2026  
+**Status:** ✅ Production Ready (v1.3.0-alpha)  
+**New Feature:** 🎉 Auto-Config on Login - All 15 models added automatically!
 
 ---
 
@@ -13,13 +14,59 @@
 
 ---
 
+## Quick Start (NEW!)
+
+### One-Command Setup
+
+```bash
+# Login and auto-configure all 15 Antigravity models
+./picoclaw-agents auth login --provider google-antigravity
+
+# Test with default model (gemini-3-flash)
+./picoclaw-agents agent -m "Hello world"
+```
+
+**What happens automatically:**
+1. ✅ OAuth authentication via browser
+2. ✅ **All 15 Antigravity models added to config**
+3. ✅ `gemini-3-flash` set as default model
+4. ✅ Fallback to `gemini-2.5-flash` configured
+
+**Output:**
+```
+✓ Google Antigravity login successful!
+
+✓ Added 15 Antigravity models to config
+
+Default model set to: gemini-3-flash (fallback: gemini-2.5-flash)
+
+Available models:
+  - gemini-3-flash (default)
+  - gemini-3-pro-high, gemini-3-pro-low
+  - gemini-3.1-pro-high, gemini-3.1-pro-low, gemini-3.1-flash-lite
+  - gemini-3-flash-agent, gemini-3-flash-preview
+  - gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-flash-thinking, gemini-2.5-pro
+  - claude-sonnet-4-6, claude-opus-4-6-thinking
+  - gpt-oss-120b-medium
+
+Try it: picoclaw-agents agent -m "Hello world" --model gemini-3-flash
+```
+
+---
+
 ## Authentication
 
-### Step 1: Login
+### Step 1: Login (Auto-Config)
 
 ```bash
 ./picoclaw-agents auth login --provider google-antigravity
 ```
+
+**What's NEW (v1.3.0-alpha):**
+- 🎉 **Automatically adds ALL 15 Antigravity models** to `~/.picoclaw/config.json`
+- 🎉 **Sets `gemini-3-flash` as default model** for all agents
+- 🎉 **Configures fallback** to `gemini-2.5-flash`
+- 🎉 **No manual config editing required!**
 
 **Alias also works:**
 ```bash
@@ -32,6 +79,7 @@
 2. **Sign in** with your Google account (must have Google One AI Premium or Workspace Gemini)
 3. **Grant permissions** to PicoClaw
 4. **Credentials saved** to `~/.picoclaw/auth.json`
+5. **Config updated** with all 15 models ✨
 
 **Headless/Remote (VPS/Coolify/Docker):**
 1. Run the command
@@ -73,52 +121,156 @@
 
 ## Available Models (OAuth Auth)
 
-These models are available **only via Antigravity OAuth** — they use your Google Cloud quota:
+### View All Models
 
 ```bash
 ./picoclaw-agents auth models
 ```
 
-### Verified Working Models (as of March 2026)
+### Complete Model List (15 Models)
 
-| Model Name | Description | Best For |
-|------------|-------------|----------|
-| `antigravity-gemini-3-flash` | Fast, reliable | **Recommended default** |
-| `gemini-3-flash` | Same as above (auto-resolves) | Quick tasks |
-| `gemini-3-pro-high` | High reasoning Gemini 3 | Complex reasoning |
-| `gemini-3.1-pro-high` | High reasoning Gemini 3.1 | Advanced tasks |
-| `gemini-3.1-flash-image` | Multimodal (image **input** only) | Image analysis |
-| `gemini-2.5-pro` | Gemini 2.5 Pro | General purpose |
-| `gemini-2.5-flash` | Gemini 2.5 Flash | Fast responses |
-| `gemini-2.5-flash-thinking` | Flash with reasoning | Reasoning tasks |
-| `gemini-2.5-flash-lite` | Lightweight model | Simple tasks |
-| `claude-sonnet-4-6` | Claude Sonnet | Writing, analysis |
-| `claude-opus-4-6-thinking` | Claude Opus with thinking | Complex problem solving |
-| `gpt-oss-120b-medium` | Open-source GPT alternative | General use |
-| `chat_20706` | Internal Google model | Testing |
-| `chat_23310` | Internal Google model | Testing |
-| `tab_flash_lite_preview` | Preview model | Testing |
-| `tab_jump_flash_lite_preview` | Preview model | Testing |
+**Auto-configured on login (v1.3.0-alpha+):**
 
-> [!IMPORTANT]
-> **Image Generation NOT Supported via OAuth**
-> 
-> Models with `-image` suffix (e.g., `gemini-3.1-flash-image`) support **image input/analysis only** — NOT image generation.
-> 
-> For **image generation**, you must use **Google AI Studio API Key** (see below).
+| # | Model Name | Description | Best For |
+|---|------------|-------------|----------|
+| 1 | `gemini-3-flash` ⭐ | **DEFAULT** - Fast, reliable | **Recommended default** |
+| 2 | `gemini-3-pro-high` | High reasoning Gemini 3 | Complex reasoning |
+| 3 | `gemini-3-pro-low` | Low reasoning Gemini 3 | Simple tasks |
+| 4 | `gemini-3.1-pro-high` | High reasoning Gemini 3.1 | Advanced tasks |
+| 5 | `gemini-3.1-pro-low` | Low reasoning Gemini 3.1 | Medium tasks |
+| 6 | `gemini-3.1-flash-lite` | Lightweight 3.1 model | Fast responses |
+| 7 | `gemini-3-flash-agent` | Agent-optimized Flash | Multi-step tasks |
+| 8 | `gemini-3-flash-preview` | Preview model | Testing new features |
+| 9 | `gemini-2.5-flash` | Gemini 2.5 Flash | Fast responses |
+| 10 | `gemini-2.5-flash-lite` | Lightweight 2.5 | Simple tasks |
+| 11 | `gemini-2.5-flash-thinking` | Flash with reasoning | Reasoning tasks |
+| 12 | `gemini-2.5-pro` | Gemini 2.5 Pro | General purpose |
+| 13 | `claude-sonnet-4-6` | Claude Sonnet 4.6 | Writing, analysis |
+| 14 | `claude-opus-4-6-thinking` | Claude Opus with thinking | Complex problem solving |
+| 15 | `gpt-oss-120b-medium` | Open-source GPT alternative | General use |
 
-### Usage Examples
+> [!NOTE]
+> **Model Names Updated (v1.3.0-alpha)**
+>
+> Model names now match exactly what `auth models` returns:
+> - ✅ `gemini-3-flash` (simple, matches API)
+> - ❌ `antigravity-gemini-3-flash` (old format, still works but deprecated)
+
+---
+
+## Usage Examples
+
+### Command Line
 
 ```bash
+# Use default model (gemini-3-flash)
+./picoclaw-agents agent -m "Hello"
+
 # Use specific model
-./picoclaw-agents agent -m "Hello" --model antigravity-gemini-3-flash
+./picoclaw-agents agent -m "Hello" --model gemini-3-flash
 
-# Claude with thinking
-./picoclaw-agents agent -m "Solve this problem" --model claude-opus-4-6-thinking
+# Claude for writing
+./picoclaw-agents agent -m "Write a poem" --model claude-sonnet-4-6
 
-# Image analysis (NOT generation)
-./picoclaw-agents agent -m "Describe this image" --model gemini-3.1-flash-image
+# Complex reasoning
+./picoclaw-agents agent -m "Solve this math problem" --model claude-opus-4-6-thinking
+
+# Fast responses
+./picoclaw-agents agent -m "Quick question" --model gemini-3.1-flash-lite
 ```
+
+### Web UI (NEW!)
+
+**Model Selector Feature (v1.3.0-alpha):**
+
+1. Open Web UI: http://localhost:18800/
+2. Click model dropdown in header
+3. Select any of the 15 Antigravity models
+4. Send message - **model change applies immediately!**
+
+> [!TIP]
+> **Web UI Model Override**
+>
+> The model selected in Web UI now **actually works**! Each user can use different models independently.
+>
+> See [`PICO_MODEL_OVERRIDE.md`](./PICO_MODEL_OVERRIDE.md) for details.
+
+---
+
+## Configuration
+
+### Automatic Config (v1.3.0-alpha+)
+
+**After login, your config automatically has:**
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "gemini-3-flash",
+      "fallbacks": ["gemini-2.5-flash"]
+    }
+  },
+  "model_list": [
+    {
+      "model_name": "gemini-3-flash",
+      "model": "antigravity/gemini-3-flash",
+      "auth_method": "oauth"
+    },
+    {
+      "model_name": "gemini-3-pro-high",
+      "model": "antigravity/gemini-3-pro-high",
+      "auth_method": "oauth"
+    },
+    // ... 13 more models ...
+  ]
+}
+```
+
+### Manual Config (Pre-v1.3.0 or Custom Setup)
+
+If you need to manually add models:
+
+```bash
+# Option 1: Re-run login to auto-add all models
+./picoclaw-agents auth login --provider google-antigravity
+
+# Option 2: Use sync script
+./scripts/sync_antigravity_models.sh
+
+# Option 3: Use fix script (updates model names)
+./scripts/fix_antigravity_models.sh
+```
+
+### model_list Format
+
+**Correct format (v1.3.0-alpha+):**
+```json
+{
+  "model_name": "gemini-3-flash",
+  "model": "antigravity/gemini-3-flash",
+  "auth_method": "oauth"
+}
+```
+
+**Old format (deprecated but still works):**
+```json
+{
+  "model_name": "antigravity-gemini-3-flash",
+  "model": "antigravity/gemini-3-flash",
+  "auth_method": "oauth"
+}
+```
+
+> [!IMPORTANT]
+> **Use Simple Model Names**
+>
+> Always use the simple name (e.g., `gemini-3-flash`) in:
+> - CLI: `--model gemini-3-flash`
+> - Web UI: Select from dropdown
+> - Config: `model_name` field
+>
+> The `antigravity/` prefix is only for the `model` field internally.
 
 ---
 

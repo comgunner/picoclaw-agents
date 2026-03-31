@@ -410,6 +410,8 @@ func (c *PicoChannel) picoHandleMessage(pc *picoConn, msg PicoMessage) {
 // picoHandleMessageSend processes an inbound message.send frame from a WebSocket client.
 func (c *PicoChannel) picoHandleMessageSend(pc *picoConn, msg PicoMessage) {
 	content, _ := msg.Payload["content"].(string)
+	modelName, _ := msg.Payload["model_name"].(string)
+
 	if strings.TrimSpace(content) == "" {
 		_ = pc.writeJSON(newPicoError("empty_content", "message content is empty"))
 		return
@@ -431,9 +433,15 @@ func (c *PicoChannel) picoHandleMessageSend(pc *picoConn, msg PicoMessage) {
 		"peer_id":    sessionID,
 	}
 
+	// Include model_name in metadata if provided by client
+	if modelName != "" {
+		metadata["model_name"] = modelName
+	}
+
 	logger.DebugCF("pico", "Received message", map[string]any{
 		"session_id": sessionID,
 		"preview":    picoTruncate(content, 50),
+		"model_name": modelName,
 	})
 
 	c.HandleMessage(senderID, chatID, content, nil, metadata)

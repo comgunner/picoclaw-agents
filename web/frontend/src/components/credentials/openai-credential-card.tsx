@@ -18,7 +18,6 @@ interface OpenAICredentialCardProps {
   activeAction: string
   token: string
   onTokenChange: (value: string) => void
-  onStartBrowserOAuth: () => void
   onStartDeviceCode: () => void
   onStopLoading: () => void
   onSaveToken: () => void
@@ -30,7 +29,6 @@ export function OpenAICredentialCard({
   activeAction,
   token,
   onTokenChange,
-  onStartBrowserOAuth,
   onStartDeviceCode,
   onStopLoading,
   onSaveToken,
@@ -38,9 +36,7 @@ export function OpenAICredentialCard({
 }: OpenAICredentialCardProps) {
   const { t } = useTranslation()
   const actionBusy = activeAction !== ""
-  const browserLoading = activeAction === "openai:browser"
   const deviceLoading = activeAction === "openai:device"
-  const oauthLoading = browserLoading || deviceLoading
   const tokenLoading = activeAction === "openai:token"
 
   return (
@@ -72,16 +68,16 @@ export function OpenAICredentialCard({
                   size="sm"
                   variant="outline"
                   disabled={actionBusy}
-                  onClick={onStartBrowserOAuth}
+                  onClick={onStartDeviceCode}
                 >
-                  {browserLoading && (
+                  {deviceLoading && (
                     <IconLoader2 className="size-4 animate-spin" />
                   )}
-                  <IconBrandOpenai className="size-4" />
-                  {t("credentials.actions.browser")}
+                  <IconClockHour4 className="size-4" />
+                  {t("credentials.actions.deviceCode")}
                 </Button>
 
-                {oauthLoading && !deviceLoading && (
+                {deviceLoading && (
                   <Button
                     size="icon-xs"
                     variant="secondary"
@@ -91,19 +87,6 @@ export function OpenAICredentialCard({
                     <IconPlayerStopFilled className="size-4" />
                   </Button>
                 )}
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={actionBusy}
-                  onClick={onStartDeviceCode}
-                >
-                  {deviceLoading && (
-                    <IconLoader2 className="size-4 animate-spin" />
-                  )}
-                  <IconClockHour4 className="size-4" />
-                  {t("credentials.actions.deviceCode")}
-                </Button>
               </div>
             </div>
 

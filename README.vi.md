@@ -154,6 +154,18 @@ make build-launcher
 > picoclaw-agents-launcher -public
 > ```
 
+**Xác thực OAuth qua Web UI:**
+
+Bạn có thể xác thực với các nhà cung cấp OAuth trực tiếp từ Web UI tại `http://localhost:18800/credentials`:
+
+- **Anthropic**: OAuth trình duyệt (luồng PKCE) — Tự động thêm 5 mô hình Claude
+- **Google Antigravity**: OAuth trình duyệt — Tự động thêm 15 mô hình Gemini
+- **OpenAI**: Chỉ mã thiết bị — Tự động thêm 8 mô hình GPT
+
+![Credentials OAuth](assets/webui/credentials-auth.png)
+
+> **Lưu ý:** OpenAI chỉ hỗ trợ xác thực bằng **Mã Thiết Bị** (không có OAuth trình duyệt). Sử dụng cờ `--device-code` hoặc nút Device Code trong Web UI.
+
 ![WebUI Launcher](assets/launcher-webui.jpg)
 
 
@@ -343,6 +355,9 @@ Tùy chọn `--free` cấu hình ba mô hình miễn phí của OpenRouter với
 
 Cả ba đều được định tuyến qua [OpenRouter](https://openrouter.ai) — một khóa API duy nhất phủ toàn bộ.
 
+
+> [!TIP]
+> **OAuth OpenAI trên Free Tier:** Bạn cũng có thể sử dụng xác thực OAuth OpenAI (`picoclaw-agents auth login --provider openai --device-code`) hoạt động với các gói miễn phí. Không cần khóa API — sử dụng tài khoản OpenAI/ChatGPT hiện có của bạn.
 **2. Cấu hình** (`~/.picoclaw/config.json`)
 
 ```json
@@ -1073,6 +1088,8 @@ picoclaw-agents auth login --provider openai --device-code
 
 > ⚠️ **Quan trọng:** Đối với OAuth OpenAI Codex, bạn phải bật ủy quyền mã thiết bị trong cài đặt ChatGPT trước.
 
+
+> **Lưu ý:** OAuth OpenAI chỉ hỗ trợ xác thực bằng **Mã Thiết Bị** (không có OAuth trình duyệt). Đây là thiết kế để tăng cường bảo mật và độ tin cậy.
 #### Bước 2: Liệt kê các mô hình có sẵn
 
 Sau khi cấu hình các nhà cung cấp, kiểm tra các mô hình có sẵn:

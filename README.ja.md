@@ -154,6 +154,18 @@ make build-launcher
 > picoclaw-agents-launcher -public
 > ```
 
+**Web UI 経由の OAuth 認証：**
+
+`http://localhost:18800/credentials` の Web UI から直接 OAuth プロバイダーを認証できます：
+
+- **Anthropic**：ブラウザー OAuth（PKCE フロー）— 5 つの Claude モデルを自動追加
+- **Google Antigravity**：ブラウザー OAuth — 15 の Gemini モデルを自動追加
+- **OpenAI**：デバイスコードのみ — 8 つの GPT モデルを自動追加
+
+![Credentials OAuth](assets/webui/credentials-auth.png)
+
+> **注意：** OpenAI は**デバイスコード**認証のみをサポートしています（ブラウザー OAuth は利用不可）。`--device-code` フラグまたは Web UI のデバイスコードボタンを使用してください。
+
 ![WebUI ランチャー](assets/launcher-webui.jpg)
 
 
@@ -343,6 +355,9 @@ picoclaw-agents onboard --gemini      # Gemini テンプレートを使用 (gemi
 
 3つすべて [OpenRouter](https://openrouter.ai) 経由でルーティング — 1つのAPIキーですべてをカバー。
 
+
+> [!TIP]
+> **無料ティアでの OpenAI OAuth:** OpenAI OAuth 認証（`picoclaw-agents auth login --provider openai --device-code`）も無料ティアプランで動作します。API キーは不要 — 既存の OpenAI/ChatGPT アカウントを使用します。
 **2. 構成** (`~/.picoclaw/config.json`)
 
 ```json
@@ -1073,6 +1088,8 @@ picoclaw-agents auth login --provider openai --device-code
 
 > ⚠️ **重要:** OpenAI Codex OAuth の場合、最初に ChatGPT 設定でデバイスコード認証を有効にする必要があります。
 
+
+> **注意：** OpenAI OAuth は**デバイスコード**認証のみをサポートしています（ブラウザー OAuth は利用不可）。これは、セキュリティと信頼性を向上させるための設計です。
 #### ステップ 2: 利用可能なモデルの一覧表示
 
 プロバイダーを設定した後、利用可能なモデルを確認します：

@@ -24,11 +24,12 @@ func TestOAuthLoginRejectsUnsupportedMethod(t *testing.T) {
 	mux := http.NewServeMux()
 	h.RegisterRoutes(mux)
 
+	// OpenAI does not support browser OAuth (only device code), should reject
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(
 		http.MethodPost,
 		"/api/oauth/login",
-		strings.NewReader(`{"provider":"anthropic","method":"browser"}`),
+		strings.NewReader(`{"provider":"openai","method":"browser"}`),
 	)
 	req.Header.Set("Content-Type", "application/json")
 	mux.ServeHTTP(rec, req)
@@ -55,11 +56,12 @@ func TestOAuthBrowserFlowCreatedAndQueried(t *testing.T) {
 	mux := http.NewServeMux()
 	h.RegisterRoutes(mux)
 
+	// Anthropic now supports browser OAuth, should succeed
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(
 		http.MethodPost,
 		"/api/oauth/login",
-		strings.NewReader(`{"provider":"openai","method":"browser"}`),
+		strings.NewReader(`{"provider":"anthropic","method":"browser"}`),
 	)
 	req.Host = "localhost:18800"
 	req.Header.Set("Content-Type", "application/json")

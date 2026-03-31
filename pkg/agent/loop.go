@@ -64,14 +64,15 @@ type AgentLoop struct {
 
 // processOptions configures how a message is processed
 type processOptions struct {
-	SessionKey      string // Session identifier for history/context
-	Channel         string // Target channel for tool execution
-	ChatID          string // Target chat ID for tool execution
-	UserMessage     string // User message content (may include prefix)
-	DefaultResponse string // Response when LLM returns empty
-	EnableSummary   bool   // Whether to trigger summarization
-	SendResponse    bool   // Whether to send response via bus
-	NoHistory       bool   // If true, don't load session history (for heartbeat)
+	SessionKey      string            // Session identifier for history/context
+	Channel         string            // Target channel for tool execution
+	ChatID          string            // Target chat ID for tool execution
+	UserMessage     string            // User message content (may include prefix)
+	DefaultResponse string            // Response when LLM returns empty
+	EnableSummary   bool              // Whether to trigger summarization
+	SendResponse    bool              // Whether to send response via bus
+	NoHistory       bool              // If true, don't load session history (for heartbeat)
+	Metadata        map[string]string // Message metadata (e.g., model_name from client)
 }
 
 func NewAgentLoop(cfg *config.Config, msgBus *bus.MessageBus, provider providers.LLMProvider) *AgentLoop {
@@ -644,6 +645,7 @@ func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage)
 		DefaultResponse: "I've completed processing but have no response to give.",
 		EnableSummary:   true,
 		SendResponse:    false,
+		Metadata:        msg.Metadata,
 	})
 }
 
@@ -1001,6 +1003,19 @@ func (al *AgentLoop) runLLMIteration(
 		var response *providers.LLMResponse
 		var err error
 
+		// Determine model to use: client-specified model from metadata takes priority
+		modelToUse := agent.Model
+		if clientModel, ok := opts.Metadata["model_name"]; ok && clientModel != "" {
+			// Resolve model alias from model_list (e.g., "gpt-4" → "openai/gpt-4")
+			modelToUse = resolveModelAlias(clientModel, al.cfg.ModelList)
+			logger.DebugCF("agent", "Using client-specified model", map[string]any{
+				"model":        modelToUse,
+				"agent_id":     agent.ID,
+				"session_key":  opts.SessionKey,
+				"client_model": clientModel,
+			})
+		}
+
 		callLLM := func() (*providers.LLMResponse, error) {
 			if len(agent.Candidates) > 1 && al.fallback != nil {
 				fbResult, fbErr := al.fallback.Execute(ctx, agent.Candidates,
@@ -1022,7 +1037,7 @@ func (al *AgentLoop) runLLMIteration(
 				}
 				return fbResult.Response, nil
 			}
-			return agent.Provider.Chat(ctx, prunedMessages, providerToolDefs, agent.Model, map[string]any{
+			return agent.Provider.Chat(ctx, prunedMessages, providerToolDefs, modelToUse, map[string]any{
 				"max_tokens":       agent.MaxTokens,
 				"temperature":      agent.Temperature,
 				"prompt_cache_key": agent.ID,

@@ -197,6 +197,18 @@ make build-launcher
 > picoclaw-agents-launcher -public
 > ```
 
+**通过 Web UI 进行 OAuth 认证：**
+
+您可以在 `http://localhost:18800/credentials` 的 Web UI 直接认证 OAuth 提供商：
+
+- **Anthropic**：浏览器 OAuth（PKCE 流程）— 自动添加 5 个 Claude 模型
+- **Google Antigravity**：浏览器 OAuth — 自动添加 15 个 Gemini 模型
+- **OpenAI**：仅设备代码 — 自动添加 8 个 GPT 模型
+
+![Credentials OAuth](assets/webui/credentials-auth.png)
+
+> **注意：** OpenAI 仅支持**设备代码**认证（不支持浏览器 OAuth）。请使用 `--device-code` 参数或 Web UI 中的 Device Code 按钮。
+
 ![WebUI Launcher](assets/launcher-webui.jpg)
 
 
@@ -391,6 +403,9 @@ picoclaw-agents onboard --gemini      # 使用 Gemini 模板 (gemini-2.5-flash)
 > [!IMPORTANT]
 > **模型 ID 修复:** 早期版本使用 `openrouter/free`，这不是有效的 OpenRouter 模型 ID。已修复为 `openrouter/auto`。如果您的现有配置包含 `openrouter-free` 或 `openrouter/free`，请更新为 `openrouter/auto` 或重新运行 `picoclaw-agents onboard --free`。
 
+
+> [!TIP]
+> **免费层使用 OpenAI OAuth：** 您也可以使用 OpenAI OAuth 认证（`picoclaw-agents auth login --provider openai --device-code`），它适用于免费层计划。无需 API 密钥 — 使用您现有的 OpenAI/ChatGPT 账户即可。
 **了解更多：** 查看 [docs/OPENROUTER_FREE.md](docs/OPENROUTER_FREE.md) 获取完整设置指南、限制和故障排除。
 
 **2. 配置** (`~/.picoclaw/config.json`)
@@ -1122,6 +1137,8 @@ picoclaw-agents auth login --provider openai --device-code
 ```
 
 > ⚠️ **重要：** 对于 OpenAI Codex OAuth，您必须先在 ChatGPT 设置中启用设备代码授权。
+
+> **注意：** OpenAI OAuth 仅支持**设备代码**认证（不支持浏览器 OAuth）。这是为了更高的安全性和可靠性而设计的。
 
 #### 步骤 2：列出可用模型
 

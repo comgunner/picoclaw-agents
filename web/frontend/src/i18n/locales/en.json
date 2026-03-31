@@ -133,7 +133,8 @@
       "pending": "Waiting for authorization...",
       "success": "Authentication successful",
       "error": "Authentication failed",
-      "expired": "Authentication session expired"
+      "expired": "Authentication session expired",
+      "login_success": "login successful! Models added."
     },
     "device": {
       "title": "OpenAI Device Login",

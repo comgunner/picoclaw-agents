@@ -1,4 +1,5 @@
 import {
+  IconBrandOpenai,
   IconKey,
   IconLoader2,
   IconPlayerStopFilled,
@@ -18,6 +19,7 @@ interface AnthropicCredentialCardProps {
   token: string
   onTokenChange: (value: string) => void
   onStopLoading: () => void
+  onStartBrowserOAuth: () => void
   onSaveToken: () => void
   onAskLogout: () => void
 }
@@ -28,11 +30,13 @@ export function AnthropicCredentialCard({
   token,
   onTokenChange,
   onStopLoading,
+  onStartBrowserOAuth,
   onSaveToken,
   onAskLogout,
 }: AnthropicCredentialCardProps) {
   const { t } = useTranslation()
   const actionBusy = activeAction !== ""
+  const browserLoading = activeAction === "anthropic:browser"
   const tokenLoading = activeAction === "anthropic:token"
   const stopLabel = t("credentials.actions.stopLoading")
 
@@ -50,39 +54,69 @@ export function AnthropicCredentialCard({
       status={status?.status ?? "not_logged_in"}
       authMethod={status?.auth_method}
       actions={
-        <div className="border-muted flex h-[120px] flex-col justify-center rounded-lg border p-3">
+        <div className="border-muted flex h-[120px] flex-col rounded-lg border p-3">
           <div className="flex h-full flex-col gap-3">
-            <div className="flex h-full items-center gap-2">
-              <Input
-                value={token}
-                onChange={(e) => onTokenChange(e.target.value)}
-                type="password"
-                placeholder={t("credentials.fields.anthropicToken")}
-              />
-              <Button
-                size="sm"
-                className="w-fit"
-                disabled={actionBusy || !token.trim()}
-                onClick={onSaveToken}
-              >
-                {tokenLoading && (
-                  <IconLoader2 className="size-4 animate-spin" />
-                )}
-                <IconKey className="size-4" />
-                {t("credentials.actions.saveToken")}
-              </Button>
-              {tokenLoading && (
+            <div className="min-h-8">
+              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
                 <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={onStopLoading}
-                  aria-label={stopLabel}
-                  title={stopLabel}
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  size="sm"
+                  variant="outline"
+                  disabled={actionBusy}
+                  onClick={onStartBrowserOAuth}
                 >
-                  <IconPlayerStopFilled className="size-4" />
+                  {browserLoading && (
+                    <IconLoader2 className="size-4 animate-spin" />
+                  )}
+                  <IconBrandOpenai className="size-4" />
+                  {t("credentials.actions.browser")}
                 </Button>
-              )}
+
+                {browserLoading && (
+                  <Button
+                    size="icon-xs"
+                    variant="secondary"
+                    onClick={onStopLoading}
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <IconPlayerStopFilled className="size-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="min-h-9 flex-1">
+              <div className="flex h-full items-center gap-2">
+                <Input
+                  value={token}
+                  onChange={(e) => onTokenChange(e.target.value)}
+                  type="password"
+                  placeholder={t("credentials.fields.anthropicToken")}
+                />
+                <Button
+                  size="sm"
+                  className="w-fit"
+                  disabled={actionBusy || !token.trim()}
+                  onClick={onSaveToken}
+                >
+                  {tokenLoading && (
+                    <IconLoader2 className="size-4 animate-spin" />
+                  )}
+                  <IconKey className="size-4" />
+                  {t("credentials.actions.saveToken")}
+                </Button>
+                {tokenLoading && (
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={onStopLoading}
+                    aria-label={stopLabel}
+                    title={stopLabel}
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <IconPlayerStopFilled className="size-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>

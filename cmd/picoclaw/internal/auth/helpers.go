@@ -10,6 +10,7 @@
 package auth
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -31,7 +32,19 @@ func authLoginCmd(provider string, useDeviceCode bool) error {
 	case "openai":
 		return authLoginOpenAI(useDeviceCode)
 	case "anthropic":
-		return authLoginPasteToken(provider)
+		// Check if user wants browser or token auth
+		fmt.Println("Select authentication method:")
+		fmt.Println("1) Browser (OAuth)")
+		fmt.Println("2) API Key (Token)")
+		fmt.Print("Enter choice (1 or 2, default 1): ")
+		reader := bufio.NewReader(os.Stdin)
+		choice, _ := reader.ReadString('\n')
+		choice = strings.TrimSpace(choice)
+
+		if choice == "2" {
+			return authLoginPasteToken(provider)
+		}
+		return authLoginAnthropicBrowser()
 	case "google-antigravity", "antigravity":
 		return authLoginGoogleAntigravity()
 	default:
@@ -64,30 +77,15 @@ func authLoginOpenAI(useDeviceCode bool) error {
 		// Update Providers (legacy format)
 		appCfg.Providers.OpenAI.AuthMethod = "oauth"
 
-		// Update or add openai in ModelList
-		foundOpenAI := false
-		for i := range appCfg.ModelList {
-			if isOpenAIModel(appCfg.ModelList[i].Model) {
-				appCfg.ModelList[i].AuthMethod = "oauth"
-				foundOpenAI = true
-				break
-			}
-		}
-
-		// If no openai in ModelList, add it
-		if !foundOpenAI {
-			appCfg.ModelList = append(appCfg.ModelList, config.ModelConfig{
-				ModelName:  "gpt-5.2",
-				Model:      "openai/gpt-5.2",
-				AuthMethod: "oauth",
-			})
-		}
-
-		// Update default model to use OpenAI
-		appCfg.Agents.Defaults.ModelName = "gpt-5.2"
+		// Use shared function to add models
+		addedCount := AddOpenAIModels(appCfg)
 
 		if err = config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
 			return fmt.Errorf("could not update config: %w", err)
+		}
+
+		if addedCount > 0 {
+			fmt.Printf("\n✓ Added %d OpenAI models to config\n", addedCount)
 		}
 	}
 
@@ -96,6 +94,44 @@ func authLoginOpenAI(useDeviceCode bool) error {
 		fmt.Printf("Account: %s\n", cred.AccountID)
 	}
 	fmt.Println("Default model set to: gpt-5.2")
+
+	return nil
+}
+
+func authLoginAnthropicBrowser() error {
+	cfg := auth.AnthropicOAuthConfig()
+
+	cred, err := auth.LoginBrowser(cfg)
+	if err != nil {
+		return fmt.Errorf("login failed: %w", err)
+	}
+
+	cred.Provider = "anthropic"
+
+	if err = auth.SetCredential("anthropic", cred); err != nil {
+		return fmt.Errorf("failed to save credentials: %w", err)
+	}
+
+	appCfg, err := internal.LoadConfig()
+	if err == nil {
+		// Update Providers (legacy format)
+		appCfg.Providers.Anthropic.AuthMethod = "oauth"
+
+		// Use shared function to add models
+		addedCount := AddAnthropicModels(appCfg)
+
+		if err = config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
+			fmt.Printf("Warning: could not update config: %v\n", err)
+		} else {
+			fmt.Printf("\n✓ Added %d Anthropic models to config\n", addedCount)
+		}
+	}
+
+	fmt.Println("\n✓ Anthropic OAuth login successful!")
+	fmt.Println("Default model set to: claude-sonnet-4-6")
+	if cred.AccountID != "" {
+		fmt.Printf("Account: %s\n", cred.AccountID)
+	}
 
 	return nil
 }
@@ -138,50 +174,27 @@ func authLoginGoogleAntigravity() error {
 		// Update Providers (legacy format, for backward compatibility)
 		appCfg.Providers.Antigravity.AuthMethod = "oauth"
 
-		// Update or add antigravity in ModelList
-		foundAntigravity := false
-		for i := range appCfg.ModelList {
-			if isAntigravityModel(appCfg.ModelList[i].Model) {
-				appCfg.ModelList[i].AuthMethod = "oauth"
-				foundAntigravity = true
-				break
-			}
-		}
-
-		// If no antigravity in ModelList, add primary + fallback entries
-		if !foundAntigravity {
-			appCfg.ModelList = append(appCfg.ModelList,
-				config.ModelConfig{
-					ModelName:  "antigravity-gemini-3-flash-agent",
-					Model:      "antigravity/gemini-3-flash-agent",
-					AuthMethod: "oauth",
-				},
-				config.ModelConfig{
-					ModelName:  "antigravity-gemini-2-5-flash",
-					Model:      "antigravity/gemini-2.5-flash",
-					AuthMethod: "oauth",
-				},
-			)
-		}
-
-		// Update default model and add fallback to all agents
-		appCfg.Agents.Defaults.ModelName = "antigravity-gemini-3-flash-agent"
-		for i := range appCfg.Agents.List {
-			if appCfg.Agents.List[i].Model == nil {
-				appCfg.Agents.List[i].Model = &config.AgentModelConfig{}
-			}
-			appCfg.Agents.List[i].Model.Primary = "antigravity-gemini-3-flash-agent"
-			appCfg.Agents.List[i].Model.Fallbacks = []string{"antigravity-gemini-2-5-flash"}
-		}
+		// Use shared function to add models
+		addedCount := AddAntigravityModels(appCfg)
 
 		if err := config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
 			fmt.Printf("Warning: could not update config: %v\n", err)
+		} else {
+			fmt.Printf("\n✓ Added %d Antigravity models to config\n", addedCount)
 		}
 	}
 
 	fmt.Println("\n✓ Google Antigravity login successful!")
-	fmt.Println("Default model set to: antigravity-gemini-3-flash-agent (fallback: antigravity-gemini-2-5-flash)")
-	fmt.Println("Try it: picoclaw-agents agent -m \"Hello world\"")
+	fmt.Println("Default model set to: gemini-3-flash (fallback: gemini-2.5-flash)")
+	fmt.Println("Available models:")
+	fmt.Println("  - gemini-3-flash (default)")
+	fmt.Println("  - gemini-3-pro-high, gemini-3-pro-low")
+	fmt.Println("  - gemini-3.1-pro-high, gemini-3.1-pro-low, gemini-3.1-flash-lite")
+	fmt.Println("  - gemini-3-flash-agent, gemini-3-flash-preview")
+	fmt.Println("  - gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-flash-thinking, gemini-2.5-pro")
+	fmt.Println("  - claude-sonnet-4-6, claude-opus-4-6-thinking")
+	fmt.Println("  - gpt-oss-120b-medium")
+	fmt.Println("\nTry it: picoclaw-agents agent -m \"Hello world\" --model gemini-3-flash")
 
 	return nil
 }
@@ -488,4 +501,117 @@ func isOpenAIModel(model string) bool {
 func isAnthropicModel(model string) bool {
 	return model == "anthropic" ||
 		strings.HasPrefix(model, "anthropic/")
+}
+
+// AddAnthropicModels adds Anthropic models to config with deduplication
+func AddAnthropicModels(appCfg *config.Config) int {
+	anthropicModels := []config.ModelConfig{
+		{ModelName: "claude-sonnet-4-6", Model: "anthropic/claude-sonnet-4-6", AuthMethod: "oauth"},
+		{ModelName: "claude-opus-4-6", Model: "anthropic/claude-opus-4-6", AuthMethod: "oauth"},
+		{ModelName: "claude-opus-4-6-thinking", Model: "anthropic/claude-opus-4-6-thinking", AuthMethod: "oauth"},
+		{ModelName: "claude-3-5-sonnet", Model: "anthropic/claude-3-5-sonnet", AuthMethod: "oauth"},
+		{ModelName: "claude-3-5-haiku", Model: "anthropic/claude-3-5-haiku", AuthMethod: "oauth"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range anthropicModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "claude-sonnet-4-6"
+	}
+
+	return addedCount
+}
+
+// AddAntigravityModels adds Antigravity models to config with deduplication
+func AddAntigravityModels(appCfg *config.Config) int {
+	antigravityModels := []config.ModelConfig{
+		{ModelName: "gemini-3-flash", Model: "antigravity/gemini-3-flash", AuthMethod: "oauth"},
+		{ModelName: "gemini-3-pro-high", Model: "antigravity/gemini-3-pro-high", AuthMethod: "oauth"},
+		{ModelName: "gemini-3-pro-low", Model: "antigravity/gemini-3-pro-low", AuthMethod: "oauth"},
+		{ModelName: "gemini-3.1-pro-high", Model: "antigravity/gemini-3.1-pro-high", AuthMethod: "oauth"},
+		{ModelName: "gemini-3.1-pro-low", Model: "antigravity/gemini-3.1-pro-low", AuthMethod: "oauth"},
+		{ModelName: "gemini-3.1-flash-lite", Model: "antigravity/gemini-3.1-flash-lite", AuthMethod: "oauth"},
+		{ModelName: "gemini-3-flash-agent", Model: "antigravity/gemini-3-flash-agent", AuthMethod: "oauth"},
+		{ModelName: "gemini-3-flash-preview", Model: "antigravity/gemini-3-flash-preview", AuthMethod: "oauth"},
+		{ModelName: "gemini-2.5-flash", Model: "antigravity/gemini-2.5-flash", AuthMethod: "oauth"},
+		{ModelName: "gemini-2.5-flash-lite", Model: "antigravity/gemini-2.5-flash-lite", AuthMethod: "oauth"},
+		{ModelName: "gemini-2.5-flash-thinking", Model: "antigravity/gemini-2.5-flash-thinking", AuthMethod: "oauth"},
+		{ModelName: "gemini-2.5-pro", Model: "antigravity/gemini-2.5-pro", AuthMethod: "oauth"},
+		{ModelName: "claude-sonnet-4-6", Model: "antigravity/claude-sonnet-4-6", AuthMethod: "oauth"},
+		{ModelName: "claude-opus-4-6-thinking", Model: "antigravity/claude-opus-4-6-thinking", AuthMethod: "oauth"},
+		{ModelName: "gpt-oss-120b-medium", Model: "antigravity/gpt-oss-120b-medium", AuthMethod: "oauth"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range antigravityModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "gemini-3-flash"
+		for i := range appCfg.Agents.List {
+			if appCfg.Agents.List[i].Model == nil {
+				appCfg.Agents.List[i].Model = &config.AgentModelConfig{}
+			}
+			appCfg.Agents.List[i].Model.Primary = "gemini-3-flash"
+			appCfg.Agents.List[i].Model.Fallbacks = []string{"gemini-2.5-flash"}
+		}
+	}
+
+	return addedCount
+}
+
+// AddOpenAIModels adds OpenAI models to config with deduplication
+func AddOpenAIModels(appCfg *config.Config) int {
+	openAIModels := []config.ModelConfig{
+		{ModelName: "gpt-5.4", Model: "openai/gpt-5.4", AuthMethod: "oauth"},
+		{ModelName: "gpt-5", Model: "openai/gpt-5", AuthMethod: "oauth"},
+		{ModelName: "o3-mini", Model: "openai/o3-mini", AuthMethod: "oauth"},
+		{ModelName: "o3", Model: "openai/o3", AuthMethod: "oauth"},
+		{ModelName: "o1", Model: "openai/o1", AuthMethod: "oauth"},
+		{ModelName: "o1-mini", Model: "openai/o1-mini", AuthMethod: "oauth"},
+		{ModelName: "gpt-4.1", Model: "openai/gpt-4.1", AuthMethod: "oauth"},
+		{ModelName: "gpt-4-turbo", Model: "openai/gpt-4-turbo", AuthMethod: "oauth"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range openAIModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "gpt-5.4"
+	}
+
+	return addedCount
 }

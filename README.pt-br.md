@@ -154,6 +154,18 @@ make build-launcher
 > picoclaw-agents-launcher -public
 > ```
 
+**Autenticação OAuth via Web UI:**
+
+Você pode autenticar com provedores OAuth diretamente da Web UI em `http://localhost:18800/credentials`:
+
+- **Anthropic**: OAuth do navegador (fluxo PKCE) — Adiciona automaticamente 5 modelos Claude
+- **Google Antigravity**: OAuth do navegador — Adiciona automaticamente 15 modelos Gemini
+- **OpenAI**: Apenas código do dispositivo — Adiciona automaticamente 8 modelos GPT
+
+![Credentials OAuth](assets/webui/credentials-auth.png)
+
+> **Nota:** O OpenAI suporta apenas autenticação por **Código do Dispositivo** (sem OAuth do navegador). Use a flag `--device-code` ou o botão Device Code da Web UI.
+
 ![WebUI Launcher](assets/launcher-webui.jpg)
 
 
@@ -343,6 +355,9 @@ A opção `--free` configura três modelos gratuitos do OpenRouter com fallback 
 
 Os três são roteados pelo [OpenRouter](https://openrouter.ai) — uma única chave API cobre todos eles.
 
+
+> [!TIP]
+> **OAuth da OpenAI no Free Tier:** Você também pode usar a autenticação OAuth da OpenAI (`picoclaw-agents auth login --provider openai --device-code`) que funciona com planos free tier. Nenhuma chave API necessária — usa sua conta OpenAI/ChatGPT existente.
 **2. Configurar** (`~/.picoclaw/config.json`)
 
 ```json
@@ -1073,6 +1088,8 @@ picoclaw-agents auth login --provider openai --device-code
 
 > ⚠️ **Importante:** Para OAuth do OpenAI Codex, você deve habilitar a autorização por código de dispositivo nas configurações do ChatGPT primeiro.
 
+
+> **Nota:** O OAuth da OpenAI suporta apenas autenticação por **Código do Dispositivo** (sem OAuth do navegador). Isso é por design para melhor segurança e confiabilidade.
 #### Passo 2: Listar Modelos Disponíveis
 
 Após configurar os provedores, verifique os modelos disponíveis:

@@ -81,7 +81,7 @@ export function ChatPage() {
 
   const handleSend = () => {
     if (!input.trim() || !canSend) return
-    if (sendMessage(input.trim())) {
+    if (sendMessage(input.trim(), defaultModelName)) {
       setInput("")
     }
   }

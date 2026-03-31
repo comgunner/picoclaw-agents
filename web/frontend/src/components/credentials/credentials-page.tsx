@@ -76,7 +76,6 @@ export function CredentialsPage() {
               activeAction={activeAction}
               token={openAIToken}
               onTokenChange={setOpenAIToken}
-              onStartBrowserOAuth={() => void startBrowserOAuth("openai")}
               onStartDeviceCode={() => void startOpenAIDeviceCode()}
               onStopLoading={stopLoading}
               onSaveToken={() => void saveToken("openai", openAIToken.trim())}
@@ -88,6 +87,7 @@ export function CredentialsPage() {
               activeAction={activeAction}
               token={anthropicToken}
               onTokenChange={setAnthropicToken}
+              onStartBrowserOAuth={() => void startBrowserOAuth("anthropic")}
               onStopLoading={stopLoading}
               onSaveToken={() =>
                 void saveToken("anthropic", anthropicToken.trim())

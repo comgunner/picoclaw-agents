@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { toast } from "sonner"
 
 import {
   type OAuthFlowState,
@@ -95,6 +96,12 @@ export function useCredentialsPage() {
 
         if (watchMode === "poll") {
           setDeviceSheetOpen(false)
+        }
+
+        // Show success toast when flow completes
+        if (flow.status === "success") {
+          const providerName = getProviderLabel(flow.provider)
+          toast.success(`${providerName} ${t("credentials.flow.login_success")}`)
         }
 
         setWatchFlowID("")

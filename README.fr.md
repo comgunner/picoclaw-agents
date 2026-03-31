@@ -199,6 +199,18 @@ make build-launcher
 > picoclaw-agents-launcher -public
 > ```
 
+**Authentification OAuth via l'interface Web :**
+
+Vous pouvez vous authentifier avec les fournisseurs OAuth directement depuis l'interface Web à `http://localhost:18800/credentials` :
+
+- **Anthropic** : OAuth navigateur (flux PKCE) — Ajoute automatiquement 5 modèles Claude
+- **Google Antigravity** : OAuth navigateur — Ajoute automatiquement 15 modèles Gemini
+- **OpenAI** : Code d'appareil uniquement — Ajoute automatiquement 8 modèles GPT
+
+![Credentials OAuth](assets/webui/credentials-auth.png)
+
+> **Remarque :** OpenAI prend uniquement en charge l'authentification par **code d'appareil** (pas d'OAuth navigateur). Utilisez le drapeau `--device-code` ou le bouton Code d'appareil de l'interface Web.
+
 ![Lanceur WebUI](assets/launcher-webui.jpg)
 
 
@@ -390,6 +402,9 @@ Les trois sont acheminés via [OpenRouter](https://openrouter.ai) — une seule 
 
 > [!IMPORTANT]
 > **Correction ID de Modèle:** Les versions précédentes utilisaient `openrouter/free` qui n'est pas un ID de modèle OpenRouter valide. Ceci a été corrigé en `openrouter/auto`. Si vous avez une config existante avec `openrouter-free` ou `openrouter/free`, mettez-la à jour vers `openrouter/auto` ou ré-exécutez `picoclaw-agents onboard --free`.
+
+> [!TIP]
+> **OAuth OpenAI sur le niveau gratuit :** Vous pouvez également utiliser l'authentification OAuth OpenAI (`picoclaw-agents auth login --provider openai --device-code`) qui fonctionne avec les abonnements gratuits. Aucune clé API requise — utilise votre compte OpenAI/ChatGPT existant.
 
 **En savoir plus:** Voir [docs/OPENROUTER_FREE.md](docs/OPENROUTER_FREE.md) pour le guide complet de configuration, les limites et le dépannage.
 
@@ -1122,6 +1137,8 @@ picoclaw-agents auth login --provider openai --device-code
 ```
 
 > ⚠️ **Important :** Pour OpenAI Codex OAuth, vous devez d'abord activer l'autorisation par code d'appareil dans vos paramètres ChatGPT.
+
+> **Remarque :** L'OAuth OpenAI prend uniquement en charge l'authentification par **code d'appareil** (pas d'OAuth navigateur). Ceci est par conception pour une meilleure sécurité et fiabilité.
 
 #### Étape 2 : Lister les modèles disponibles
 

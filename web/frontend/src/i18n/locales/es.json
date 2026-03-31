@@ -133,7 +133,8 @@
       "pending": "Esperando autorización...",
       "success": "Autenticación exitosa",
       "error": "Error de autenticación",
-      "expired": "La sesión de autenticación expiró"
+      "expired": "La sesión de autenticación expiró",
+      "login_success": "¡login exitoso! Modelos agregados."
     },
     "device": {
       "title": "Login de Dispositivo OpenAI",

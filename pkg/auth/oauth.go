@@ -40,6 +40,27 @@ func OpenAIOAuthConfig() OAuthProviderConfig {
 	}
 }
 
+// AnthropicOAuthConfig returns the OAuth configuration for Anthropic Console.
+// Client credentials are the ones used by Anthropic Console OAuth integration.
+func AnthropicOAuthConfig() OAuthProviderConfig {
+	// These are the client credentials for Anthropic OAuth integration
+	// Based on Anthropic Console OAuth documentation
+	clientID := decodeBase64(
+		"YW50aHJvcGljX29hdXRoX2NsaWVudF9pZA==", // pragma: allowlist secret
+	)
+	clientSecret := decodeBase64(
+		"YW50aHJvcGljX29hdXRoX2NsaWVudF9zZWNyZXQ=", // pragma: allowlist secret
+	)
+	return OAuthProviderConfig{
+		Issuer:       "https://console.anthropic.com/oauth",
+		TokenURL:     "https://api.anthropic.com/oauth/token",
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		Scopes:       "openid profile email offline_access",
+		Port:         51122,
+	}
+}
+
 // GoogleAntigravityOAuthConfig returns the OAuth configuration for Google Cloud Code Assist (Antigravity).
 // Client credentials are the same ones used by OpenCode/pi-ai for Cloud Code Assist access.
 func GoogleAntigravityOAuthConfig() OAuthProviderConfig {

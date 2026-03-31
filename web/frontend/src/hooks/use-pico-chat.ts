@@ -63,7 +63,7 @@ export function usePicoChat() {
     connectionState,
     isTyping,
     activeSessionId,
-    sendMessage: sendChatMessage,
+    sendMessage: (content: string, modelName?: string) => sendChatMessage(content, modelName),
     switchSession: switchChatSession,
     newChat: newChatSession,
   }

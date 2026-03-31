@@ -6,6 +6,73 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-03-30
+
+### 🌐 WebUI: OAuth Authentication for All Providers
+
+**Files modified:** `pkg/auth/oauth.go`, `web/backend/api/oauth.go`, `cmd/picoclaw/internal/auth/helpers.go`, `web/frontend/src/components/credentials/*.tsx`
+
+- **Anthropic Browser OAuth:** Implemented PKCE OAuth flow for Anthropic (`console.anthropic.com/oauth`)
+  - Auto-adds 5 Claude models on login: `claude-sonnet-4-6` (default), `claude-opus-4-6`, `claude-opus-4-6-thinking`, `claude-3-5-sonnet`, `claude-3-5-haiku`
+  - Frontend: Browser OAuth button in Anthropic credential card
+  - CLI: `auth login --provider anthropic` with Browser option
+  - Toast notification on success: "Anthropic login successful! Models added."
+
+- **Auto-Config Models:** All providers now auto-add models on OAuth login
+  - **OpenAI:** 8 models (`gpt-5.4`, `gpt-5`, `o3-mini`, `o3`, `o1`, `o1-mini`, `gpt-4.1`, `gpt-4-turbo`)
+  - **Anthropic:** 5 models (see above)
+  - **Antigravity:** 15 models (`gemini-3-flash` default, plus 14 others)
+  - Deduplication via `map[string]bool` prevents duplicate models
+  - Default model auto-configured per provider
+
+- **Shared Functions:** `AddOpenAIModels()`, `AddAnthropicModels()`, `AddAntigravityModels()` in CLI helpers
+  - DRY pattern: Same logic for CLI and Web UI
+  - Consistent model lists across both interfaces
+
+- **UX Improvements:**
+  - Toast notifications (sonner) on successful OAuth login
+  - Translations: English (`en.json`) and Spanish (`es.json`)
+  - Message: "{Provider} login successful! Models added."
+
+### 🎨 WebUI: OpenAI Browser OAuth Button Removed
+
+**Files modified:** `web/frontend/src/components/credentials/openai-credential-card.tsx`, `web/frontend/src/components/credentials/credentials-page.tsx`, `web/backend/api/oauth.go`
+
+- **Removed:** Browser OAuth button from OpenAI credential card
+- **Reason:** OpenAI only supports Device Code authentication (more reliable, no popup blockers)
+- **Kept:** Device Code button + Token input
+- **Backend:** Updated `oauthProviderMethods` to reflect Device Code + Token only
+
+**Documentation:**
+- Updated all READMEs (7 languages) with credentials screenshot
+- Added note: "OpenAI only supports Device Code (no Browser OAuth)"
+- Image: `assets/webui/credentials-auth.png`
+
+### 📚 Documentation Updates
+
+**Files modified:** `README.md`, `README.es.md`, `README.fr.md`, `README.ja.md`, `README.pt-br.md`, `README.vi.md`, `README.zh.md`
+
+- **New section:** "OAuth Authentication via Web UI" in WebUI Launcher section
+  - Shows credentials page screenshot
+  - Lists supported OAuth methods per provider
+  - Notes OpenAI Device Code only
+
+- **Free Tier note:** Added tip about OpenAI OAuth working with free tier plans
+  - No API key required — uses existing OpenAI/ChatGPT account
+  - Device Code authorization required
+
+**New files in `local_work/`:**
+- `ALL_PHASES_COMPLETE.md` — Complete implementation summary (6/6 phases)
+- `IMPLEMENTATION_COMPLETE.md` — Executive summary
+- `OPENAI_BROWSER_BUTTON_REMOVED.md` — Button removal documentation
+
+**Builds:**
+- ✅ CLI: `make build` — Success
+- ✅ Frontend: `pnpm build:backend` — Success
+- ✅ Launcher: `make build-launcher` — Success
+
+---
+
 ## 2026-03-29
 
 ### 🤖 Agent: Global Model Normalization Fix (OpenRouter 404)

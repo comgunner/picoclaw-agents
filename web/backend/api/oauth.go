@@ -45,8 +45,8 @@ var oauthProviderOrder = []string{
 }
 
 var oauthProviderMethods = map[string][]string{
-	oauthProviderOpenAI:            {oauthMethodBrowser, oauthMethodDeviceCode, oauthMethodToken},
-	oauthProviderAnthropic:         {oauthMethodToken},
+	oauthProviderOpenAI:            {oauthMethodDeviceCode, oauthMethodToken},
+	oauthProviderAnthropic:         {oauthMethodBrowser, oauthMethodToken},
 	oauthProviderGoogleAntigravity: {oauthMethodBrowser},
 }
 
@@ -548,6 +548,8 @@ func oauthConfigForProvider(provider string) (auth.OAuthProviderConfig, error) {
 	switch provider {
 	case oauthProviderOpenAI:
 		return auth.OpenAIOAuthConfig(), nil
+	case oauthProviderAnthropic:
+		return auth.AnthropicOAuthConfig(), nil
 	case oauthProviderGoogleAntigravity:
 		return auth.GoogleAntigravityOAuthConfig(), nil
 	default:
@@ -744,19 +746,122 @@ func (h *Handler) syncProviderAuthMethod(provider, authMethod string) error {
 		return err
 	}
 
-	found := false
+	// Update auth_method for existing models
 	for i := range cfg.ModelList {
 		if modelBelongsToProvider(provider, cfg.ModelList[i].Model) {
 			cfg.ModelList[i].AuthMethod = authMethod
-			found = true
 		}
 	}
 
-	if !found && authMethod != "" {
-		cfg.ModelList = append(cfg.ModelList, *defaultModelConfigForProvider(provider, authMethod))
+	// Auto-add all models for this provider with deduplication
+	addedCount := addModelsForProvider(cfg, provider, authMethod)
+
+	if err := oauthSaveConfig(h.configPath, cfg); err != nil {
+		return err
 	}
 
-	return oauthSaveConfig(h.configPath, cfg)
+	if addedCount > 0 {
+		logger.InfoC("oauth", fmt.Sprintf("Added %d models for %s", addedCount, provider))
+	}
+
+	return nil
+}
+
+// addModelsForProvider adds all models for a provider with deduplication
+// Returns the number of models added
+func addModelsForProvider(cfg *config.Config, provider, authMethod string) int {
+	existingModels := make(map[string]bool)
+	for _, m := range cfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	var modelsToAdd []config.ModelConfig
+
+	switch provider {
+	case oauthProviderOpenAI:
+		modelsToAdd = []config.ModelConfig{
+			{ModelName: "gpt-5.4", Model: "openai/gpt-5.4", AuthMethod: authMethod},
+			{ModelName: "gpt-5", Model: "openai/gpt-5", AuthMethod: authMethod},
+			{ModelName: "o3-mini", Model: "openai/o3-mini", AuthMethod: authMethod},
+			{ModelName: "o3", Model: "openai/o3", AuthMethod: authMethod},
+			{ModelName: "o1", Model: "openai/o1", AuthMethod: authMethod},
+			{ModelName: "o1-mini", Model: "openai/o1-mini", AuthMethod: authMethod},
+			{ModelName: "gpt-4.1", Model: "openai/gpt-4.1", AuthMethod: authMethod},
+			{ModelName: "gpt-4-turbo", Model: "openai/gpt-4-turbo", AuthMethod: authMethod},
+		}
+		if !existingModels["gpt-5.4"] {
+			cfg.Agents.Defaults.ModelName = "gpt-5.4"
+		}
+
+	case oauthProviderAnthropic:
+		modelsToAdd = []config.ModelConfig{
+			{ModelName: "claude-sonnet-4-6", Model: "anthropic/claude-sonnet-4-6", AuthMethod: authMethod},
+			{ModelName: "claude-opus-4-6", Model: "anthropic/claude-opus-4-6", AuthMethod: authMethod},
+			{
+				ModelName:  "claude-opus-4-6-thinking",
+				Model:      "anthropic/claude-opus-4-6-thinking",
+				AuthMethod: authMethod,
+			},
+			{ModelName: "claude-3-5-sonnet", Model: "anthropic/claude-3-5-sonnet", AuthMethod: authMethod},
+			{ModelName: "claude-3-5-haiku", Model: "anthropic/claude-3-5-haiku", AuthMethod: authMethod},
+		}
+		if !existingModels["claude-sonnet-4-6"] {
+			cfg.Agents.Defaults.ModelName = "claude-sonnet-4-6"
+		}
+
+	case oauthProviderGoogleAntigravity:
+		modelsToAdd = []config.ModelConfig{
+			{ModelName: "gemini-3-flash", Model: "antigravity/gemini-3-flash", AuthMethod: authMethod},
+			{ModelName: "gemini-3-pro-high", Model: "antigravity/gemini-3-pro-high", AuthMethod: authMethod},
+			{ModelName: "gemini-3-pro-low", Model: "antigravity/gemini-3-pro-low", AuthMethod: authMethod},
+			{ModelName: "gemini-3.1-pro-high", Model: "antigravity/gemini-3.1-pro-high", AuthMethod: authMethod},
+			{ModelName: "gemini-3.1-pro-low", Model: "antigravity/gemini-3.1-pro-low", AuthMethod: authMethod},
+			{ModelName: "gemini-3.1-flash-lite", Model: "antigravity/gemini-3.1-flash-lite", AuthMethod: authMethod},
+			{ModelName: "gemini-3-flash-agent", Model: "antigravity/gemini-3-flash-agent", AuthMethod: authMethod},
+			{ModelName: "gemini-3-flash-preview", Model: "antigravity/gemini-3-flash-preview", AuthMethod: authMethod},
+			{ModelName: "gemini-2.5-flash", Model: "antigravity/gemini-2.5-flash", AuthMethod: authMethod},
+			{ModelName: "gemini-2.5-flash-lite", Model: "antigravity/gemini-2.5-flash-lite", AuthMethod: authMethod},
+			{
+				ModelName:  "gemini-2.5-flash-thinking",
+				Model:      "antigravity/gemini-2.5-flash-thinking",
+				AuthMethod: authMethod,
+			},
+			{ModelName: "gemini-2.5-pro", Model: "antigravity/gemini-2.5-pro", AuthMethod: authMethod},
+			{ModelName: "claude-sonnet-4-6", Model: "antigravity/claude-sonnet-4-6", AuthMethod: authMethod},
+			{
+				ModelName:  "claude-opus-4-6-thinking",
+				Model:      "antigravity/claude-opus-4-6-thinking",
+				AuthMethod: authMethod,
+			},
+			{ModelName: "gpt-oss-120b-medium", Model: "antigravity/gpt-oss-120b-medium", AuthMethod: authMethod},
+		}
+		if !existingModels["gemini-3-flash"] {
+			cfg.Agents.Defaults.ModelName = "gemini-3-flash"
+			// Update all agents to use gemini-3-flash as primary
+			for i := range cfg.Agents.List {
+				if cfg.Agents.List[i].Model == nil {
+					cfg.Agents.List[i].Model = &config.AgentModelConfig{}
+				}
+				cfg.Agents.List[i].Model.Primary = "gemini-3-flash"
+				cfg.Agents.List[i].Model.Fallbacks = []string{"gemini-2.5-flash"}
+			}
+		}
+
+	default:
+		return 0
+	}
+
+	// Add only models that don't exist yet
+	addedCount := 0
+	for _, modelCfg := range modelsToAdd {
+		if !existingModels[modelCfg.ModelName] {
+			cfg.ModelList = append(cfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	return addedCount
 }
 
 func modelBelongsToProvider(provider, model string) bool {

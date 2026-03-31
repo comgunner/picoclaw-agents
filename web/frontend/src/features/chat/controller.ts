@@ -324,7 +324,7 @@ export async function hydrateActiveSession() {
   return hydratePromise
 }
 
-export function sendChatMessage(content: string) {
+export function sendChatMessage(content: string, modelName?: string) {
   if (!wsRef || wsRef.readyState !== WebSocket.OPEN) {
     console.warn("WebSocket not connected")
     return false
@@ -346,7 +346,10 @@ export function sendChatMessage(content: string) {
       JSON.stringify({
         type: "message.send",
         id,
-        payload: { content },
+        payload: {
+          content,
+          model_name: modelName,  // Include model if provided
+        },
       }),
     )
     return true
