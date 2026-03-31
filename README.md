@@ -1439,13 +1439,13 @@ Example output:
 
 #### Switching Between Models
 
-You can switch models at any time:
+You can switch models at any time using the `/model` fast-path command:
 
 ```bash
 # Interactive mode with model switch
 ./build/picoclaw-agents interactive --model openrouter-free
 
-# Then use /model command to switch
+# Then use /model command to switch (instant, no LLM latency)
 /model antigravity-gemini-2.5-flash
 ```
 
@@ -1455,6 +1455,57 @@ Or specify model per message:
 ./build/picoclaw-agents agent --model antigravity -m "First message"
 ./build/picoclaw-agents agent --model openrouter-free -m "Second message"
 ```
+
+#### `/model` Command - Fast-Path Model Management (Telegram & Discord)
+
+The `/model` command provides **instant model switching** without LLM latency. **Available on Telegram and Discord.**
+
+```
+# List all available models
+/model
+
+# Switch to a specific model
+/model openai/gpt-5.4
+/model anthropic/claude-sonnet-4-6
+/model llama3.2:1b                    # Local Ollama model
+
+# Filter models by provider (Telegram only)
+/model provider openai                # Show all OpenAI models
+/model provider antigravity           # Show all Google Antigravity models
+
+# Get model details (Telegram only)
+/model info antigravity/gemini-3-flash
+/model info openai/gpt-5.4
+```
+
+**Example Output:**
+
+```
+📦 Models available (35 configured):
+
+   1. openrouter/free (Local)
+👉 2. openai/gpt-5.4 (OAuth)
+   3. antigravity/gemini-3-flash (OAuth)
+   4. anthropic/claude-sonnet-4-6 (token)
+   5. llama3.2:1b (Local)
+   ...
+
+💡 Usage:
+   /model <name> to switch
+   Ex: /model openai/gpt-5.4
+   /model provider <vendor> to filter
+   Ex: /model provider openai
+   /model info <name> for details
+   Ex: /model info antigravity/gemini-3-flash
+```
+
+**Features:**
+
+- ⚡ **Zero Latency:** Processes locally without LLM inference
+- 🔐 **Secure:** API keys hidden in responses
+- 📊 **Informative:** Shows current model (`👉`), auth method, and status
+- 💬 **Telegram & Discord:** Fast-path command available on both platforms
+- 🎯 **Instant:** No waiting for model responses
 
 ### Model Configuration (model_list)
 

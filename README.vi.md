@@ -1169,13 +1169,13 @@ Ví dụ đầu ra:
 
 #### Chuyển đổi giữa các mô hình
 
-Bạn có thể chuyển đổi mô hình bất cứ lúc nào:
+Bạn có thể chuyển đổi mô hình bất cứ lúc nào bằng lệnh nhanh `/model`:
 
 ```bash
 # Chế độ tương tác với chuyển đổi mô hình
 ./build/picoclaw-agents interactive --model openrouter-free
 
-# Sau đó sử dụng lệnh /model để chuyển đổi
+# Sau đó sử dụng lệnh /model để chuyển đổi (tức thì, không có độ trễ LLM)
 /model antigravity-gemini-2.5-flash
 ```
 
@@ -1185,6 +1185,57 @@ Hoặc chỉ định mô hình cho mỗi tin nhắn:
 ./build/picoclaw-agents agent --model antigravity -m "Tin nhắn đầu tiên"
 ./build/picoclaw-agents agent --model openrouter-free -m "Tin nhắn thứ hai"
 ```
+
+#### Lệnh `/model` - Quản lý Mô hình Nhanh (Telegram và Discord)
+
+Lệnh `/model` cung cấp **chuyển đổi mô hình tức thì** mà không có độ trễ LLM. **Khả dụng trên Telegram và Discord.**
+
+```
+# Liệt kê tất cả các mô hình có sẵn
+/model
+
+# Chuyển đổi sang mô hình cụ thể
+/model openai/gpt-5.4
+/model anthropic/claude-sonnet-4-6
+/model llama3.2:1b                    # Mô hình local Ollama
+
+# Lọc mô hình theo nhà cung cấp (chỉ Telegram)
+/model provider openai                # Hiển thị tất cả mô hình OpenAI
+/model provider antigravity           # Hiển thị tất cả mô hình Google Antigravity
+
+# Lấy thông tin chi tiết mô hình (chỉ Telegram)
+/model info antigravity/gemini-3-flash
+/model info openai/gpt-5.4
+```
+
+**Ví dụ Đầu ra:**
+
+```
+📦 Mô hình có sẵn (35 được cấu hình):
+
+   1. openrouter/free (Local)
+👉 2. openai/gpt-5.4 (OAuth)
+   3. antigravity/gemini-3-flash (OAuth)
+   4. anthropic/claude-sonnet-4-6 (token)
+   5. llama3.2:1b (Local)
+   ...
+
+💡 Cách dùng:
+   /model <tên> để chuyển đổi
+   Ví dụ: /model openai/gpt-5.4
+   /model provider <nhà_cung_cấp> để lọc
+   Ví dụ: /model provider openai
+   /model info <tên> để xem chi tiết
+   Ví dụ: /model info antigravity/gemini-3-flash
+```
+
+**Tính Năng:**
+
+- ⚡ **Không Độ Trễ:** Xử lý cục bộ mà không cần suy luận LLM
+- 🔐 **An Toàn:** Khóa API bị ẩn trong các phản hồi
+- 📊 **Thông Tin Chi Tiết:** Hiển thị mô hình hiện tại (`👉`), phương pháp xác thực và trạng thái
+- 💬 **Telegram và Discord:** Lệnh nhanh khả dụng trên cả hai nền tảng
+- 🎯 **Tức Thì:** Không cần chờ phản hồi mô hình
 
 ### Cấu hình Mô hình (model_list)
 

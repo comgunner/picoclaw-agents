@@ -1169,13 +1169,13 @@ picoclaw-agents models list
 
 #### モデルの切り替え
 
-いつでもモデルを切り替えることができます：
+高速パスコマンド `/model` を使用してモデルを切り替えることができます：
 
 ```bash
 # モデル切り替え付きインタラクティブモード
 ./build/picoclaw-agents interactive --model openrouter-free
 
-# 次に /model コマンドで切り替え
+# 次に /model コマンドで切り替え（瞬時、LLM レイテンシなし）
 /model antigravity-gemini-2.5-flash
 ```
 
@@ -1185,6 +1185,57 @@ picoclaw-agents models list
 ./build/picoclaw-agents agent --model antigravity -m "最初のメッセージ"
 ./build/picoclaw-agents agent --model openrouter-free -m "2 番目のメッセージ"
 ```
+
+#### `/model` コマンド - 高速モデル管理（Telegram と Discord）
+
+`/model` コマンドは **LLM レイテンシなしの瞬時モデル切り替え** を実現します。**Telegram と Discord で利用可能。**
+
+```
+# 利用可能なすべてのモデルを一覧表示
+/model
+
+# 特定のモデルに切り替え
+/model openai/gpt-5.4
+/model anthropic/claude-sonnet-4-6
+/model llama3.2:1b                    # ローカル Ollama モデル
+
+# プロバイダー別にフィルタリング（Telegram のみ）
+/model provider openai                # OpenAI のすべてのモデルを表示
+/model provider antigravity           # Google Antigravity のモデルを表示
+
+# モデルの詳細を取得（Telegram のみ）
+/model info antigravity/gemini-3-flash
+/model info openai/gpt-5.4
+```
+
+**出力例：**
+
+```
+📦 利用可能なモデル (35 個設定済み):
+
+   1. openrouter/free (Local)
+👉 2. openai/gpt-5.4 (OAuth)
+   3. antigravity/gemini-3-flash (OAuth)
+   4. anthropic/claude-sonnet-4-6 (token)
+   5. llama3.2:1b (Local)
+   ...
+
+💡 使用方法:
+   /model <名前> で切り替え
+   例: /model openai/gpt-5.4
+   /model provider <ベンダー> でフィルタ
+   例: /model provider openai
+   /model info <名前> で詳細
+   例: /model info antigravity/gemini-3-flash
+```
+
+**特徴：**
+
+- ⚡ **ゼロレイテンシ:** LLM 推論なしでローカル処理
+- 🔐 **セキュア:** レスポンス内で API キーを隠ぺい
+- 📊 **情報量豊富:** 現在のモデル（`👉`）、認証方法、ステータスを表示
+- 💬 **Telegram と Discord:** 両プラットフォームで利用可能な高速コマンド
+- 🎯 **瞬時:** モデルのレスポンスを待たない
 
 ### モデル構成 (model_list)
 

@@ -1169,13 +1169,13 @@ Exemplo de saída:
 
 #### Alternando Entre Modelos
 
-Você pode alternar modelos a qualquer momento:
+Você pode alternar modelos a qualquer momento usando o comando rápido `/model`:
 
 ```bash
 # Modo interativo com alternância de modelo
 ./build/picoclaw-agents interactive --model openrouter-free
 
-# Depois use o comando /model para alternar
+# Depois use o comando /model para alternar (instantâneo, sem latência de LLM)
 /model antigravity-gemini-2.5-flash
 ```
 
@@ -1185,6 +1185,57 @@ Ou especifique o modelo por mensagem:
 ./build/picoclaw-agents agent --model antigravity -m "Primeira mensagem"
 ./build/picoclaw-agents agent --model openrouter-free -m "Segunda mensagem"
 ```
+
+#### Comando `/model` - Gerenciamento Rápido de Modelos (Telegram e Discord)
+
+O comando `/model` oferece **alternância de modelo instantânea** sem latência de LLM. **Disponível no Telegram e Discord.**
+
+```
+# Listar todos os modelos disponíveis
+/model
+
+# Alternar para um modelo específico
+/model openai/gpt-5.4
+/model anthropic/claude-sonnet-4-6
+/model llama3.2:1b                    # Modelo local Ollama
+
+# Filtrar modelos por provedor (apenas Telegram)
+/model provider openai                # Mostrar todos os modelos OpenAI
+/model provider antigravity           # Mostrar todos os modelos Google Antigravity
+
+# Obter detalhes do modelo (apenas Telegram)
+/model info antigravity/gemini-3-flash
+/model info openai/gpt-5.4
+```
+
+**Exemplo de Saída:**
+
+```
+📦 Modelos disponíveis (35 configurados):
+
+   1. openrouter/free (Local)
+👉 2. openai/gpt-5.4 (OAuth)
+   3. antigravity/gemini-3-flash (OAuth)
+   4. anthropic/claude-sonnet-4-6 (token)
+   5. llama3.2:1b (Local)
+   ...
+
+💡 Uso:
+   /model <nome> para alternar
+   Ex: /model openai/gpt-5.4
+   /model provider <provedor> para filtrar
+   Ex: /model provider openai
+   /model info <nome> para detalhes
+   Ex: /model info antigravity/gemini-3-flash
+```
+
+**Características:**
+
+- ⚡ **Latência Nula:** Processado localmente sem inferência de LLM
+- 🔐 **Seguro:** Chaves de API ocultadas nas respostas
+- 📊 **Informativo:** Exibe modelo atual (`👉`), método de autenticação e status
+- 💬 **Telegram e Discord:** Comando rápido disponível em ambas as plataformas
+- 🎯 **Instantâneo:** Sem esperar respostas do modelo
 
 ### Configuração de Modelos (model_list)
 

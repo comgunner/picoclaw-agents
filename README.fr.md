@@ -1219,13 +1219,13 @@ Exemple de sortie :
 
 #### Basculer entre les modèles
 
-Vous pouvez changer de modèle à tout moment :
+Vous pouvez changer de modèle à tout moment en utilisant la commande rapide `/model` :
 
 ```bash
 # Mode interactif avec changement de modèle
 ./build/picoclaw-agents interactive --model openrouter-free
 
-# Puis utilisez la commande /model pour basculer
+# Puis utilisez la commande /model pour basculer (instantané, sans latence LLM)
 /model antigravity-gemini-2.5-flash
 ```
 
@@ -1235,6 +1235,57 @@ Ou spécifiez le modèle par message :
 ./build/picoclaw-agents agent --model antigravity -m "Premier message"
 ./build/picoclaw-agents agent --model openrouter-free -m "Deuxième message"
 ```
+
+#### Commande `/model` - Gestion Rapide des Modèles (Telegram et Discord)
+
+La commande `/model` offre un **changement de modèle instantané** sans latence LLM. **Disponible sur Telegram et Discord.**
+
+```
+# Lister tous les modèles disponibles
+/model
+
+# Basculer vers un modèle spécifique
+/model openai/gpt-5.4
+/model anthropic/claude-sonnet-4-6
+/model llama3.2:1b                    # Modèle local Ollama
+
+# Filtrer les modèles par fournisseur (Telegram uniquement)
+/model provider openai                # Afficher tous les modèles OpenAI
+/model provider antigravity           # Afficher tous les modèles Google Antigravity
+
+# Obtenir les détails du modèle (Telegram uniquement)
+/model info antigravity/gemini-3-flash
+/model info openai/gpt-5.4
+```
+
+**Exemple de Sortie :**
+
+```
+📦 Modèles disponibles (35 configurés):
+
+   1. openrouter/free (Local)
+👉 2. openai/gpt-5.4 (OAuth)
+   3. antigravity/gemini-3-flash (OAuth)
+   4. anthropic/claude-sonnet-4-6 (token)
+   5. llama3.2:1b (Local)
+   ...
+
+💡 Utilisation :
+   /model <nom> pour changer
+   Ex : /model openai/gpt-5.4
+   /model provider <vendeur> pour filtrer
+   Ex : /model provider openai
+   /model info <nom> pour les détails
+   Ex : /model info antigravity/gemini-3-flash
+```
+
+**Caractéristiques :**
+
+- ⚡ **Zéro Latence :** Traitée localement sans inférence LLM
+- 🔐 **Sécurisé :** Les clés API sont masquées dans les réponses
+- 📊 **Informatif :** Affiche le modèle actuel (`👉`), la méthode d'authentification et le statut
+- 💬 **Telegram et Discord :** Commande rapide disponible sur les deux plates-formes
+- 🎯 **Instantané :** Sans attendre les réponses du modèle
 
 ### Configuration du Modèle (model_list)
 

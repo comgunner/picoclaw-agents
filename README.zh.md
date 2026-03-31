@@ -1219,13 +1219,13 @@ picoclaw-agents models list
 
 #### 切换模型
 
-您可以随时切换模型：
+您可以使用快速路径命令 `/model` 随时切换模型：
 
 ```bash
 # 带模型切换的交互模式
 ./build/picoclaw-agents interactive --model openrouter-free
 
-# 然后使用 /model 命令切换
+# 然后使用 /model 命令切换（立即生效，无 LLM 延迟）
 /model antigravity-gemini-2.5-flash
 ```
 
@@ -1235,6 +1235,57 @@ picoclaw-agents models list
 ./build/picoclaw-agents agent --model antigravity -m "第一条消息"
 ./build/picoclaw-agents agent --model openrouter-free -m "第二条消息"
 ```
+
+#### `/model` 命令 - 快速模型管理（Telegram 和 Discord）
+
+`/model` 命令提供**无延迟的即时模型切换**，无需等待 LLM 响应。**适用于 Telegram 和 Discord。**
+
+```
+# 列出所有可用模型
+/model
+
+# 切换到特定模型
+/model openai/gpt-5.4
+/model anthropic/claude-sonnet-4-6
+/model llama3.2:1b                    # 本地 Ollama 模型
+
+# 按供应商筛选模型（仅限 Telegram）
+/model provider openai                # 显示所有 OpenAI 模型
+/model provider antigravity           # 显示所有 Google Antigravity 模型
+
+# 获取模型详细信息（仅限 Telegram）
+/model info antigravity/gemini-3-flash
+/model info openai/gpt-5.4
+```
+
+**输出示例：**
+
+```
+📦 可用模型 (已配置 35 个):
+
+   1. openrouter/free (Local)
+👉 2. openai/gpt-5.4 (OAuth)
+   3. antigravity/gemini-3-flash (OAuth)
+   4. anthropic/claude-sonnet-4-6 (token)
+   5. llama3.2:1b (Local)
+   ...
+
+💡 使用方法:
+   /model <名称> 切换模型
+   例: /model openai/gpt-5.4
+   /model provider <供应商> 筛选
+   例: /model provider openai
+   /model info <名称> 查看详情
+   例: /model info antigravity/gemini-3-flash
+```
+
+**特性：**
+
+- ⚡ **零延迟：** 本地处理，无需 LLM 推理
+- 🔐 **安全：** 响应中隐藏 API 密钥
+- 📊 **信息详细：** 显示当前模型（`👉`）、认证方法和状态
+- 💬 **Telegram 和 Discord：** 快速命令支持两个平台
+- 🎯 **即时：** 无需等待模型响应
 
 ### 模型配置 (model_list)
 

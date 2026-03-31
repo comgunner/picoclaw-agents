@@ -8,6 +8,41 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ## 2026-03-30
 
+### ⚡ Fast-Path Command: `/model` for Model Switching
+
+**Files modified:** `pkg/channels/telegram.go`, `pkg/channels/discord.go`, `pkg/channels/manager.go`
+
+- **New Command:** Implemented `/model` as a fast-path command (processes locally without LLM)
+  - Zero-latency model switching without waiting for LLM inference
+  - Works on Telegram, Discord, and CLI
+  - Instant responses with model configuration from `config.json`
+
+- **Features:**
+  - `/model` — List all configured models
+  - `/model openai/gpt-5.4` — Switch to specific model
+  - `/model provider openai` — Filter models by provider (Telegram)
+  - `/model info antigravity/gemini-3-flash` — Show model details (Telegram)
+  - `llama3.2:1b` — Also works with local Ollama models
+
+- **Implementation Details:**
+  - **Telegram:** Registered `th.CommandEqual("model")` handler before `th.AnyMessage()` for fast-path interception
+  - **Discord:** `/model` slash command returns ephemeral response (visible only to user)
+  - **Backend:** Reused existing `ModelCommandHandler` from `pkg/commands/`
+  - **Security:** API keys sanitized in responses, model name validation prevents injection
+
+- **UX Improvements:**
+  - Displays current model with `👉` marker
+  - Shows auth method (OAuth, API Key, Local)
+  - Color-coded status indicators in Telegram output
+  - Instant confirmation: "✅ Model changed to: openai/gpt-5.4"
+
+- **Build Status:**
+  - ✅ CLI: `picoclaw-agents-darwin-arm64` (21MB)
+  - ✅ Launcher: `picoclaw-agents-launcher-darwin-arm64` (15MB)
+  - ✅ Verified on Mac M1 (darwin/arm64)
+
+**Note:** Discord slash command appears in autocomplete after ~15 minutes (standard Discord sync delay). Command works immediately when typed manually.
+
 ### 🌐 WebUI: OAuth Authentication for All Providers
 
 **Files modified:** `pkg/auth/oauth.go`, `web/backend/api/oauth.go`, `cmd/picoclaw/internal/auth/helpers.go`, `web/frontend/src/components/credentials/*.tsx`
