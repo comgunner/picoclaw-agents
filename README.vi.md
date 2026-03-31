@@ -37,7 +37,7 @@
 
 2026-03-27 🎉 **Cải thiện chất lượng build và kênh**: `go build ./...` hiện chạy sạch không lỗi. Đã thêm API group trigger vào `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender` và `ShouldRespondInGroup` — kiểm soát chi tiết chat nhóm (chỉ mention, trigger theo tiền tố). Xem [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-27 🎉 **WebUI Launcher hoạt động đầy đủ**: `picoclaw-agents-launcher` hoạt động từ đầu đến cuối — nút Start Gateway, chat WebSocket qua PicoChannel, nội dung skill bản địa trong trang Skills, và tất cả các mục menu được xác nhận. Chạy với `./build/picoclaw-agents-launcher` hoặc `./build/picoclaw-agents-launcher -public` để truy cập mạng.
+2026-03-27 🎉 **WebUI Launcher hoạt động đầy đủ**: `picoclaw-agents-launcher` hoạt động từ đầu đến cuối — nút Start Gateway, chat WebSocket qua PicoChannel, nội dung skill bản địa trong trang Skills, và tất cả các mục menu được xác nhận. Chạy với `picoclaw-agents-launcher` hoặc `picoclaw-agents-launcher -public` để truy cập mạng.
 
 2026-03-27 🎉 **Pipeline release 3 nhị phân**: GoReleaser giờ tạo ra cả ba nhị phân — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI) và `picoclaw-agents-launcher-tui` (TUI). Kích hoạt bằng `./scripts/create-release.sh`.
 
@@ -103,7 +103,7 @@ make build-launcher-tui
 
 **Chạy:**
 ```bash
-./build/picoclaw-agents-launcher-tui
+picoclaw-agents-launcher-tui
 # Hoặc ở chế độ development
 make dev-launcher-tui
 ```
@@ -145,7 +145,7 @@ pnpm build:backend
 **Sử Dụng:**
 ```bash
 make build-launcher
-./build/picoclaw-agents-launcher
+picoclaw-agents-launcher
 # Mở http://localhost:18800 trong trình duyệt của bạn
 ```
 
@@ -1123,16 +1123,16 @@ Ví dụ đầu ra:
 
 ```bash
 # Sử dụng mô hình miễn phí OpenRouter
-./build/picoclaw-agents agent --model openrouter-free -m "Hello, world!"
+picoclaw-agents agent --model openrouter-free -m "Hello, world!"
 
 # Sử dụng Google Antigravity (Gemini)
-./build/picoclaw-agents agent --model antigravity -m "Giải thích máy tính lượng tử"
+picoclaw-agents agent --model antigravity -m "Giải thích máy tính lượng tử"
 
 # Sử dụng mô hình Gemini cụ thể
-./build/picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "Viết một bài thơ"
+picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "Viết một bài thơ"
 
 # Sử dụng OpenAI Codex (cho tác vụ lập trình)
-./build/picoclaw-agents agent --model openai -m "Viết hàm Python để sắp xếp danh sách"
+picoclaw-agents agent --model openai -m "Viết hàm Python để sắp xếp danh sách"
 ```
 
 **Trong config.json (mô hình cho mỗi agent):**
@@ -1173,7 +1173,7 @@ Bạn có thể chuyển đổi mô hình bất cứ lúc nào bằng lệnh nha
 
 ```bash
 # Chế độ tương tác với chuyển đổi mô hình
-./build/picoclaw-agents interactive --model openrouter-free
+picoclaw-agents interactive --model openrouter-free
 
 # Sau đó sử dụng lệnh /model để chuyển đổi (tức thì, không có độ trễ LLM)
 /model antigravity-gemini-2.5-flash
@@ -1182,8 +1182,8 @@ Bạn có thể chuyển đổi mô hình bất cứ lúc nào bằng lệnh nha
 Hoặc chỉ định mô hình cho mỗi tin nhắn:
 
 ```bash
-./build/picoclaw-agents agent --model antigravity -m "Tin nhắn đầu tiên"
-./build/picoclaw-agents agent --model openrouter-free -m "Tin nhắn thứ hai"
+picoclaw-agents agent --model antigravity -m "Tin nhắn đầu tiên"
+picoclaw-agents agent --model openrouter-free -m "Tin nhắn thứ hai"
 ```
 
 #### Lệnh `/model` - Quản lý Mô hình Nhanh (Telegram và Discord)

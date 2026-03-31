@@ -37,7 +37,7 @@
 
 2026-03-27 🎉 **Calidad de build y mejoras de canales**: `go build ./...` ahora pasa limpiamente. Añadida API de group trigger a `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender` y `ShouldRespondInGroup` — control granular de chats de grupo (solo menciones, triggers por prefijo). Ver [CHANGELOG.md](CHANGELOG.md).
 
-2026-03-27 🎉 **WebUI Launcher completamente operativo**: `picoclaw-agents-launcher` funciona de extremo a extremo — botón Start Gateway, chat WebSocket vía PicoChannel, contenido de skills nativas en la página de Skills, y todas las secciones del menú validadas. Ejecuta con `./build/picoclaw-agents-launcher` o `./build/picoclaw-agents-launcher -public` para acceso desde la red.
+2026-03-27 🎉 **WebUI Launcher completamente operativo**: `picoclaw-agents-launcher` funciona de extremo a extremo — botón Start Gateway, chat WebSocket vía PicoChannel, contenido de skills nativas en la página de Skills, y todas las secciones del menú validadas. Ejecuta con `picoclaw-agents-launcher` o `picoclaw-agents-launcher -public` para acceso desde la red.
 
 2026-03-27 🎉 **Pipeline de release con 3 binarios**: GoReleaser ahora produce los tres binarios — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI) y `picoclaw-agents-launcher-tui` (TUI) — igualando la estructura de releases del proyecto original. Lanzar con `./scripts/create-release.sh`.
 
@@ -287,7 +287,7 @@ make build-launcher-tui
 
 **Ejecutar:**
 ```bash
-./build/picoclaw-agents-launcher-tui
+picoclaw-agents-launcher-tui
 # O en modo desarrollo
 make dev-launcher-tui
 ```
@@ -329,7 +329,7 @@ pnpm build:backend
 **Uso:**
 ```bash
 make build-launcher
-./build/picoclaw-agents-launcher
+picoclaw-agents-launcher
 # Abre http://localhost:18800 en tu navegador
 ```
 
@@ -1393,16 +1393,16 @@ Ejemplo de salida:
 
 ```bash
 # Usar modelo gratuito de OpenRouter
-./build/picoclaw-agents agent --model openrouter-free -m "¡Hola, mundo!"
+picoclaw-agents agent --model openrouter-free -m "¡Hola, mundo!"
 
 # Usar Google Antigravity (Gemini)
-./build/picoclaw-agents agent --model antigravity -m "Explica la computación cuántica"
+picoclaw-agents agent --model antigravity -m "Explica la computación cuántica"
 
 # Usar modelo Gemini específico
-./build/picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "Escribe un poema"
+picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "Escribe un poema"
 
 # Usar OpenAI Codex (para tareas de programación)
-./build/picoclaw-agents agent --model openai -m "Escribe una función Python para ordenar una lista"
+picoclaw-agents agent --model openai -m "Escribe una función Python para ordenar una lista"
 ```
 
 **En config.json (modelos por agente):**
@@ -1443,7 +1443,7 @@ Puedes cambiar de modelo en cualquier momento usando el comando fast-path `/mode
 
 ```bash
 # Modo interactivo con cambio de modelo
-./build/picoclaw-agents interactive --model openrouter-free
+picoclaw-agents interactive --model openrouter-free
 
 # Luego usa el comando /model para cambiar (instantáneo, sin latencia de LLM)
 /model antigravity-gemini-2.5-flash
@@ -1452,8 +1452,8 @@ Puedes cambiar de modelo en cualquier momento usando el comando fast-path `/mode
 O especifica el modelo por mensaje:
 
 ```bash
-./build/picoclaw-agents agent --model antigravity -m "Primer mensaje"
-./build/picoclaw-agents agent --model openrouter-free -m "Segundo mensaje"
+picoclaw-agents agent --model antigravity -m "Primer mensaje"
+picoclaw-agents agent --model openrouter-free -m "Segundo mensaje"
 ```
 
 #### Comando `/model` - Gestión Rápida de Modelos (Telegram y Discord)

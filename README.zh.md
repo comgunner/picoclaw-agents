@@ -37,7 +37,7 @@
 
 2026-03-27 🎉 **构建质量与频道改进**: `go build ./...` 现已完全通过。为 `BaseChannel` 添加了 group trigger API：`WithGroupTrigger`、`IsAllowedSender` 和 `ShouldRespondInGroup` — 支持精细的群组聊天控制（仅@提及、前缀触发）。查看 [CHANGELOG.md](CHANGELOG.md)。
 
-2026-03-27 🎉 **WebUI 启动器完全正常运行**: `picoclaw-agents-launcher` 端到端工作 — Start Gateway 按钮、通过 PicoChannel 的 WebSocket 聊天、Skills 页面的原生技能内容，以及所有菜单部分经过验证。使用 `./build/picoclaw-agents-launcher` 或 `./build/picoclaw-agents-launcher -public` 运行。
+2026-03-27 🎉 **WebUI 启动器完全正常运行**: `picoclaw-agents-launcher` 端到端工作 — Start Gateway 按钮、通过 PicoChannel 的 WebSocket 聊天、Skills 页面的原生技能内容，以及所有菜单部分经过验证。使用 `picoclaw-agents-launcher` 或 `picoclaw-agents-launcher -public` 运行。
 
 2026-03-27 🎉 **三个二进制文件发布管道**: GoReleaser 现在生成所有三个二进制文件 — `picoclaw-agents`（CLI）、`picoclaw-agents-launcher`（WebUI）和 `picoclaw-agents-launcher-tui`（TUI）。使用 `./scripts/create-release.sh` 触发。
 
@@ -147,7 +147,7 @@ make build-launcher-tui
 
 **运行：**
 ```bash
-./build/picoclaw-agents-launcher-tui
+picoclaw-agents-launcher-tui
 # 或开发模式
 make dev-launcher-tui
 ```
@@ -188,7 +188,7 @@ pnpm build:backend
 **用法：**
 ```bash
 make build-launcher
-./build/picoclaw-agents-launcher
+picoclaw-agents-launcher
 # 在浏览器中打开 http://localhost:18800
 ```
 
@@ -1173,16 +1173,16 @@ picoclaw-agents models list
 
 ```bash
 # 使用 OpenRouter 免费模型
-./build/picoclaw-agents agent --model openrouter-free -m "Hello, world!"
+picoclaw-agents agent --model openrouter-free -m "Hello, world!"
 
 # 使用 Google Antigravity (Gemini)
-./build/picoclaw-agents agent --model antigravity -m "解释量子计算"
+picoclaw-agents agent --model antigravity -m "解释量子计算"
 
 # 使用特定的 Gemini 模型
-./build/picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "写一首诗"
+picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "写一首诗"
 
 # 使用 OpenAI Codex（用于编码任务）
-./build/picoclaw-agents agent --model openai -m "写一个 Python 函数来排序列表"
+picoclaw-agents agent --model openai -m "写一个 Python 函数来排序列表"
 ```
 
 **在 config.json 中（每个代理的模型）：**
@@ -1223,7 +1223,7 @@ picoclaw-agents models list
 
 ```bash
 # 带模型切换的交互模式
-./build/picoclaw-agents interactive --model openrouter-free
+picoclaw-agents interactive --model openrouter-free
 
 # 然后使用 /model 命令切换（立即生效，无 LLM 延迟）
 /model antigravity-gemini-2.5-flash
@@ -1232,8 +1232,8 @@ picoclaw-agents models list
 或者每条消息指定模型：
 
 ```bash
-./build/picoclaw-agents agent --model antigravity -m "第一条消息"
-./build/picoclaw-agents agent --model openrouter-free -m "第二条消息"
+picoclaw-agents agent --model antigravity -m "第一条消息"
+picoclaw-agents agent --model openrouter-free -m "第二条消息"
 ```
 
 #### `/model` 命令 - 快速模型管理（Telegram 和 Discord）

@@ -37,7 +37,7 @@
 
 2026-03-27 🎉 **ビルド品質とチャンネルの改善**: `go build ./...` がクリーンに通るようになりました。`BaseChannel` にグループトリガー API を追加：`WithGroupTrigger`、`IsAllowedSender`、`ShouldRespondInGroup` — メンション限定・プレフィックストリガーなど、グループチャットの細かい制御が可能に。[CHANGELOG.md](CHANGELOG.md) を参照。
 
-2026-03-27 🎉 **WebUI ランチャーが完全に稼働**: `picoclaw-agents-launcher` がエンドツーエンドで動作 — Start Gateway ボタン、PicoChannel 経由の WebSocket チャット、Skills ページのネイティブスキルコンテンツ、すべてのメニューセクションを検証済み。`./build/picoclaw-agents-launcher` または `./build/picoclaw-agents-launcher -public` で実行。
+2026-03-27 🎉 **WebUI ランチャーが完全に稼働**: `picoclaw-agents-launcher` がエンドツーエンドで動作 — Start Gateway ボタン、PicoChannel 経由の WebSocket チャット、Skills ページのネイティブスキルコンテンツ、すべてのメニューセクションを検証済み。`picoclaw-agents-launcher` または `picoclaw-agents-launcher -public` で実行。
 
 2026-03-27 🎉 **3バイナリリリースパイプライン**: GoReleaser がすべての 3 つのバイナリを生成 — `picoclaw-agents`（CLI）、`picoclaw-agents-launcher`（WebUI）、`picoclaw-agents-launcher-tui`（TUI）。`./scripts/create-release.sh` でトリガー。
 
@@ -103,7 +103,7 @@ make build-launcher-tui
 
 **実行：**
 ```bash
-./build/picoclaw-agents-launcher-tui
+picoclaw-agents-launcher-tui
 # または開発モード
 make dev-launcher-tui
 ```
@@ -145,7 +145,7 @@ pnpm build:backend
 **使い方：**
 ```bash
 make build-launcher
-./build/picoclaw-agents-launcher
+picoclaw-agents-launcher
 # ブラウザで http://localhost:18800 を開く
 ```
 
@@ -1123,16 +1123,16 @@ picoclaw-agents models list
 
 ```bash
 # OpenRouter 無料モデルを使用
-./build/picoclaw-agents agent --model openrouter-free -m "Hello, world!"
+picoclaw-agents agent --model openrouter-free -m "Hello, world!"
 
 # Google Antigravity (Gemini) を使用
-./build/picoclaw-agents agent --model antigravity -m "量子コンピューティングを説明して"
+picoclaw-agents agent --model antigravity -m "量子コンピューティングを説明して"
 
 # 特定の Gemini モデルを使用
-./build/picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "詩を書いて"
+picoclaw-agents agent --model antigravity-gemini-2.5-flash -m "詩を書いて"
 
 # OpenAI Codex を使用（コーディングタスク用）
-./build/picoclaw-agents agent --model openai -m "リストをソートする Python 関数を書いて"
+picoclaw-agents agent --model openai -m "リストをソートする Python 関数を書いて"
 ```
 
 **config.json での設定（エージェントごとのモデル）：**
@@ -1173,7 +1173,7 @@ picoclaw-agents models list
 
 ```bash
 # モデル切り替え付きインタラクティブモード
-./build/picoclaw-agents interactive --model openrouter-free
+picoclaw-agents interactive --model openrouter-free
 
 # 次に /model コマンドで切り替え（瞬時、LLM レイテンシなし）
 /model antigravity-gemini-2.5-flash
@@ -1182,8 +1182,8 @@ picoclaw-agents models list
 または、メッセージごとにモデルを指定：
 
 ```bash
-./build/picoclaw-agents agent --model antigravity -m "最初のメッセージ"
-./build/picoclaw-agents agent --model openrouter-free -m "2 番目のメッセージ"
+picoclaw-agents agent --model antigravity -m "最初のメッセージ"
+picoclaw-agents agent --model openrouter-free -m "2 番目のメッセージ"
 ```
 
 #### `/model` コマンド - 高速モデル管理（Telegram と Discord）
