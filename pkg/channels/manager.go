@@ -91,7 +91,7 @@ func (m *Manager) initChannels() error {
 
 	if m.config.Channels.Discord.Enabled && m.config.Channels.Discord.Token != "" {
 		logger.DebugC("channels", "Attempting to initialize Discord channel")
-		discord, err := NewDiscordChannel(m.config.Channels.Discord, m.bus)
+		discord, err := NewDiscordChannel(m.config.Channels.Discord, m.bus, m.config)
 		if err != nil {
 			logger.ErrorCF("channels", "Failed to initialize Discord channel", map[string]any{
 				"error": err.Error(),

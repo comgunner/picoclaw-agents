@@ -21,6 +21,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/comgunner/picoclaw/pkg/bus"
+	"github.com/comgunner/picoclaw/pkg/commands"
 	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/comgunner/picoclaw/pkg/utils"
@@ -34,16 +35,21 @@ const (
 
 type DiscordChannel struct {
 	*BaseChannel
-	session     *discordgo.Session
-	config      config.DiscordConfig
-	transcriber *voice.GroqTranscriber
-	ctx         context.Context
-	typingMu    sync.Mutex
-	typingStop  map[string]chan struct{} // chatID → stop signal
-	botUserID   string                   // stored for mention checking
+	session      *discordgo.Session
+	config       config.DiscordConfig
+	transcriber  *voice.GroqTranscriber
+	ctx          context.Context
+	typingMu     sync.Mutex
+	typingStop   map[string]chan struct{} // chatID → stop signal
+	botUserID    string                   // stored for mention checking
+	modelHandler *commands.ModelCommandHandler
 }
 
-func NewDiscordChannel(cfg config.DiscordConfig, bus *bus.MessageBus) (*DiscordChannel, error) {
+func NewDiscordChannel(
+	cfg config.DiscordConfig,
+	bus *bus.MessageBus,
+	fullConfig *config.Config,
+) (*DiscordChannel, error) {
 	session, err := discordgo.New("Bot " + cfg.Token)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create discord session: %w", err)
@@ -51,13 +57,23 @@ func NewDiscordChannel(cfg config.DiscordConfig, bus *bus.MessageBus) (*DiscordC
 
 	base := NewBaseChannel("discord", cfg, bus, cfg.AllowFrom)
 
+	// Initialize model command handler
+	var modelHandler *commands.ModelCommandHandler
+	if fullConfig != nil {
+		configPath := filepath.Join(fullConfig.WorkspacePath(), "..", "config.json")
+		modelHandler = commands.NewModelCommandHandler(configPath, nil)
+	} else {
+		modelHandler = commands.NewModelCommandHandler("config.json", nil)
+	}
+
 	return &DiscordChannel{
-		BaseChannel: base,
-		session:     session,
-		config:      cfg,
-		transcriber: nil,
-		ctx:         context.Background(),
-		typingStop:  make(map[string]chan struct{}),
+		BaseChannel:  base,
+		session:      session,
+		config:       cfg,
+		transcriber:  nil,
+		ctx:          context.Background(),
+		typingStop:   make(map[string]chan struct{}),
+		modelHandler: modelHandler,
 	}, nil
 }
 
@@ -556,6 +572,36 @@ func (c *DiscordChannel) handleInteraction(s *discordgo.Session, i *discordgo.In
 		}
 		content := "/restrict_to_workspace " + action
 		c.HandleMessage(senderID, i.ChannelID, content, nil, metadata)
+		return
+
+	case "model":
+		// Handle /model command as fast-path (don't pass to LLM)
+		var modelName string
+		for _, opt := range data.Options {
+			if opt.Name == "model_name" {
+				modelName = opt.StringValue()
+				break
+			}
+		}
+
+		// Build command string
+		commandText := "/model"
+		if modelName != "" {
+			commandText += " " + modelName
+		}
+
+		// Process with ModelCommandHandler (fast-path)
+		if c.modelHandler != nil {
+			response, _ := c.modelHandler.Handle(commandText, senderID)
+			// Send response as ephemeral message
+			_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: response,
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+		}
 		return
 	}
 

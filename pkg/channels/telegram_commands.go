@@ -50,6 +50,7 @@ func (c *cmd) Help(ctx context.Context, message telego.Message) error {
 	msg := `🦞 **Commandos de PicoClaw**:
 /start - Iniciar el bot y ver bienvenida
 /help - Mostrar este mensaje de ayuda
+/model [nombre|provider X|info X] - Listar/cambiar modelo de IA
 /bundle_approve id=ID - Aprobar post e imagen
 /bundle_regen id=ID - Regenerar lote completo
 /bundle_edit id=ID - Editar texto del lote

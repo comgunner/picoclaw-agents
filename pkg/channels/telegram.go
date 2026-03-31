@@ -27,6 +27,7 @@ import (
 	tu "github.com/mymmrac/telego/telegoutil"
 
 	"github.com/comgunner/picoclaw/pkg/bus"
+	"github.com/comgunner/picoclaw/pkg/commands"
 	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/comgunner/picoclaw/pkg/utils"
@@ -55,6 +56,7 @@ type TelegramChannel struct {
 	transcriber  *voice.GroqTranscriber
 	placeholders sync.Map // chatID -> messageID
 	stopThinking sync.Map // chatID -> thinkingCancel
+	modelHandler *commands.ModelCommandHandler
 }
 
 type thinkingCancel struct {
@@ -97,6 +99,10 @@ func NewTelegramChannel(cfg *config.Config, bus *bus.MessageBus) (*TelegramChann
 
 	base := NewBaseChannel("telegram", telegramCfg, bus, telegramCfg.AllowFrom)
 
+	// Initialize model command handler
+	configPath := filepath.Join(cfg.WorkspacePath(), "..", "config.json")
+	modelHandler := commands.NewModelCommandHandler(configPath, nil)
+
 	return &TelegramChannel{
 		BaseChannel:  base,
 		commands:     NewTelegramCommands(bot, cfg),
@@ -106,6 +112,7 @@ func NewTelegramChannel(cfg *config.Config, bus *bus.MessageBus) (*TelegramChann
 		transcriber:  nil,
 		placeholders: sync.Map{},
 		stopThinking: sync.Map{},
+		modelHandler: modelHandler,
 	}, nil
 }
 
@@ -144,6 +151,7 @@ func (c *TelegramChannel) Start(ctx context.Context) error {
 				Command:     "restrict_to_workspace",
 				Description: "Controlar restricción de archivos (activate|deactivate|status)",
 			},
+			{Command: "model", Description: "Cambiar o listar modelos de IA (ej: /model openai/gpt-5.4)"},
 			{Command: "show", Description: "Ver configuración actual"},
 			{Command: "list", Description: "Listar opciones disponibles"},
 			{Command: "status", Description: "Ver estado del contexto"},
@@ -177,6 +185,14 @@ func (c *TelegramChannel) Start(ctx context.Context) error {
 		}
 		return c.commands.List(ctx, message)
 	}, th.CommandEqual("list"))
+
+	// /model and /models commands - fast-path (no LLM latency)
+	bh.HandleMessage(func(ctx *th.Context, message telego.Message) error {
+		if !c.isMessageAllowed(&message) {
+			return nil
+		}
+		return c.handleModelCommand(ctx, &message)
+	}, th.Or(th.CommandEqual("model"), th.CommandEqual("models")))
 
 	bh.HandleMessage(func(ctx *th.Context, message telego.Message) error {
 		return c.handleMessage(ctx, &message)
@@ -474,6 +490,39 @@ func (c *TelegramChannel) isMessageAllowed(message *telego.Message) bool {
 	}
 
 	return true
+}
+
+func (c *TelegramChannel) handleModelCommand(ctx context.Context, message *telego.Message) error {
+	user := message.From
+	senderID := fmt.Sprintf("%d", user.ID)
+	if user.Username != "" {
+		senderID = fmt.Sprintf("%d|%s", user.ID, user.Username)
+	}
+
+	// Extract command arguments
+	commandText := message.Text
+	if message.Entities != nil && len(message.Entities) > 0 {
+		for _, entity := range message.Entities {
+			if entity.Type == "bot_command" {
+				commandText = message.Text[entity.Offset : entity.Offset+entity.Length]
+				if len(message.Text) > entity.Offset+entity.Length {
+					commandText += message.Text[entity.Offset+entity.Length:]
+				}
+			}
+		}
+	}
+
+	// Handle with ModelCommandHandler
+	response, _ := c.modelHandler.Handle(commandText, senderID)
+
+	// Send response (no ParseMode to avoid HTML/Markdown parsing errors)
+	chatID := message.Chat.ID
+	_, err := c.bot.SendMessage(ctx, &telego.SendMessageParams{
+		ChatID: tu.ID(chatID),
+		Text:   response,
+	})
+
+	return err
 }
 
 func (c *TelegramChannel) handleMessage(ctx context.Context, message *telego.Message) error {
