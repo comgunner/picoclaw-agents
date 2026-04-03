@@ -33,6 +33,10 @@
 
 ## 📢 News
 
+2026-03-31 🎉 **ICUETH Fork Integration**: Comprehensive analysis of icueth fork completed. Architecture comparison: A2A horizontal (109 agents) vs parallel subagents. Identified features: Agent Meeting System, Persona System, RAG/SQLite memory, MCP support, Mailbox system. Integration strategy defined in 3 phases. Audit completed: ✅ CLEAN. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Qwen & Zhipu WebUI Auth**: Added Qwen Portal and Zhipu AI authentication via WebUI at `http://localhost:18800/credentials`. CLI commands: `./picoclaw-agents auth login --provider qwen` and `--provider zhipu`. Auto-configures models on authentication. Zhipu glm-4.5-flash is 100% FREE. See [CHANGELOG.md](CHANGELOG.md).
+
 2026-03-28 🎉 **Multi-Source Migration + Team Mode Onboard**: Added `picoclaw-agents migrate --from nanoclaw` for migration from NanoClaw configs. Onboard wizard now features **Team Mode** with pre-built templates (Dev Team 9 agents, Research Team 3 agents, General Team 3 agents) and **14 native skills** selection. Context Window improvements: tool result pruning (-60% tokens), advanced compaction with model override, and `/compact` manual command. See [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-27 🎉 **Build quality & channel improvements**: `go build ./...` now passes cleanly. Added group trigger API to `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, and `ShouldRespondInGroup` — enabling fine-grained group chat control (mention-only, prefix-based triggers). See [CHANGELOG.md](CHANGELOG.md).
@@ -345,6 +349,26 @@ You can authenticate with OAuth providers directly from the Web UI at `http://lo
 - **Anthropic**: Browser OAuth (PKCE flow) — Auto-adds 5 Claude models
 - **Google Antigravity**: Browser OAuth — Auto-adds 15 Gemini models
 - **OpenAI**: Device Code only — Auto-adds 8 GPT models
+- **Qwen Portal**: API Key (token) — Auto-adds 6 Qwen models
+- **Zhipu AI (z.ai)**: API Key (token) — Auto-adds 7 GLM models 🆓 **100% FREE** with `glm-4.5-flash`
+
+**CLI Authentication Commands:**
+
+```bash
+# OpenAI (Codex OAuth - Device Code)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% FREE with glm-4.5-flash
+./picoclaw-agents auth login --provider zhipu
+```
+
+All methods support API key token input or OAuth flow and automatically configure models on successful authentication.
 
 ![Credentials OAuth](assets/webui/credentials-auth.png)
 
@@ -1318,6 +1342,7 @@ The subagent has access to tools (message, web_search, etc.) and can communicate
 | `cerebras`                 | LLM (Cerebras direct)                   | [cerebras.ai](https://cerebras.ai)                                   |
 | `antigravity`              | LLM (Google Antigravity / OAuth)        | `picoclaw-agents auth login --provider google-antigravity`           |
 | `openai` (Codex OAuth)     | LLM + Coding (OpenAI Codex backend — OAuth) | `picoclaw-agents auth login --provider openai`                       |
+| `zhipu`                    | LLM (Zhipu AI / z.ai) 🆓 **100% FREE**  | `picoclaw-agents auth login --provider zhipu`                        |
 
 ---
 
@@ -1345,7 +1370,25 @@ picoclaw-agents auth login --provider google-antigravity
 
 This gives you access to Google's free tier models via Cloud Code Assist.
 
-**Option C: OpenAI Codex (OAuth for Coding)**
+**Option C: Qwen Portal (Alibaba Cloud)**
+
+```bash
+# Login with API Key
+picoclaw-agents auth login --provider qwen
+```
+
+Auto-configures 6 Qwen models from Alibaba Cloud (DashScope).
+
+**Option D: Zhipu AI (z.ai) - 100% FREE**
+
+```bash
+# Login with API Key - No credit card required
+picoclaw-agents auth login --provider zhipu
+```
+
+Auto-configures 7 GLM models including **glm-4.5-flash** (100% free tier). See [z.ai/pricing](https://z.ai/pricing).
+
+**Option E: OpenAI Codex (OAuth for Coding)**
 
 ```bash
 # Enable device code authorization first:

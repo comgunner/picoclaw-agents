@@ -748,6 +748,9 @@ func TestToolResult_SilentToolDoesNotSendUserMessage(t *testing.T) {
 				MaxToolIterations: 10,
 			},
 		},
+		ModelList: []config.ModelConfig{
+			{ModelName: "test-model", Model: "test-model"},
+		},
 	}
 
 	msgBus := bus.NewMessageBus()
@@ -789,6 +792,9 @@ func TestToolResult_UserFacingToolDoesSendMessage(t *testing.T) {
 				MaxTokens:         4096,
 				MaxToolIterations: 10,
 			},
+		},
+		ModelList: []config.ModelConfig{
+			{ModelName: "test-model", Model: "test-model"},
 		},
 	}
 
@@ -860,6 +866,9 @@ func TestAgentLoop_ContextExhaustionRetry(t *testing.T) {
 				MaxTokens:         4096,
 				MaxToolIterations: 10,
 			},
+		},
+		ModelList: []config.ModelConfig{
+			{ModelName: "test-model", Model: "test-model"},
 		},
 	}
 

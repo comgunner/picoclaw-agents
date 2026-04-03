@@ -25,6 +25,9 @@
 
 ## 📢 Notícias
 
+2026-03-31 🎉 **Integração do Fork ICUETH**: Análise completa do fork icueth concluída. Comparação de arquitetura: A2A horizontal (109 agentes) vs subagentes paralelos. Funcionalidades identificadas: Sistema de Reuniões de Agentes, Sistema de Personas, memória RAG/SQLite, suporte MCP, Mailbox system. Estratégia de integração definida em 3 fases. Auditoria concluída: ✅ CLEAN. Veja [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Auth WebUI Qwen e Zhipu**: Autenticação Qwen Portal e Zhipu AI adicionada via WebUI em `http://localhost:18800/credentials`. Comandos CLI: `./picoclaw-agents auth login --provider qwen` e `--provider zhipu`. Configura automaticamente os modelos após autenticação. Zhipu glm-4.5-flash é 100% GRÁTIS. Veja [CHANGELOG.md](CHANGELOG.md).
 2026-03-28 🎉 **Migração Multi-Fonte + Modo Equipe Onboard**: Adicionado `picoclaw-agents migrate --from nanoclaw` para migração do NanoClaw. Wizard onboard agora inclui **Team Mode** com templates pré-construídos (Dev Team 9 agentes, Research Team 3 agentes, General Team 3 agentes) e seleção de **14 native skills**. Melhorias Context Window: pruning tool results (-60% tokens), compactação avançada com model override, e comando manual `/compact`. Ver [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-27 🎉 **Qualidade build e melhorias canais**: `go build ./...` agora passa limpo. API group trigger adicionada ao `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — controle granular de chats em grupo. Ver [CHANGELOG.md](CHANGELOG.md).
@@ -52,6 +55,8 @@
 2026-03-02 🎉 **Comandos Slash Fast-path e Rastreador Global**: Adicionados comandos Slash instantâneos (`/bundle_approve`, `/status`, etc.) para interação de latência zero. Unificado o `ImageGenTracker` em todos os agentes para consistência perfeita de estado multi-agente. Veja [docs/queue_batch.md](docs/queue_batch.md).
 
 2026-03-01 🎉 **Geração de Imagens IA e Gerente de Comunidade**: Adicionada geração nativa de imagens (Gemini/Ideogram), fluxos script-to-image, menus interativos pós-geração e agente gerente de comunidade para gerar automaticamente postagens de mídia social. Veja [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+
+2026-03-01 🎉 **Reforço de Segurança e Estabilidade**: Manipulação robusta de fechamento de barramento de mensagens, processamento em segundo plano resiliente para o aplicativo WeCom e validação de inicialização reforçada para a ferramenta de shell.
 
 2026-03-01 🎉 **Sentinela de Skills Nativo**: Adicionada uma camada de segurança interna (`skills_sentinel.go`) que fornece proteção em tempo real baseada em padrões contra injeção de prompts e vazamentos do sistema.
 2026-03-01 🎉 **Segurança Fail-Close & Estabilidade**: Política de segurança robusta. A ferramenta de execução de comandos agora realiza uma validação rigorosa dos padrões de negação durante a inicialização.
@@ -161,6 +166,26 @@ Você pode autenticar com provedores OAuth diretamente da Web UI em `http://loca
 - **Anthropic**: OAuth do navegador (fluxo PKCE) — Adiciona automaticamente 5 modelos Claude
 - **Google Antigravity**: OAuth do navegador — Adiciona automaticamente 15 modelos Gemini
 - **OpenAI**: Apenas código do dispositivo — Adiciona automaticamente 8 modelos GPT
+- **Qwen Portal**: Chave API (token) — Adiciona automaticamente 6 modelos Qwen
+- **Zhipu AI (z.ai)**: Chave API (token) — Adiciona automaticamente 7 modelos GLM 🆓 **100% GRÁTIS** com `glm-4.5-flash`
+
+**Comandos de Autenticação CLI:**
+
+```bash
+# OpenAI (Codex OAuth - Código do Dispositivo)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% GRÁTIS com glm-4.5-flash
+./picoclaw-agents auth login --provider zhipu
+```
+
+Todos os métodos suportam entrada de token API Key ou fluxo OAuth e configuram automaticamente os modelos após autenticação bem-sucedida.
 
 ![Credentials OAuth](assets/webui/credentials-auth.png)
 

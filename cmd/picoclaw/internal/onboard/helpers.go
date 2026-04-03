@@ -22,18 +22,21 @@ import (
 	"github.com/comgunner/picoclaw/pkg/config"
 )
 
-func onboard(template string) {
+func onboard(template string, force bool) {
 	configPath := internal.GetConfigPath()
 
 	if _, err := os.Stat(configPath); err == nil {
-		fmt.Printf("Config already exists at %s\n", configPath)
-		fmt.Print("Overwrite? (y/n): ")
-		var response string
-		fmt.Scanln(&response)
-		if response != "y" {
-			fmt.Println("Aborted.")
+		if !force {
+			// BUG-001 FIX: Skip automático si config existe y no se usa --force
+			fmt.Printf("✓ Config file already exists at %s\n", configPath)
+			fmt.Println("✓ Skipping onboard to preserve existing configuration")
+			fmt.Println("ℹ️  Use --force or -f to overwrite (not recommended)")
 			return
 		}
+
+		// Solo si force=true, mostrar advertencia y procedure
+		fmt.Println("⚠️  Existing config found, will overwrite...")
+		fmt.Println("⚠️  WARNING: This will delete your existing configuration!")
 	}
 
 	var cfg *config.Config

@@ -21,11 +21,13 @@ import (
 // Returns the provider, the model ID to use, and any error.
 func CreateProvider(cfg *config.Config) (LLMProvider, string, error) {
 	model := cfg.Agents.Defaults.GetModelName()
+	return CreateProviderForModel(cfg, model)
+}
 
+// CreateProviderForModel creates a provider based on the configuration and a specific model name.
+// It allows for dynamic provider switching when the user selects a different model via WebUI/CLI.
+func CreateProviderForModel(cfg *config.Config, model string) (LLMProvider, string, error) {
 	// Ensure model_list is populated from providers config if needed
-	// This handles two cases:
-	// 1. ModelList is empty - convert all providers
-	// 2. ModelList has some entries but not all providers - merge missing ones
 	if cfg.HasProvidersConfig() {
 		providerModels := config.ConvertProvidersToModelList(cfg)
 		existingModelNames := make(map[string]bool)
@@ -47,7 +49,35 @@ func CreateProvider(cfg *config.Config) (LLMProvider, string, error) {
 	// Get model config from model_list
 	modelCfg, err := cfg.GetModelConfig(model)
 	if err != nil {
-		return nil, "", fmt.Errorf("model %q not found in model_list: %w", model, err)
+		// Fallback: If model is not in list, try to create a dynamic config
+		// if it looks like a protocol/model format or we can infer it.
+		protocol, modelID := ExtractProtocol(model)
+
+		// Try to find a base config for this protocol to get API keys/base URLs
+		// We look for any model in the list that uses the same protocol
+		var baseCfg *config.ModelConfig
+		for _, m := range cfg.ModelList {
+			p, _ := ExtractProtocol(m.Model)
+			if p == protocol {
+				baseCfg = &m
+				break
+			}
+		}
+
+		if baseCfg != nil {
+			// Create a clone with the requested model ID
+			dynamicCfg := *baseCfg
+			dynamicCfg.ModelName = model
+			dynamicCfg.Model = protocol + "/" + modelID
+			modelCfg = &dynamicCfg
+		} else {
+			return nil, "", fmt.Errorf(
+				"model %q not found in model_list and no base provider for %q found: %w",
+				model,
+				protocol,
+				err,
+			)
+		}
 	}
 
 	// Inject global workspace if not set in model config

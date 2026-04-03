@@ -33,3 +33,7 @@ func (m *mockProvider) Chat(
 func (m *mockProvider) GetDefaultModel() string {
 	return "mock-model"
 }
+
+func testFactory(model string) (providers.LLMProvider, string, error) {
+	return &mockProvider{}, model, nil
+}

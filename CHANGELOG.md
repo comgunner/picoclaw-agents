@@ -6,6 +6,86 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-03-31
+
+### 🔀 ICUETH Fork Integration & Architecture Adaptation
+
+- **ICUETH Fork Analysis:** Comprehensive comparison between icueth fork and our fork completed
+  - **Architecture Differences Identified:**
+    - ICUETH: Pure Agent-to-Agent (A2A) horizontal architecture with specialist collaboration (109 agents)
+    - Our Fork: Parallel subagents with security-first approach (workspace isolation, Skills Sentinel)
+  - **ICUETH Exclusive Features Analyzed:**
+    - Agent Meeting System (`pkg/agent/meeting/`) with HTTP endpoints
+    - Persona System (`pkg/agent/persona/`) with structured profiles
+    - RAG & Persistent Memory engine powered by SQLite
+    - Model Context Protocol support (`pkg/mcp`)
+    - Mailbox system for inter-agent communication
+    - Additional modules: `pkg/api`, `pkg/bootstrap`, `pkg/office`, `pkg/project`, `pkg/testharness`
+  - **Integration Strategy Defined:**
+    - Phase 1: Extract and integrate Agent Meeting System and Persona system
+    - Phase 2: Migrate skills library through Skills Sentinel security layer
+    - Phase 3: Evaluate local memory vs SQLite/RAG unification
+  - **Audit & Cleanup:**
+    - Fork cleanup audit completed
+    - `.gitignore` updated to exclude sensitive files
+    - Secret scanning completed: ✅ CLEAN
+    - PII audit completed: ✅ CLEAN
+
+### 🔐 Qwen & Zhipu (z.ai) WebUI Authentication Integration
+
+**Files modified:** `web/backend/api/oauth.go`, `web/frontend/src/`, `cmd/picoclaw/internal/auth/helpers.go`, `pkg/config/zhipu_sanitizer.go`
+
+- **WebUI OAuth Integration:** Added Qwen Portal and Zhipu AI (z.ai) authentication support via WebUI
+  - Access via: `http://localhost:18800/credentials`
+  - Both providers use API Key authentication (token method)
+  - Automatic model list population on authentication
+- **CLI Authentication Commands:**
+  - `./picoclaw-agents auth login --provider qwen` - Qwen Portal (DashScope)
+  - `./picoclaw-agents auth login --provider zhipu` - Zhipu AI (z.ai) **🆓 100% FREE with glm-4.5-flash**
+  - Both support token paste method for API key input
+- **WebUI Credential Cards:**
+  - Qwen Portal card with API key input field
+  - Zhipu AI (z.ai) card with API key input field
+  - Save API keys securely to `~/.picoclaw/auth.json`
+  - Auto-configure models on successful authentication
+- **Model Configuration:**
+  - **Qwen models:** qwen-max, qwen-plus, qwen-turbo, qwen-long, qwen-vl-max, qwen-vl-plus
+  - **Zhipu models:** glm-4.5-flash 🆓, glm-4.7-flash, glm-5, glm-5-turbo, glm-4.5-air, glm-4-long, glm-4v-flash
+  - Default model set automatically (qwen-max for Qwen, glm-4.5-flash for Zhipu)
+  - **🆓 glm-4.5-flash: 100% FREE - No credit card required** (https://z.ai/pricing)
+- **Regional Support:**
+  - Qwen: US (Virginia), Singapore, China (Beijing) endpoints
+  - Zhipu: International endpoint (https://api.z.ai)
+- **Auto-Sanitization:** Implemented automatic config sanitization for Zhipu models to prevent duplicates
+
+### 🐛 Bug Fixes & Stability
+
+- **CRITICAL: WebUI Selected Model Fix:** Fixed a major bug in `pkg/agent/loop.go` where the WebUI ignored the user-selected model and defaulted to hardcoded candidates. Now correctly respects `model_name` passed in metadata.
+- **WebUI Launcher Assets:** Recompiled `picoclaw-agents-launcher` to ensure frontend assets are correctly embedded, fixing an issue where it incorrectly displayed the TUI interface.
+- **Config Schema Normalization:** Standardized the `agent.model` structure in `config.json`. Transitioned from simple strings to robust objects `{ "primary": "...", "fallbacks": [] }` to ensure consistent resolution across all channels (Telegram, WebUI, CLI).
+- **Agent Model Resolution:** Fixed logic in `pkg/agent/instance.go` to correctly prioritize `agents.defaults` when specific agent models are not defined.
+- **Model Deduplication:** Created  and cleaned up `config.json`, removing redundant model entries (35 → 33 models).
+- **Gateway Process Management:** Improved stability by addressing duplicate gateway processes; implemented cleaner shutdown procedures for restarts.
+
+### 🚀 Onboard Wizard Enhancements
+
+- **Safe Onboarding:** Added an automatic skip feature to the `onboard` command when a configuration already exists.
+- **Force Flag:** Introduced `--force` / `-f` flag to explicitly allow overwriting existing configurations when requested by the user.
+
+### 📦 Builds & Platforms
+
+- **macOS M1 (arm64) Binaries:** Successfully compiled and verified the full suite of binaries:
+  - `picoclaw-agents-darwin-arm64` (22 MB)
+  - `picoclaw-agents-launcher-darwin-arm64` (15 MB)
+  - `picoclaw-agents-launcher-tui-darwin-arm64` (10 MB)
+
+### 🧪 Quality Assurance (QA)
+
+- **Automated Test Suite:** Developed a new suite of QA tests in  to verify authentication, onboarding, and configuration integrity.
+- **Regression Testing:** Confirmed fixes for duplicate models and configuration overwrites through automated scripts.
+
+---
+
 ## 2026-03-30
 
 ### ⚡ Fast-Path Command: `/model` for Model Switching
@@ -96,7 +176,7 @@ All notable changes to the PicoClaw project will be documented in this file.
   - No API key required — uses existing OpenAI/ChatGPT account
   - Device Code authorization required
 
-**New files in `local_work/`:**
+**New files in :**
 - `ALL_PHASES_COMPLETE.md` — Complete implementation summary (6/6 phases)
 - `IMPLEMENTATION_COMPLETE.md` — Executive summary
 - `OPENAI_BROWSER_BUTTON_REMOVED.md` — Button removal documentation
@@ -176,7 +256,7 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### 📄 Research Documentation
 
-**New files in `local_work/`:**
+**New files in :**
 - `problema-google-antigravity-oauth.md` — Analysis of expired token in auth status (post-fixes)
 - `problema-anthropic-oauth.md` — Anthropic OAuth research in sibling repos (none achieved it)
 
@@ -244,11 +324,11 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ### 📁 Local Work Documentation Created
 
-**Files added en `local_work/`:**
+**Files added en :**
 - `START_HERE.md` — Punto de entrada bilingüe (ES/EN)
 - `INDEX.md` — Master index of documents
-- `README.md` — Hub del directorio local_work
-- `CHANGELOG.md` — Changelog de local_work
+- `README.md` — Hub del directorio
+- `CHANGELOG.md` — Changelog
 - `RESUMEN_ELIMINACION_CHATGPT_OAUTH.md` — Resumen ejecutivo (ES)
 - `chatgpt_oauth_removal_2026-03-28.md` — Complete documentation (EN)
 - `chatgpt_codex_oauth_research.md` — Investigación técnica (EN)
@@ -455,10 +535,10 @@ All notable changes to the PicoClaw project will be documented in this file.
 - **Bonus:** Added `import "os"` para stderr logging
 
 **Documentación:** 
-- `local_work/bugfix_compaction_cache.md` (BUG-01, BUG-02)
-- `local_work/bugfix_wizard_channel.md` (BUG-03, BUG-07)
-- `local_work/bugfix_broadcast_session.md` (BUG-04)
-- `local_work/bugfix_ignored_errors.md` (BUG-05, BUG-06)
+-  (BUG-01, BUG-02)
+-  (BUG-03, BUG-07)
+-  (BUG-04)
+-  (BUG-05, BUG-06)
 
 ---
 
@@ -517,7 +597,7 @@ Añadida sección "WebUI Launcher (Optional — Visual Interface)" con:
 
 #### **`go build ./...` — 4 errores corregidos (sesión 2026-03-27)**
 
-- `local_work/weixin_port_incomplete/` — 6 archivos sin `//go:build ignore` incluidos en el build del módulo. Añadida la directiva.
+-  — 6 archivos sin `//go:build ignore` incluidos en el build del módulo. Añadida la directiva.
 - `pkg/auth/oauth_test.go:222` — Test llamaba `exchangeCodeForTokens` (ya exportada como `ExchangeCodeForTokens`). Actualizada la llamada.
 - `pkg/channels/base.go` — `base_test.go` esperaba `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup`. Implementados.
 - `web/backend/api/weixin_test.go` — Referenciaba método de `weixin.go.disabled`. Añadido `//go:build ignore`.
@@ -540,7 +620,7 @@ Añadida sección "WebUI Launcher (Optional — Visual Interface)" con:
 
 El build completo (`./...`) fallaba con EXIT 1. `go vet ./...` tenía 3 errores adicionales. Todos resueltos:
 
-- **`local_work/weixin_port_incomplete/` compilaba como parte del módulo** — 6 de 7 archivos carecían de `//go:build ignore` (`api.go`, `auth.go`, `media.go`, `state.go`, `types.go`, `weixin_test.go`). Añadida la directiva a cada uno.
+- ** compilaba como parte del módulo** — 6 de 7 archivos carecían de `//go:build ignore` (`api.go`, `auth.go`, `media.go`, `state.go`, `types.go`, `weixin_test.go`). Añadida la directiva a cada uno.
 
 - **`pkg/auth/oauth_test.go:222`** — Test llamaba `exchangeCodeForTokens` (función interna ya exportada como `ExchangeCodeForTokens` en FASE 1). Actualizada la llamada.
 
@@ -554,7 +634,7 @@ El build completo (`./...`) fallaba con EXIT 1. `go vet ./...` tenía 3 errores 
 **Estado post-fixes:** `go build ./... EXIT: 0` | `go vet ./... EXIT: 0`
 
 **Files modified:**
-- `local_work/weixin_port_incomplete/api.go`, `auth.go`, `media.go`, `state.go`, `types.go`, `weixin_test.go`
+- , `auth.go`, `media.go`, `state.go`, `types.go`, `weixin_test.go`
 - `pkg/auth/oauth_test.go`
 - `pkg/channels/base.go`
 - `web/backend/api/weixin_test.go`
@@ -568,7 +648,7 @@ Limpieza de todos los `README*.md` (EN, ES, ZH, FR, JA, PT-BR, VI):
 - Eliminadas líneas "Current Status: ✅ FULLY FUNCTIONAL"
 - Renombradas secciones "Working Features:" → "Features:" y eliminados los ✅ de cada ítem
 - Eliminadas notas "Optional Advanced Features:" que referenciaban `docs/LAUNCHERS_IMPLEMENTATION_STATUS.md`
-- Removed enlaces a `local_work/` desde items de noticias (internal files, not public)
+- Removed enlaces a  desde items de noticias (internal files, not public)
 - Removed placeholder `Discord: [Próximamente / Coming Soon]` de todos los archivos
 - Eliminadas líneas "🌟 More Deployment Cases Await！" y equivalentes
 
@@ -590,8 +670,8 @@ Limpieza de todos los `README*.md` (EN, ES, ZH, FR, JA, PT-BR, VI):
 
 ### 📚 Documentation
 
-- `local_work/SOLUCION_4_PAQUETES_PENDIENTES_WEBUI.md` — Reescrito completamente para reflejar el estado real del fork. El documento original describía trabajo como pendiente que ya estaba completado (`pkg/auth/`, `pkg/config/` métodos). Ahora documenta qué existe, qué es stub intencional y qué es genuinamente opcional (WeChat).
-- `local_work/QA_FIXES_2026-03-27.md` — Nuevo documento con los 4 fixes aplicados, causa raíz y comandos de verificación.
+-  — Reescrito completamente para reflejar el estado real del fork. El documento original describía trabajo como pendiente que ya estaba completado (`pkg/auth/`, `pkg/config/` métodos). Ahora documenta qué existe, qué es stub intencional y qué es genuinamente opcional (WeChat).
+-  — Nuevo documento con los 4 fixes aplicados, causa raíz y comandos de verificación.
 
 ---
 
@@ -683,7 +763,7 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
   - Guide de uso para TUI y WebUI
   - Próximos pasos para completar WebUI Backend
 
-- `local_work/IMPLEMENTACION_ESPANOL_WEBUI_2026-03-27.md` — Resumen ejecutivo del español
+-  — Resumen ejecutivo del español
   - Objetivo y estado
   - Summary of changes (archivos creados/modificados)
   - Builds generados
@@ -693,23 +773,23 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
   - Convenciones aplicadas
   - Tiempo real de implementación
 
-- `local_work/QA_REPORT_2026-03-27.md` — QA Report completo
+-  — QA Report completo
   - 29 tests ejecutados, 29 aprobados (100%)
   - Tests de compilación, integración, documentación
   - Checklist de aceptación
 
-- `local_work/SCRIPTS_PORTADOS_2026-03-27.md` — Scripts portados
+-  — Scripts portados
   - Summary of changes
   - Referencias actualizadas
   - Testing de scripts
 
-- `local_work/plan_i18n_espanol_webui.md` — Plan de implementación del español
+-  — Plan de implementación del español
   - Fases de implementación
   - Comandos específicos
   - Build para macOS ARM64
   - Testing checklist
 
-- `local_work/DOCUMENTACION_ACTUALIZADA_2026-03-27.md` — READMEs update
+-  — READMEs update
   - 7 READMEs actualizados (EN, ES, ZH, FR, JA, PT-BR, VI)
   - Sección de Launchers agregada
   - Status banner con fecha 2026-03-27
@@ -773,7 +853,7 @@ github.com/mdp/qrterminal/v3 v3.2.1     // QR terminal output
 
 ### ⚠️ Notas
 
-**WeChat (weixin):** Rutas deshabilitadas en `web/backend/api/router.go`. Functional stub compila correctamente. Does not affect any channels outside China. Ver `local_work/SOLUCION_4_PAQUETES_PENDIENTES_WEBUI.md` para instrucciones de activación.
+**WeChat (weixin):** Rutas deshabilitadas en `web/backend/api/router.go`. Functional stub compila correctamente. Does not affect any channels outside China. Ver  para instrucciones de activación.
 
 ---
 
@@ -1070,7 +1150,7 @@ Security:
 - Priority order: workspace > global > builtin > embedded
 
 #### **Conversion Script**
-- `cmd/tools/convert_skills/main.go` — tool to convert skills from `local_work/skills_import/` to embedded format
+- `cmd/tools/convert_skills/main.go` — tool to convert skills from  to embedded format
 - Generates frontmatter with `name`, `description`, `category`, `version`
 - Strips metadata headers from source files
 - Outputs to `pkg/skills/data/{category}/{skill-name}/SKILL.md`
@@ -1091,7 +1171,7 @@ Security:
 
 ### 📝 Documentation
 
-#### **Updated `local_work/plan_integracion_160skills_nativos.md`**
+#### **Updated **
 - Complete implementation plan for 178 skills via `//go:embed`
 - Architecture decisions and comparisons
 - File structure and format specifications
@@ -1162,9 +1242,9 @@ Each skill includes:
 - Useful for `picoclaw-agents doctor` command and onboarding wizard
 
 #### **Skills Import System** (Fase 3)
-- **Python import script**: `local_work/scripts/import_skills_from_agency.py`
+- **Python import script**: 
 - Generates Markdown source files for skill conversion
-- Output: `local_work/skills_import/engineering/*.md`
+- Output: 
 - Automated skill documentation generation
 
 ### 🛠️ Core Improvements
@@ -1233,7 +1313,7 @@ Generated skills from agency-agents repository:
     "data_engineer",
     "ml_engineer"
   ],
-  "output_directory": "local_work/skills_import/engineering/"
+  "output_directory": "
 }
 ```
 
@@ -1343,7 +1423,7 @@ func (b *BackendDeveloperSkill) BuildSummary() string
 
 ### 🛡️ Upstream Security Patch Adaptations
 
-Adapted and applied 2 of 6 upstream patches from audit `upstream_audit_2026-03-04.json` (see `local_work/patch_execution_log_2026-03-04.md` for full details).
+Adapted and applied 2 of 6 upstream patches from audit `upstream_audit_2026-03-04.json` (see  for full details).
 
 - **🔒 Registry Collision Warning** (`pkg/tools/registry.go`): Added structured warning via `logger.WarnCF` when `Register()` overwrites an existing tool by name. Critical for multi-agent environments where MCP servers per agent could silently contaminate each other's tool namespace. Upstream ref: [`a2591e0`](https://github.com/sipeed/picoclaw/commit/a2591e03a942ae244b50539d4b9d26da3a0b3d58)
 
@@ -1364,7 +1444,7 @@ Adapted and applied 2 of 6 upstream patches from audit `upstream_audit_2026-03-0
 - **📦 Skills Loader Refactoring**: Updated `pkg/skills/loader.go` with native skills registry pattern. Added `GetQueueBatchSkill()`, `LoadNativeQueueBatchSkill()`, and `BuildNativeQueueBatchSummary()` methods.
 - **🎯 Context Builder Integration**: Modified `pkg/agent/context.go` to use native skill injection via `LoadNativeQueueBatchSkill()` instead of hardcoded strings.
 - **🧪 Comprehensive Test Suite**: Added `pkg/skills/queue_batch_test.go` with 9 test cases covering all public methods, concurrency, and workspace independence.
-- **📚 Developer Documentation**: Created `local_work/crear_skill_interna.md` - complete guide for developing native skills with code templates and integration steps.
+- **📚 Developer Documentation**: Created  - complete guide for developing native skills with code templates and integration steps.
 - **🌍 Documentation Updates**: Updated `docs/QUEUE_BATCH.en.md` and `docs/QUEUE_BATCH.es.md` with native skill architecture details and developer integration guide.
 
 ### 🔧 Technical Details
@@ -1397,7 +1477,7 @@ If you have custom integrations relying on `pkg/skills/queue_batch/SKILL.md`, up
 
 ### 🛡️ Security & Stability
 - **🛡️ Native Skills Sentinel**: Implemented `skills_sentinel.go` as a native internal security tool. It provides proactive pattern-matching protection against prompt injection (input) and system leaks (output sanitization).
-- **📝 Local Auditing**: Integrated a security auditor that records all blocked attacks and suspicious activities in `local_work/AUDIT.md`.
+- **📝 Local Auditing**: Integrated a security auditor that records all blocked attacks and suspicious activities in .
 
 ## 2026-03-01
 

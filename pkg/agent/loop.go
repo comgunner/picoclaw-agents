@@ -58,8 +58,55 @@ type AgentLoop struct {
 	// configMutex protects concurrent access to config.json during runtime updates.
 	configMutex sync.Mutex
 
+	// providerCache stores instantiated providers to avoid repeated creation.
+	// Keyed by provider hash (api_base + api_key).
+	providerCache map[string]providers.LLMProvider
+
 	contextMiddleware *pcontext.ContextMiddleware
 	runtimeMgr        *RuntimeManager
+}
+
+// GetProvider returns a cached provider for the given model name or creates a new one.
+func (al *AgentLoop) GetProvider(modelName string) (providers.LLMProvider, string, error) {
+	al.configMutex.Lock()
+	defer al.configMutex.Unlock()
+
+	// 1. Get model config to check api_base/api_key
+	modelCfg, err := al.cfg.GetModelConfig(modelName)
+	if err != nil {
+		// Try dynamic provider if not in list
+		p, mid, errDyn := providers.CreateProviderForModel(al.cfg, modelName)
+		if errDyn != nil {
+			// Fall back to the default provider passed to NewAgentLoop
+			if al.providerCache["__default__"] != nil {
+				return al.providerCache["__default__"], modelName, nil
+			}
+		}
+		return p, mid, errDyn
+	}
+
+	// 2. Generate cache key
+	cacheKey := fmt.Sprintf("%s:%s", modelCfg.APIBase, modelCfg.APIKey)
+	if p, ok := al.providerCache[cacheKey]; ok {
+		return p, modelCfg.Model, nil
+	}
+
+	// 3. Create new provider
+	p, mid, err := providers.CreateProviderFromConfig(modelCfg)
+	if err != nil {
+		// Fall back to the default provider passed to NewAgentLoop
+		if al.providerCache["__default__"] != nil {
+			return al.providerCache["__default__"], modelName, nil
+		}
+		return nil, "", err
+	}
+
+	// 4. Cache and return
+	if al.providerCache == nil {
+		al.providerCache = make(map[string]providers.LLMProvider)
+	}
+	al.providerCache[cacheKey] = p
+	return p, mid, nil
 }
 
 // processOptions configures how a message is processed
@@ -76,7 +123,24 @@ type processOptions struct {
 }
 
 func NewAgentLoop(cfg *config.Config, msgBus *bus.MessageBus, provider providers.LLMProvider) *AgentLoop {
-	registry := NewAgentRegistry(cfg, provider)
+	al := &AgentLoop{
+		bus:           msgBus,
+		cfg:           cfg,
+		providerCache: make(map[string]providers.LLMProvider),
+	}
+
+	// Store the default provider as fallback for tests and misconfigured environments
+	if provider != nil {
+		al.providerCache["__default__"] = provider
+	}
+
+	// Factory for agent registration
+	factory := func(model string) (providers.LLMProvider, string, error) {
+		return al.GetProvider(model)
+	}
+
+	registry := NewAgentRegistry(cfg, factory)
+	al.registry = registry
 
 	// Register shared tools to all agents
 	suite := registerSharedTools(cfg, msgBus, registry, provider)
@@ -144,20 +208,16 @@ func NewAgentLoop(cfg *config.Config, msgBus *bus.MessageBus, provider providers
 	cm := pcontext.NewContextMiddleware(workspace, 8192)
 	cm.Start()
 
-	al := &AgentLoop{
-		bus:               msgBus,
-		cfg:               cfg,
-		registry:          registry,
-		state:             stateManager,
-		summarizing:       sync.Map{},
-		fallback:          fallbackChain,
-		tokenValidator:    validator,
-		summaryCache:      cache,
-		tasklocks:         tlm,
-		sentinel:          sentinel,
-		auditor:           security.NewAuditor(workspace),
-		contextMiddleware: cm,
-	}
+	al.state = stateManager
+	al.registry = registry
+	al.summarizing = sync.Map{}
+	al.fallback = fallbackChain
+	al.tokenValidator = validator
+	al.summaryCache = cache
+	al.tasklocks = tlm
+	al.sentinel = sentinel
+	al.auditor = security.NewAuditor(workspace)
+	al.contextMiddleware = cm
 
 	al.RegisterTool(tools.NewContextStatusTool(cm))
 
@@ -1017,10 +1077,58 @@ func (al *AgentLoop) runLLMIteration(
 		}
 
 		callLLM := func() (*providers.LLMResponse, error) {
-			if len(agent.Candidates) > 1 && al.fallback != nil {
-				fbResult, fbErr := al.fallback.Execute(ctx, agent.Candidates,
-					func(ctx context.Context, provider, model string) (*providers.LLMResponse, error) {
-						return agent.Provider.Chat(ctx, prunedMessages, providerToolDefs, model, map[string]any{
+			// FIX: Use the correct provider for the model being used.
+			// If the client specified a model that belongs to a different provider
+			// (e.g., switching from Antigravity to Qwen), we must resolve the provider
+			// dynamically to avoid "model not found" errors from the wrong backend.
+			providerToUse := agent.Provider
+			modelID := modelToUse
+
+			// Guard against nil provider (misconfigured test or missing model_list entry)
+			if providerToUse == nil {
+				return nil, fmt.Errorf("no provider available for agent %q — check model_list config", agent.ID)
+			}
+
+			if clientModel, ok := opts.Metadata["model_name"]; ok && clientModel != "" {
+				// Resolve the provider for the client-specified model
+				if p, mid, errProv := al.GetProvider(modelToUse); errProv == nil {
+					providerToUse = p
+					modelID = mid
+				} else {
+					logger.WarnCF(
+						"agent",
+						"Failed to resolve provider for client model, falling back to agent provider",
+						map[string]any{
+							"model": modelToUse,
+							"error": errProv.Error(),
+						},
+					)
+				}
+
+				// Client specified a model — use it directly without fallbacks.
+				return providerToUse.Chat(ctx, prunedMessages, providerToolDefs, modelID, map[string]any{
+					"max_tokens":       agent.MaxTokens,
+					"temperature":      agent.Temperature,
+					"prompt_cache_key": agent.ID,
+				})
+			}
+
+			// No client model specified — use agent's configured fallbacks.
+			candidates := agent.Candidates
+			if len(candidates) > 1 && al.fallback != nil {
+				fbResult, fbErr := al.fallback.Execute(ctx, candidates,
+					func(ctx context.Context, pName, mName string) (*providers.LLMResponse, error) {
+						// Resolve provider for the fallback candidate
+						p, mid, errCand := al.GetProvider(mName)
+						if errCand != nil {
+							// Fallback to the agent's primary provider if resolution fails
+							p = agent.Provider
+							mid = mName
+						}
+						if p == nil {
+							return nil, fmt.Errorf("no provider available for fallback model %q", mName)
+						}
+						return p.Chat(ctx, prunedMessages, providerToolDefs, mid, map[string]any{
 							"max_tokens":       agent.MaxTokens,
 							"temperature":      agent.Temperature,
 							"prompt_cache_key": agent.ID,
@@ -1037,7 +1145,19 @@ func (al *AgentLoop) runLLMIteration(
 				}
 				return fbResult.Response, nil
 			}
-			return agent.Provider.Chat(ctx, prunedMessages, providerToolDefs, modelToUse, map[string]any{
+
+			// Standard case: use the resolved provider and model
+			p, mid, errStd := al.GetProvider(modelToUse)
+			if errStd == nil {
+				providerToUse = p
+				modelID = mid
+			}
+			// Final nil check
+			if providerToUse == nil {
+				return nil, fmt.Errorf("no provider available for model %q", modelToUse)
+			}
+
+			return providerToUse.Chat(ctx, prunedMessages, providerToolDefs, modelID, map[string]any{
 				"max_tokens":       agent.MaxTokens,
 				"temperature":      agent.Temperature,
 				"prompt_cache_key": agent.ID,

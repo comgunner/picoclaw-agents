@@ -28,6 +28,7 @@ func NewOnboardCommand() *cobra.Command {
 		openai     bool
 		gemini     bool
 		free       bool
+		force      bool
 	)
 
 	cmd := &cobra.Command{
@@ -51,7 +52,7 @@ func NewOnboardCommand() *cobra.Command {
 			} else if free {
 				template = "free"
 			}
-			onboard(template)
+			onboard(template, force)
 		},
 	}
 
@@ -63,6 +64,7 @@ func NewOnboardCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&gemini, "gemini", false, "Use Gemini template (gemini-2.5-flash)")
 	cmd.Flags().
 		BoolVar(&free, "free", false, "Use free tier template (OpenRouter free models, no API balance required)")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Overwrite existing configuration (not recommended)")
 
 	return cmd
 }

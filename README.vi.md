@@ -25,6 +25,9 @@
 
 ## 📢 Tin tức
 
+2026-03-31 🎉 **ICUETH Fork Integration**: Comprehensive analysis completed. Architecture: A2A horizontal (109 agents) vs parallel subagents. Features: Agent Meeting System, Persona System, RAG/SQLite memory, MCP, Mailbox system. 3-phase integration strategy. Audit: ✅ CLEAN. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Qwen & Zhipu WebUI Auth**: Added via WebUI at `http://localhost:18800/credentials`. CLI: `./picoclaw-agents auth login --provider qwen/zhipu`. Auto-configures models. Zhipu glm-4.5-flash 100% FREE. See [CHANGELOG.md](CHANGELOG.md).
 2026-03-28 🎉 **Di trú Đa-Nguồn + Chế độ Đội onboard**: Thêm `picoclaw-agents migrate --from nanoclaw` để di trú từ NanoClaw. Wizard onboard bây giờ bao gồm **Team Mode** với template dựng sẵn (Dev Team 9 agents, Research Team 3 agents, General Team 3 agents) và chọn **14 native skills**. Cải thiện Context Window: pruning tool results (-60% tokens), compact nâng cao với model override, và lệnh thủ công `/compact`. Xem [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-27 🎉 **Chất lượng build và cải thiện kênh**: `go build ./...` giờ qua sạch. Thêm API group trigger vào `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — kiểm soát chi tiết chat nhóm. Xem [CHANGELOG.md](CHANGELOG.md).
@@ -52,6 +55,8 @@
 2026-03-02 🎉 **Lệnh Slash Fast-path và Bộ theo dõi Toàn cầu**: Đã thêm lệnh Slash tức thì (`/bundle_approve`, `/status`, v.v.) để tương tác độ trễ bằng không. Thống nhất `ImageGenTracker` trên tất cả các agent để nhất quán trạng thái multi-agent hoàn hảo. Xem [docs/queue_batch.md](docs/queue_batch.md).
 
 2026-03-01 🎉 **Tạo ảnh AI và Quản lý Cộng đồng**: Đã thêm tạo ảnh gốc (Gemini/Ideogram), quy trình script-to-ảnh, menu tương tác sau tạo và agent quản lý cộng đồng để tự động tạo bài đăng truyền thông xã hội. Xem [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+
+2026-03-01 🎉 **Tích hợp Bên ngoài (Binance, Social Media, Notion)**: Đã thêm các công cụ bản địa cho giao dịch tiền điện tử (Binance futures & spot), xuất bản truyền thông xã hội (Facebook & X/Twitter), và quản lý kiến thức (Notion). Cấu hình qua `config.json` hoặc biến môi trường. Xem [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) và [docs/NOTION_util.md](docs/NOTION_util.md) để biết hướng dẫn thiết lập.
 
 2026-03-01 🎉 **Sentinel Kỹ năng Bản địa**: Đã thêm lớp bảo mật nội bộ bản địa (`skills_sentinel.go`) cung cấp khả năng bảo vệ dựa trên mẫu thời gian thực chống lại việc chèn prompt và rò rỉ hệ thống.
 2026-03-01 🎉 **Bảo mật Fail-Close & Độ ổn định**: Chính sách bảo mật mạnh mẽ. Công cụ thực thi lệnh hiện thực hiện xác thực nghiêm ngặt các mẫu từ chối trong quá trình khởi tạo.
@@ -161,6 +166,26 @@ Bạn có thể xác thực với các nhà cung cấp OAuth trực tiếp từ 
 - **Anthropic**: OAuth trình duyệt (luồng PKCE) — Tự động thêm 5 mô hình Claude
 - **Google Antigravity**: OAuth trình duyệt — Tự động thêm 15 mô hình Gemini
 - **OpenAI**: Chỉ mã thiết bị — Tự động thêm 8 mô hình GPT
+- **Qwen Portal**: API Key (token) — Tự động thêm 6 mô hình Qwen
+- **Zhipu AI (z.ai)**: API Key (token) — Tự động thêm 7 mô hình GLM 🆓 **100% MIỄN PHÍ** với `glm-4.5-flash`
+
+**Lệnh Xác thực CLI:**
+
+```bash
+# OpenAI (Codex OAuth - Mã Thiết Bị)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% MIỄN PHÍ với glm-4.5-flash
+./picoclaw-agents auth login --provider zhipu
+```
+
+Tất cả các phương thức hỗ trợ nhập token API Key hoặc luồng OAuth và tự động cấu hình các mô hình sau khi xác thực thành công.
 
 ![Credentials OAuth](assets/webui/credentials-auth.png)
 

@@ -244,9 +244,14 @@ func (w *Wizard) stepEnvironment() error {
 	fmt.Print("✓ Checking existing configuration... ")
 	if _, err := os.Stat(w.configPath); err == nil {
 		fmt.Println("⚠️  Found")
-		if !w.promptConfirm("  Existing configuration found. Overwrite?") {
-			return fmt.Errorf("setup canceled by user")
-		}
+		fmt.Println()
+		fmt.Println("⚠️  WARNING: Existing configuration found!")
+		fmt.Println("   To preserve your config:")
+		fmt.Println("     1. Backup: cp ~/.picoclaw/config.json ~/.picoclaw/config.json.bak")
+		fmt.Println("     2. Edit:   Edit the existing file instead")
+		fmt.Println("     3. Skip:   Remove ~/.picoclaw/config.json to start fresh")
+		fmt.Println()
+		return fmt.Errorf("setup canceled: config already exists")
 	} else {
 		fmt.Println("None (will create new)")
 	}

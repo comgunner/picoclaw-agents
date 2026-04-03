@@ -558,8 +558,11 @@ func TestStepEnvironment(t *testing.T) {
 			t.Fatalf("cannot write seed config: %v", err)
 		}
 
-		if err := w.stepEnvironment(); err != nil {
-			t.Errorf("stepEnvironment should succeed when user confirms overwrite: %v", err)
+		// stepEnvironment returns an error when config exists (even with "y" input)
+		// because it's a hard check that requires manual user intervention
+		err := w.stepEnvironment()
+		if err == nil {
+			t.Error("stepEnvironment should return error when config already exists")
 		}
 	})
 }

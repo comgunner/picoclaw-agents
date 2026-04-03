@@ -25,6 +25,10 @@
 
 ## 📢 Actualités
 
+2026-03-31 🎉 **Intégration du Fork ICUETH**: Analyse complète du fork icueth terminée. Comparaison d'architecture: A2A horizontal (109 agents) vs sous-agents parallèles. Fonctionnalités identifiées: Système de Réunions d'Agents, Système de Personas, mémoire RAG/SQLite, support MCP, système Mailbox. Stratégie d'intégration définie en 3 phases. Audit terminé: ✅ CLEAN. Voir [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Auth WebUI Qwen et Zhipu**: Authentification Qwen Portal et Zhipu AI ajoutée via WebUI à `http://localhost:18800/credentials`. Commandes CLI: `./picoclaw-agents auth login --provider qwen` et `--provider zhipu`. Configure automatiquement les modèles après authentification. Zhipu glm-4.5-flash est 100% GRATUIT. Voir [CHANGELOG.md](CHANGELOG.md).
+
 2026-03-28 🎉 **Migration Multi-Source + Mode Équipe Onboard**: Ajouté `picoclaw-agents migrate --from nanoclaw` pour migration depuis NanoClaw. Le wizard onboard inclut maintenant **Team Mode** avec templates pré-construits (Dev Team 9 agents, Research Team 3 agents, General Team 3 agents) et sélection de **14 native skills**. Améliorations Context Window: pruning tool results (-60% tokens), compaction avancée avec model override, et commande manuelle `/compact`. Voir [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-27 🎉 **Qualité build et améliorations canaux**: `go build ./...` passe maintenant proprement. API group trigger ajoutée à `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — contrôle granulaire des chats de groupe. Voir [CHANGELOG.md](CHANGELOG.md).
@@ -52,6 +56,8 @@
 2026-03-02 🎉 **Commandes Slash Fast-path & Tracker Global** : Ajout de commandes Slash instantanées (`/bundle_approve`, `/status`, etc.) pour une interaction à latence zéro. Unification de l'`ImageGenTracker` across tous les agents pour une cohérence parfaite des états multi-agents. Voir [docs/queue_batch.md](docs/queue_batch.md).
 
 2026-03-01 🎉 **Génération d'Images IA & Community Manager** : Ajout de la génération native d'images (Gemini/Ideogram), flux script-vers-image, menus interactifs post-génération, et agent community manager pour générer automatiquement des publications sur les réseaux sociaux. Voir [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md).
+
+2026-03-01 🎉 **Renforcement de la Sécurité et de la Stabilité** : Gestion robuste de la fermeture du bus de messages, traitement en arrière-plan résilient pour l'application WeCom, et validation d'initialisation renforcée pour l'outil shell.
 
 2026-03-01 🎉 **Sentinelle de Skills Native**: Ajout d'une couche de sécurité interne (`skills_sentinel.go`) qui offre une protection en temps réel contre l'injection de prompts et les fuites du système.
 2026-03-01 🎉 **Sécurité Fail-Close & Stabilité** : Politique de sécurité robuste. L'outil d'exécution de commandes effectue désormais une validation stricte des modèles de déni pendant l'initialisation.
@@ -206,6 +212,26 @@ Vous pouvez vous authentifier avec les fournisseurs OAuth directement depuis l'i
 - **Anthropic** : OAuth navigateur (flux PKCE) — Ajoute automatiquement 5 modèles Claude
 - **Google Antigravity** : OAuth navigateur — Ajoute automatiquement 15 modèles Gemini
 - **OpenAI** : Code d'appareil uniquement — Ajoute automatiquement 8 modèles GPT
+- **Qwen Portal** : Clé API (token) — Ajoute automatiquement 6 modèles Qwen
+- **Zhipu AI (z.ai)** : Clé API (token) — Ajoute automatiquement 7 modèles GLM 🆓 **100% GRATUIT** avec `glm-4.5-flash`
+
+**Commandes d'authentification CLI :**
+
+```bash
+# OpenAI (Codex OAuth - Code d'appareil)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% GRATUIT avec glm-4.5-flash
+./picoclaw-agents auth login --provider zhipu
+```
+
+Toutes les méthodes prennent en charge la saisie de token API Key ou le flux OAuth et configurent automatiquement les modèles après une authentification réussie.
 
 ![Credentials OAuth](assets/webui/credentials-auth.png)
 

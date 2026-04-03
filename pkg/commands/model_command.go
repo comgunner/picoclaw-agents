@@ -113,6 +113,11 @@ func (h *ModelCommandHandler) selectModel(modelName string, channelID string) st
 	oldModel := cfg.Agents.Defaults.ModelName
 	cfg.Agents.Defaults.ModelName = selectedModel.ModelName
 
+	// Limpiar overrides de agentes para forzar el nuevo modelo global
+	for i := range cfg.Agents.List {
+		cfg.Agents.List[i].Model = nil
+	}
+
 	// Guardar config
 	if err := config.SaveConfig(h.configPath, cfg); err != nil {
 		return fmt.Sprintf("❌ Error guardando config: %v", err)

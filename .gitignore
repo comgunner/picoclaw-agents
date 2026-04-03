@@ -185,3 +185,14 @@ coverage.html
 dupl_report.json
 dupl_report.json
 web/backend/backend
+
+# Test & utility scripts (do not commit)
+scripts/test_fix_verification.sh
+scripts/start-web-gateway.sh
+
+
+# Local configuration files (may contain secrets)
+public
+
+# Test coverage output
+coverage.out

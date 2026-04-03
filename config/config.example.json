@@ -2,6 +2,7 @@
   "session": {
     "dm_scope": "per-channel-peer"
   },
+
   "agents": {
     "defaults": {
       "workspace": "~/.picoclaw/workspace",
@@ -169,7 +170,49 @@
         "skills": ["binance_mcp"],
         "subagents": {}
       }
-    ]
+    ],
+    "department_models": {
+      "core": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.1,
+        "top_p": 0.5,
+        "max_tokens": 4096,
+        "enable_thinking": false
+      },
+      "engineering": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.1,
+        "top_p": 0.5,
+        "max_tokens": 8192,
+        "enable_thinking": true
+      },
+      "design": {
+        "provider": "anthropic",
+        "model": "claude-3-sonnet",
+        "temperature": 0.8,
+        "top_p": 0.95,
+        "max_tokens": 4096,
+        "enable_thinking": false
+      },
+      "testing": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.1,
+        "top_p": 0.5,
+        "max_tokens": 4096,
+        "enable_thinking": false
+      },
+      "project-management": {
+        "provider": "anthropic",
+        "model": "claude-3-haiku",
+        "temperature": 0.5,
+        "top_p": 0.9,
+        "max_tokens": 4096,
+        "enable_thinking": false
+      }
+    }
   },
   "_examples": {
     "_description": "Examples of specialized agents using engineering role skills (v3.6.0+)",
@@ -651,5 +694,17 @@
     "min_completion_tokens": 512,
     "preserve_messages": 20,
     "auto_compact_enabled": true
+  },
+
+  "a2a": {
+    "enabled": true,
+    "mailbox_capacity": 1000,
+    "cleanup_interval": "5m",
+    "orchestrator": {
+      "enabled": true,
+      "discovery_phase": true,
+      "planning_phase": true,
+      "parallel_execution": true
+    }
   }
 }

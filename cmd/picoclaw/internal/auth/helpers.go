@@ -25,7 +25,7 @@ import (
 	"github.com/comgunner/picoclaw/pkg/providers"
 )
 
-const supportedProvidersMsg = "supported providers: openai, anthropic, google-antigravity"
+const supportedProvidersMsg = "supported providers: openai, anthropic, google-antigravity, qwen, zhipu"
 
 func authLoginCmd(provider string, useDeviceCode bool) error {
 	switch provider {
@@ -47,6 +47,23 @@ func authLoginCmd(provider string, useDeviceCode bool) error {
 		return authLoginAnthropicBrowser()
 	case "google-antigravity", "antigravity":
 		return authLoginGoogleAntigravity()
+	case "qwen", "qwen-portal":
+		// Qwen Portal no tiene OAuth público - usar API Key
+		fmt.Println("Qwen Portal requires an API key from DashScope")
+		fmt.Println()
+		fmt.Println("Get your API key at: https://dashscope.console.aliyun.com/apiKey")
+		fmt.Println()
+		return authLoginPasteToken(provider)
+	case "zhipu", "z.ai", "glm":
+		// Zhipu AI (z.ai) - usar API Key
+		fmt.Println("Zhipu AI (z.ai) requires an API key")
+		fmt.Println()
+		fmt.Println("Get your API key at: https://platform.z.ai/api-keys")
+		fmt.Println()
+		fmt.Println("Free tier: 100% free with generous limits")
+		fmt.Println("Models: glm-4.5-flash (default), glm-4-flash, glm-4-air, glm-4-airx, glm-4-long, glm-4v-flash")
+		fmt.Println()
+		return authLoginPasteToken(provider)
 	default:
 		return fmt.Errorf("unsupported provider: %s (%s)", provider, supportedProvidersMsg)
 	}
@@ -199,6 +216,48 @@ func authLoginGoogleAntigravity() error {
 	return nil
 }
 
+// authLoginQwenBrowser inicia el flujo OAuth de Qwen usando LoginBrowser (sin tmux)
+//
+
+var _ = authLoginQwenBrowser
+
+func authLoginQwenBrowser() error {
+	cfg := auth.QwenOAuthConfig()
+
+	// Usar LoginBrowser igual que OpenAI (sin tmux!)
+	cred, err := auth.LoginBrowser(cfg)
+	if err != nil {
+		return fmt.Errorf("login failed: %w", err)
+	}
+
+	cred.Provider = "qwen"
+
+	if err = auth.SetCredential("qwen", cred); err != nil {
+		return fmt.Errorf("failed to save credentials: %w", err)
+	}
+
+	appCfg, err := internal.LoadConfig()
+	if err == nil {
+		// Add Qwen models to config
+		addedCount := AddQwenModels(appCfg)
+		if err = config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
+			return fmt.Errorf("could not update config: %w", err)
+		}
+		if addedCount > 0 {
+			fmt.Printf("\n✓ Added %d Qwen models to config\n", addedCount)
+		}
+	}
+
+	fmt.Println("\n✅ Qwen Portal authentication successful!")
+	fmt.Println("Default model set to: qwen-2.5-72b")
+	if cred.AccountID != "" {
+		fmt.Printf("Account: %s\n", cred.AccountID)
+	}
+	fmt.Println("\nTry it: picoclaw-agents agent -m \"Hello\" --model qwen-2.5-72b")
+
+	return nil
+}
+
 func fetchGoogleUserEmail(accessToken string) (string, error) {
 	req, err := http.NewRequest("GET", "https://www.googleapis.com/oauth2/v2/userinfo", nil)
 	if err != nil {
@@ -280,6 +339,12 @@ func authLoginPasteToken(provider string) error {
 			}
 			// Update default model
 			appCfg.Agents.Defaults.ModelName = "gpt-5.2"
+		case "qwen", "qwen-portal":
+			// Update ModelList and set default to qwen-plus
+			AddQwenModels(appCfg)
+		case "zhipu", "z.ai", "glm":
+			// Update ModelList and set default to glm-4.5-flash
+			AddZhipuModels(appCfg)
 		}
 		if err := config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
 			return fmt.Errorf("could not update config: %w", err)
@@ -318,6 +383,14 @@ func authLogoutCmd(provider string) error {
 					if isAntigravityModel(appCfg.ModelList[i].Model) {
 						appCfg.ModelList[i].AuthMethod = ""
 					}
+				case "qwen", "qwen-portal":
+					if isQwenModel(appCfg.ModelList[i].Model) {
+						appCfg.ModelList[i].AuthMethod = ""
+					}
+				case "zhipu", "z.ai", "glm":
+					if isZhipuModel(appCfg.ModelList[i].Model) {
+						appCfg.ModelList[i].AuthMethod = ""
+					}
 				}
 			}
 			// Clear AuthMethod in Providers (legacy)
@@ -328,6 +401,10 @@ func authLogoutCmd(provider string) error {
 				appCfg.Providers.Anthropic.AuthMethod = ""
 			case "google-antigravity", "antigravity":
 				appCfg.Providers.Antigravity.AuthMethod = ""
+			case "qwen", "qwen-portal":
+				// Qwen no usa Providers legacy block, solo ModelList
+			case "zhipu", "z.ai", "glm":
+				// Zhipu no usa Providers legacy block, solo ModelList
 			}
 			config.SaveConfig(internal.GetConfigPath(), appCfg)
 		}
@@ -503,6 +580,21 @@ func isAnthropicModel(model string) bool {
 		strings.HasPrefix(model, "anthropic/")
 }
 
+// isQwenModel checks if a model string belongs to Qwen provider
+func isQwenModel(model string) bool {
+	return model == "qwen" ||
+		model == "qwen-portal" ||
+		strings.HasPrefix(model, "qwen/")
+}
+
+// isZhipuModel checks if a model string belongs to Zhipu provider
+func isZhipuModel(model string) bool {
+	return model == "zhipu" ||
+		model == "z.ai" ||
+		model == "glm" ||
+		strings.HasPrefix(model, "glm-")
+}
+
 // AddAnthropicModels adds Anthropic models to config with deduplication
 func AddAnthropicModels(appCfg *config.Config) int {
 	anthropicModels := []config.ModelConfig{
@@ -611,6 +703,83 @@ func AddOpenAIModels(appCfg *config.Config) int {
 
 	if addedCount > 0 {
 		appCfg.Agents.Defaults.ModelName = "gpt-5.4"
+	}
+
+	return addedCount
+}
+
+// AddQwenModels adds Qwen models to config with deduplication
+// Models for US (Virginia) / International endpoint
+func AddQwenModels(appCfg *config.Config) int {
+	qwenModels := []config.ModelConfig{
+		// Only qwen-plus is confirmed to work reliably in US region
+		{ModelName: "qwen-plus", Model: "qwen-plus", AuthMethod: "oauth"},
+	}
+
+	// First, remove ALL other Qwen models to ensure a clean state
+	var filtered []config.ModelConfig
+	for _, m := range appCfg.ModelList {
+		if !isQwenModel(m.Model) {
+			filtered = append(filtered, m)
+		}
+	}
+	appCfg.ModelList = filtered
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range qwenModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	// Always set qwen-plus as default when this function is called
+	appCfg.Agents.Defaults.ModelName = "qwen-plus"
+
+	return addedCount
+}
+
+// AddZhipuModels adds Zhipu AI (z.ai) models to config with deduplication
+// Models for Zhipu AI platform - 100% free tier
+// Updated based on actual API response (March 2026)
+func AddZhipuModels(appCfg *config.Config) int {
+	zhipuModels := []config.ModelConfig{
+		// Zhipu AI (z.ai) models - Actualizados según API real
+		// Docs: https://docs.z.ai/guides/overview/quick-start
+		// Free tier: 100% free with generous limits
+		{ModelName: "glm-5", Model: "glm-5", AuthMethod: "token"},
+		{ModelName: "glm-5-turbo", Model: "glm-5-turbo", AuthMethod: "token"},
+		{ModelName: "glm-5.1", Model: "glm-5.1", AuthMethod: "token"},
+		{ModelName: "glm-4.7", Model: "glm-4.7", AuthMethod: "token"},
+		{ModelName: "glm-4.6", Model: "glm-4.6", AuthMethod: "token"},
+		{ModelName: "glm-4.5", Model: "glm-4.5", AuthMethod: "token"},
+		{ModelName: "glm-4.5-air", Model: "glm-4.5-air", AuthMethod: "token"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range zhipuModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	// Set glm-5 as default (latest version)
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "glm-5"
+		appCfg.Agents.Defaults.Model = "glm-5"
 	}
 
 	return addedCount

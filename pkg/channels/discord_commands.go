@@ -14,6 +14,22 @@ var DiscordCommands = []*discordgo.ApplicationCommand{
 		Description: "Mostrar mensaje de ayuda con commandos disponibles",
 	},
 	{
+		Name:        "model",
+		Description: "Cambiar o listar modelos de IA",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "model",
+				Description: "Nombre del modelo o provider (ej: openai/gpt-5.4)",
+				Required:    false,
+			},
+		},
+	},
+	{
+		Name:        "models",
+		Description: "Listar todos los modelos disponibles",
+	},
+	{
 		Name:        "bundle_approve",
 		Description: "Aprobar un lote de post+imagen",
 		Options: []*discordgo.ApplicationCommandOption{

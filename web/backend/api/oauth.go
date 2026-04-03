@@ -21,6 +21,8 @@ const (
 	oauthProviderOpenAI            = "openai"
 	oauthProviderAnthropic         = "anthropic"
 	oauthProviderGoogleAntigravity = "google-antigravity"
+	oauthProviderQwen              = "qwen"
+	oauthProviderZhipu             = "zhipu"
 
 	oauthMethodBrowser    = "browser"
 	oauthMethodDeviceCode = "device_code"
@@ -42,18 +44,24 @@ var oauthProviderOrder = []string{
 	oauthProviderOpenAI,
 	oauthProviderAnthropic,
 	oauthProviderGoogleAntigravity,
+	oauthProviderQwen,
+	oauthProviderZhipu,
 }
 
 var oauthProviderMethods = map[string][]string{
 	oauthProviderOpenAI:            {oauthMethodDeviceCode, oauthMethodToken},
 	oauthProviderAnthropic:         {oauthMethodBrowser, oauthMethodToken},
 	oauthProviderGoogleAntigravity: {oauthMethodBrowser},
+	oauthProviderQwen:              {oauthMethodToken}, // Qwen usa API Key, no OAuth
+	oauthProviderZhipu:             {oauthMethodToken}, // Zhipu usa API Key, no OAuth
 }
 
 var oauthProviderLabels = map[string]string{
 	oauthProviderOpenAI:            "OpenAI",
 	oauthProviderAnthropic:         "Anthropic",
 	oauthProviderGoogleAntigravity: "Google Antigravity",
+	oauthProviderQwen:              "Qwen Portal",
+	oauthProviderZhipu:             "Zhipu AI (z.ai)",
 }
 
 var (
@@ -527,7 +535,11 @@ func normalizeOAuthProvider(raw string) (string, error) {
 	switch provider {
 	case "antigravity":
 		return oauthProviderGoogleAntigravity, nil
-	case oauthProviderOpenAI, oauthProviderAnthropic, oauthProviderGoogleAntigravity:
+	case "qwen-portal":
+		return oauthProviderQwen, nil
+	case "zhipu", "z.ai", "glm":
+		return oauthProviderZhipu, nil
+	case oauthProviderOpenAI, oauthProviderAnthropic, oauthProviderGoogleAntigravity, oauthProviderQwen:
 		return provider, nil
 	default:
 		return "", fmt.Errorf("unsupported provider %q", raw)
@@ -552,6 +564,8 @@ func oauthConfigForProvider(provider string) (auth.OAuthProviderConfig, error) {
 		return auth.AnthropicOAuthConfig(), nil
 	case oauthProviderGoogleAntigravity:
 		return auth.GoogleAntigravityOAuthConfig(), nil
+	case oauthProviderQwen:
+		return auth.QwenOAuthConfig(), nil
 	default:
 		return auth.OAuthProviderConfig{}, fmt.Errorf("provider %q does not support browser oauth", provider)
 	}
@@ -746,22 +760,40 @@ func (h *Handler) syncProviderAuthMethod(provider, authMethod string) error {
 		return err
 	}
 
-	// Update auth_method for existing models
-	for i := range cfg.ModelList {
-		if modelBelongsToProvider(provider, cfg.ModelList[i].Model) {
-			cfg.ModelList[i].AuthMethod = authMethod
-		}
-	}
-
-	// Auto-add all models for this provider with deduplication
-	addedCount := addModelsForProvider(cfg, provider, authMethod)
-
-	if err := oauthSaveConfig(h.configPath, cfg); err != nil {
+	// Get the credential to access the token/API key
+	cred, err := oauthGetCredential(provider)
+	if err != nil {
 		return err
 	}
 
-	if addedCount > 0 {
-		logger.InfoC("oauth", fmt.Sprintf("Added %d models for %s", addedCount, provider))
+	// If authMethod is empty, it means we are logging out.
+	// We should remove all models belonging to this provider.
+	if authMethod == "" {
+		var filtered []config.ModelConfig
+		for _, m := range cfg.ModelList {
+			if !modelBelongsToProvider(provider, m.Model) {
+				filtered = append(filtered, m)
+			}
+		}
+		cfg.ModelList = filtered
+	} else {
+		// Update auth_method and api_key for existing models
+		for i := range cfg.ModelList {
+			if modelBelongsToProvider(provider, cfg.ModelList[i].Model) {
+				cfg.ModelList[i].AuthMethod = authMethod
+				// Update API key if credential has access token
+				if cred != nil && cred.AccessToken != "" {
+					cfg.ModelList[i].APIKey = cred.AccessToken
+				}
+			}
+		}
+
+		// Auto-add all models for this provider with deduplication
+		addModelsForProvider(cfg, provider, authMethod)
+	}
+
+	if err := oauthSaveConfig(h.configPath, cfg); err != nil {
+		return err
 	}
 
 	return nil
@@ -770,6 +802,15 @@ func (h *Handler) syncProviderAuthMethod(provider, authMethod string) error {
 // addModelsForProvider adds all models for a provider with deduplication
 // Returns the number of models added
 func addModelsForProvider(cfg *config.Config, provider, authMethod string) int {
+	// First, PURGE all existing models for this provider to ensure a clean state
+	var filtered []config.ModelConfig
+	for _, m := range cfg.ModelList {
+		if !modelBelongsToProvider(provider, m.Model) {
+			filtered = append(filtered, m)
+		}
+	}
+	cfg.ModelList = filtered
+
 	existingModels := make(map[string]bool)
 	for _, m := range cfg.ModelList {
 		existingModels[m.ModelName] = true
@@ -837,14 +878,32 @@ func addModelsForProvider(cfg *config.Config, provider, authMethod string) int {
 		}
 		if !existingModels["gemini-3-flash"] {
 			cfg.Agents.Defaults.ModelName = "gemini-3-flash"
-			// Update all agents to use gemini-3-flash as primary
-			for i := range cfg.Agents.List {
-				if cfg.Agents.List[i].Model == nil {
-					cfg.Agents.List[i].Model = &config.AgentModelConfig{}
-				}
-				cfg.Agents.List[i].Model.Primary = "gemini-3-flash"
-				cfg.Agents.List[i].Model.Fallbacks = []string{"gemini-2.5-flash"}
-			}
+		}
+
+	case oauthProviderQwen:
+		modelsToAdd = []config.ModelConfig{
+			// Only qwen-plus is confirmed to work reliably in US region
+			{ModelName: "qwen-plus", Model: "qwen-plus", AuthMethod: authMethod},
+		}
+		if !existingModels["qwen-plus"] {
+			cfg.Agents.Defaults.ModelName = "qwen-plus"
+		}
+
+	case oauthProviderZhipu:
+		modelsToAdd = []config.ModelConfig{
+			// Zhipu AI (z.ai) models - Gratuitos y Premium
+			{ModelName: "glm-4.7-flash", Model: "glm-4.7-flash", AuthMethod: authMethod},
+			{ModelName: "glm-4.5-flash", Model: "glm-4.5-flash", AuthMethod: authMethod},
+			{ModelName: "glm-5", Model: "glm-5", AuthMethod: authMethod},
+			{ModelName: "glm-5-turbo", Model: "glm-5-turbo", AuthMethod: authMethod},
+			{ModelName: "glm-5.1", Model: "glm-5.1", AuthMethod: authMethod},
+			{ModelName: "glm-4.7", Model: "glm-4.7", AuthMethod: authMethod},
+			{ModelName: "glm-4.6", Model: "glm-4.6", AuthMethod: authMethod},
+			{ModelName: "glm-4.5", Model: "glm-4.5", AuthMethod: authMethod},
+			{ModelName: "glm-4.5-air", Model: "glm-4.5-air", AuthMethod: authMethod},
+		}
+		if !existingModels["glm-5"] {
+			cfg.Agents.Defaults.ModelName = "glm-5"
 		}
 
 	default:
@@ -876,6 +935,17 @@ func modelBelongsToProvider(provider, model string) bool {
 			lower == "google-antigravity" ||
 			strings.HasPrefix(lower, "antigravity/") ||
 			strings.HasPrefix(lower, "google-antigravity/")
+	case oauthProviderQwen:
+		return lower == "qwen" ||
+			lower == "qwen-portal" ||
+			strings.HasPrefix(lower, "qwen/") ||
+			strings.HasPrefix(lower, "qwen-") ||
+			strings.HasPrefix(lower, "qwen3")
+	case oauthProviderZhipu:
+		return lower == "zhipu" ||
+			lower == "z.ai" ||
+			lower == "glm" ||
+			strings.HasPrefix(lower, "glm-")
 	default:
 		return false
 	}

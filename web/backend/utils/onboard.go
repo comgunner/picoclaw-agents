@@ -14,19 +14,27 @@ var execCommand = exec.Command
 func EnsureOnboarded(configPath string) error {
 	_, err := os.Stat(configPath)
 	if err == nil {
-		return nil
+		return nil // Config already exists, skip automatically
 	}
 	if !os.IsNotExist(err) {
 		return fmt.Errorf("stat config: %w", err)
 	}
 
+	// Config doesn't exist, run onboard
 	cmd := execCommand(FindPicoclawBinary(), "onboard")
 	cmd.Env = append(os.Environ(), config.EnvConfig+"="+configPath)
-	cmd.Stdin = strings.NewReader("n\n")
+	// Don't send stdin - let onboard handle skip automatically
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		trimmed := strings.TrimSpace(string(output))
+		// Check if it's a skip message (config exists)
+		outputStr := string(output)
+		if strings.Contains(outputStr, "already exists") ||
+			strings.Contains(outputStr, "Skipping onboard") {
+			return nil // Skip was successful
+		}
+
+		trimmed := strings.TrimSpace(outputStr)
 		if trimmed == "" {
 			return fmt.Errorf("run onboard: %w", err)
 		}

@@ -25,6 +25,10 @@
 
 ## 📢 ニュース
 
+2026-03-31 🎉 **ICUETH Fork 統合**: icueth fork の包括的分析を完了。アーキテクチャ比較：A2A ホリゾンタル（109 エージェント）vs 並列サブエージェント。特定された機能：エージェント会議システム、ペルソナシステム、RAG/SQLite メモリ、MCP サポート、Mailbox システム。3 段階の統合戦略を定義。監査完了：✅ CLEAN。[CHANGELOG.md](CHANGELOG.md) を参照。
+
+2026-03-31 🎉 **Qwen と Zhipu WebUI 認証**: `http://localhost:18800/credentials` の WebUI を介して Qwen Portal と Zhipu AI 認証を追加。CLI コマンド：`./picoclaw-agents auth login --provider qwen` および `--provider zhipu`。認証後にモデルを自動設定。Zhipu glm-4.5-flash は 100% 無料。[CHANGELOG.md](CHANGELOG.md) を参照。
+
 2026-03-28 🎉 **マルチソース移行 + チームモード onboard**: NanoClaw からの移行用に `picoclaw-agents migrate --from nanoclaw` を追加。onboard wizard は**Team Mode** を搭載、プリビルドテンプレート (Dev Team 9 エージェント、Research Team 3 エージェント、General Team 3 エージェント) と**14 のネイティブスキル** 選択。コンテキストウィンドウ改善：ツール結果の剪定 (-60% tokens)、モデルオーバーライド付き高度な圧縮、および手動 `/compact` コマンド。[CHANGELOG.md](CHANGELOG.md) を参照。
 
 2026-03-27 🎉 **ビルド品質とチャンネル改善**: `go build ./...` がクリーンに通過。`BaseChannel` に group trigger API を追加：`WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — きめ細かいグループチャット制御。[CHANGELOG.md](CHANGELOG.md) を参照。
@@ -52,6 +56,8 @@
 2026-03-02 🎉 **Fast-path Slash コマンドとグローバル・トラッカー**: ゼロ・レイテンシ対話のための即時 Slash コマンド（`/bundle_approve`、`/status` など）を追加。完全なマルチ・エージェント状態の一貫性のために、すべてのエージェントで `ImageGenTracker` を統一。[docs/queue_batch.md](docs/queue_batch.md) を参照。
 
 2026-03-01 🎉 **AI 画像生成とコミュニティ・マネージャー**: ネイティブ画像生成（Gemini/Ideogram）、スクリプト・トゥ・画像ワークフロー、インタラクティブな生成後メニュー、およびソーシャルメディア投稿を自動的に生成するコミュニティ・マネージャー・エージェントを追加。[docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) を参照。
+
+2026-03-01 🎉 **セキュリティと安定性の強化**: メッセージバスクローズの堅牢な処理、WeCom アプリの回復力のあるバックグラウンド処理、およびシェルツールの初期化検証の強化。
 
 2026-03-01 🎉 **ネイティブ・スキル・センチネル**: プロンプト・インジェクションやシステム漏洩に対するリアルタイムのパターンベースの保護を提供する内部セキュリティ・レイヤー（`skills_sentinel.go`）を追加しました。
 2026-03-01 🎉 **Fail-Close セキュリティと安定性**: 堅牢なセキュリティポリシー。コマンド実行ツールは、初期化中に拒否パターンの厳格な検証を行うようになりました。
@@ -161,6 +167,26 @@ picoclaw-agents-launcher
 - **Anthropic**：ブラウザー OAuth（PKCE フロー）— 5 つの Claude モデルを自動追加
 - **Google Antigravity**：ブラウザー OAuth — 15 の Gemini モデルを自動追加
 - **OpenAI**：デバイスコードのみ — 8 つの GPT モデルを自動追加
+- **Qwen Portal**：API キー（token）— 6 つの Qwen モデルを自動追加
+- **Zhipu AI (z.ai)**：API キー（token）— 7 つの GLM モデルを自動追加 🆓 **100% 無料** `glm-4.5-flash` で利用可能
+
+**CLI 認証コマンド：**
+
+```bash
+# OpenAI (Codex OAuth - デバイスコード)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% 無料 glm-4.5-flash で利用可能
+./picoclaw-agents auth login --provider zhipu
+```
+
+すべての方法は API キー token 入力または OAuth フローをサポートし、認証成功後にモデルを自動的に設定します。
 
 ![Credentials OAuth](assets/webui/credentials-auth.png)
 

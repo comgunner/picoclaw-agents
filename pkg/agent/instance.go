@@ -44,20 +44,47 @@ type AgentInstance struct {
 	Runtime        *config.AgentRuntimeConfig
 	SkillsFilter   []string
 	Candidates     []providers.FallbackCandidate
+
+	// A2A Components (Agent-to-Agent Communication)
+	mailbox          any // *mailbox.Mailbox - assigned by orchestrator
+	departmentRouter any //nolint:unused // *DepartmentRouter - reserved for future A2A routing
+
+	Role       string // Agent role (e.g., "coordinator", "developer", "tester")
+	Status     string // Current status (e.g., "idle", "running", "waiting")
+	LastActive int64  // Last activity timestamp (Unix seconds)
 }
+
+// ProviderFactory is a function that returns a provider for a given model.
+type ProviderFactory func(model string) (providers.LLMProvider, string, error)
 
 // NewAgentInstance creates an agent instance from config.
 func NewAgentInstance(
 	agentCfg *config.AgentConfig,
 	defaults *config.AgentDefaults,
 	cfg *config.Config,
-	provider providers.LLMProvider,
+	factory ProviderFactory,
 ) *AgentInstance {
 	workspace := resolveAgentWorkspace(agentCfg, defaults)
 	os.MkdirAll(workspace, 0o755)
 
 	model := resolveAgentModel(agentCfg, defaults)
 	fallbacks := resolveAgentFallbacks(agentCfg, defaults)
+
+	// Resolve the provider for this specific agent's model
+	provider, resolvedModel, err := factory(model)
+	if err != nil {
+		logger.ErrorCF("agent", "Failed to resolve provider for agent",
+			map[string]any{
+				"agent_id": agentCfg.ID,
+				"model":    model,
+				"error":    err.Error(),
+			})
+		// If factory fails, we might still have a "default" provider from the loop
+		// But it's better to log error and let it use whatever was returned.
+	}
+	if resolvedModel != "" {
+		model = resolvedModel
+	}
 
 	restrict := defaults.RestrictToWorkspace
 	globalWorkspace := ""

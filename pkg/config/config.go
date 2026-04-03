@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
 // rrCounter is a global counter for round-robin load balancing across models.
@@ -111,8 +112,9 @@ func (c Config) MarshalJSON() ([]byte, error) {
 }
 
 type AgentsConfig struct {
-	Defaults AgentDefaults `json:"defaults"`
-	List     []AgentConfig `json:"list,omitempty"`
+	Defaults         AgentDefaults             `json:"defaults"`
+	List             []AgentConfig             `json:"list,omitempty"`
+	DepartmentModels map[string]map[string]any `json:"department_models,omitempty"`
 }
 
 // AgentModelConfig supports both string and structured model config.
@@ -216,6 +218,8 @@ type AgentDefaults struct {
 	ImageModelFallbacks []string            `json:"image_model_fallbacks,omitempty"`
 	MaxTokens           int                 `json:"max_tokens"                      env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOKENS"`
 	Temperature         *float64            `json:"temperature,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_TEMPERATURE"`
+	TopP                *float64            `json:"top_p,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_TOP_P"`
+	EnableThinking      bool                `json:"enable_thinking,omitempty"       env:"PICOCLAW_AGENTS_DEFAULTS_ENABLE_THINKING"`
 	MaxToolIterations   int                 `json:"max_tool_iterations"             env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOOL_ITERATIONS"`
 	Runtime             *AgentRuntimeConfig `json:"runtime,omitempty"`
 }
@@ -853,6 +857,11 @@ func LoadConfig(path string) (*Config, error) {
 	// Validate model_list for uniqueness and required fields
 	if err := cfg.ValidateModelList(); err != nil {
 		return nil, err
+	}
+
+	// Sanitize Zhipu models (auto-fix obsolete models)
+	if SanitizeZhipuModels(cfg) {
+		logger.InfoC("config", "Zhipu models sanitized - obsolete models were auto-corrected")
 	}
 
 	// Store path so it can be used for runtime config updates

@@ -23,6 +23,7 @@ import (
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal"
 	"github.com/comgunner/picoclaw/pkg/agent"
 	"github.com/comgunner/picoclaw/pkg/bus"
+	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/logger"
 	"github.com/comgunner/picoclaw/pkg/providers"
 )
@@ -44,10 +45,14 @@ func agentCmd(message, sessionKey, model string, debug bool) error {
 
 	if model != "" {
 		cfg.Agents.Defaults.ModelName = model
-		// Clear per-agent model overrides so all agents use the provider
-		// and model selected by the --model flag instead of their config defaults.
+		// Force all agents in the list to use the same global model/provider
+		// This ensures consistency when specifying --model on the CLI.
 		for i := range cfg.Agents.List {
-			cfg.Agents.List[i].Model = nil
+			if cfg.Agents.List[i].Model == nil {
+				cfg.Agents.List[i].Model = &config.AgentModelConfig{}
+			}
+			cfg.Agents.List[i].Model.Primary = model
+			cfg.Agents.List[i].Model.Fallbacks = nil
 		}
 	}
 

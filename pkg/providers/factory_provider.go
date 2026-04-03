@@ -11,9 +11,11 @@ package providers
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/comgunner/picoclaw/pkg/auth"
 	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/providers/openai_compat"
 )
@@ -51,10 +53,37 @@ func createCodexAuthProvider() (LLMProvider, error) {
 func ExtractProtocol(model string) (protocol, modelID string) {
 	model = strings.TrimSpace(model)
 	protocol, modelID, found := strings.Cut(model, "/")
-	if !found {
-		return "openai", model
+	if found {
+		return protocol, modelID
 	}
-	return protocol, modelID
+
+	// Automatic inference for common models without protocol prefix
+	lowered := strings.ToLower(model)
+	if strings.HasPrefix(lowered, "qwen") {
+		return "qwen", model
+	}
+	if strings.HasPrefix(lowered, "claude") || strings.HasPrefix(lowered, "anthropic") {
+		return "anthropic", model
+	}
+	if strings.HasPrefix(lowered, "gemini") || strings.HasPrefix(lowered, "google") {
+		return "gemini", model
+	}
+	if strings.HasPrefix(lowered, "deepseek") {
+		return "deepseek", model
+	}
+	if strings.HasPrefix(lowered, "llama") || strings.HasPrefix(lowered, "meta-llama") ||
+		strings.HasPrefix(lowered, "ollama") {
+		return "ollama", model
+	}
+	if strings.HasPrefix(lowered, "mistral") {
+		return "mistral", model
+	}
+	if strings.HasPrefix(lowered, "glm") || strings.HasPrefix(lowered, "zhipu") {
+		return "zhipu", model
+	}
+
+	// Default to openai
+	return "openai", model
 }
 
 // CreateProviderFromConfig creates a provider based on the ModelConfig.
@@ -102,10 +131,24 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 		"ollama", "moonshot", "shengsuanyun", "deepseek", "cerebras",
 		"volcengine", "vllm", "qwen", "mistral":
 		// All other OpenAI-compatible HTTP providers
-		if cfg.APIKey == "" && cfg.APIBase == "" {
-			return nil, "", fmt.Errorf("api_key or api_base is required for HTTP-based protocol %q", protocol)
-		}
+		apiKey := cfg.APIKey
 		apiBase := cfg.APIBase
+
+		// If API key is missing and auth_method is oauth/token, or just empty,
+		// try to load from auth store
+		if apiKey == "" && (cfg.AuthMethod == "oauth" || cfg.AuthMethod == "token" || cfg.AuthMethod == "") {
+			if cred, err := auth.GetCredential(protocol); err == nil && cred != nil {
+				apiKey = cred.AccessToken
+			}
+		}
+
+		if apiKey == "" && apiBase == "" {
+			return nil, "", fmt.Errorf(
+				"api_key or api_base is required for HTTP-based protocol %q (tried config and auth store)",
+				protocol,
+			)
+		}
+
 		if apiBase == "" {
 			apiBase = getDefaultAPIBase(protocol)
 		}
@@ -123,7 +166,7 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 			modelForProvider = cfg.Model
 		}
 		return &HTTPProvider{
-			delegate: openai_compat.NewProvider(cfg.APIKey, apiBase, cfg.Proxy, opts...),
+			delegate: openai_compat.NewProvider(apiKey, apiBase, cfg.Proxy, opts...),
 		}, modelForProvider, nil
 
 	case "anthropic":
@@ -216,7 +259,16 @@ func getDefaultAPIBase(protocol string) string {
 	case "volcengine":
 		return "https://ark.cn-beijing.volces.com/api/v3"
 	case "qwen":
-		return "https://dashscope.aliyuncs.com/compatible-mode/v1"
+		// Qwen/DashScope - Default to US (Virginia)
+		// Regions:
+		// - US (Virginia): https://dashscope-us.aliyuncs.com/compatible-mode/v1 (default)
+		// - Singapore: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+		// - China (Beijing): https://dashscope.aliyuncs.com/compatible-mode/v1
+		// Can be overridden via QWEN_BASE_URL environment variable
+		if envURL := os.Getenv("QWEN_BASE_URL"); envURL != "" {
+			return envURL
+		}
+		return "https://dashscope-us.aliyuncs.com/compatible-mode/v1"
 	case "vllm":
 		return "http://localhost:8000/v1"
 	case "mistral":

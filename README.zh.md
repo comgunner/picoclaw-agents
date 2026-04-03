@@ -25,6 +25,9 @@
 
 ## 📢 新闻
 
+2026-03-31 🎉 **ICUETH Fork Integration**: Comprehensive analysis completed. Architecture: A2A horizontal (109 agents) vs parallel subagents. Features: Agent Meeting System, Persona System, RAG/SQLite memory, MCP, Mailbox system. 3-phase integration strategy. Audit: ✅ CLEAN. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Qwen & Zhipu WebUI Auth**: Added via WebUI at `http://localhost:18800/credentials`. CLI: `./picoclaw-agents auth login --provider qwen/zhipu`. Auto-configures models. Zhipu glm-4.5-flash 100% FREE. See [CHANGELOG.md](CHANGELOG.md).
 2026-03-28 🎉 **多源迁移 + 团队模式 onboard**: 添加 `picoclaw-agents migrate --from nanoclaw` 用于从 NanoClaw 迁移。onboard wizard 现在包含 **Team Mode**,预构建模板 (Dev Team 9 个代理，Research Team 3 个代理，General Team 3 个代理) 和 **14 个原生技能** 选择。上下文窗口改进：工具结果修剪 (-60% tokens),高级压缩与模型覆盖，以及手动 `/compact` 命令。参见 [CHANGELOG.md](CHANGELOG.md)。
 
 2026-03-27 🎉 **构建质量和频道改进**: `go build ./...` 现在干净通过。添加 group trigger API 到 `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — 细粒度群组聊天控制。参见 [CHANGELOG.md](CHANGELOG.md)。
@@ -52,6 +55,8 @@
 2026-03-02 🎉 **快速路径 Slash 命令和全局跟踪器**: 添加即时 Slash 命令（`/bundle_approve`、`/status` 等）实现零延迟交互。统一所有代理的 `ImageGenTracker` 实现完美的多代理状态一致性。查看 [docs/queue_batch.md](docs/queue_batch.md)。
 
 2026-03-01 🎉 **AI 图像生成和社区管理员**: 添加原生图像生成（Gemini/Ideogram）、脚本到图像工作流、交互式生成后菜单，以及社区管理员代理自动生成社交媒体帖子。查看 [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md)。
+
+2026-03-01 🎉 **外部集成（Binance、社交媒体、Notion）**: 添加用于加密货币交易（Binance futures & spot）、社交媒体发布（Facebook & X/Twitter）和知识管理（Notion）的原生工具。通过 `config.json` 或环境变量配置。查看 [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) 和 [docs/NOTION_util.md](docs/NOTION_util.md) 获取设置指南。
 
 2026-03-01 🎉 **原生技能哨兵 (Skills Sentinel)**: 增加了其内部安全层 (`skills_sentinel.go`)，提供基于模式的实时保护，防止提示注入和系统泄漏。
 2026-03-01 🎉 **Fail-Close 安全机制与稳定性**: 引入了更强大的安全策略。ExecTool 在启动时会严格验证安全规则。
@@ -204,6 +209,26 @@ picoclaw-agents-launcher
 - **Anthropic**：浏览器 OAuth（PKCE 流程）— 自动添加 5 个 Claude 模型
 - **Google Antigravity**：浏览器 OAuth — 自动添加 15 个 Gemini 模型
 - **OpenAI**：仅设备代码 — 自动添加 8 个 GPT 模型
+- **Qwen Portal**：API Key（token）— 自动添加 6 个 Qwen 模型
+- **Zhipu AI (z.ai)**：API Key（token）— 自动添加 7 个 GLM 模型 🆓 **100% 免费** 使用 `glm-4.5-flash`
+
+**CLI 认证命令：**
+
+```bash
+# OpenAI (Codex OAuth - 设备代码)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% 免费 使用 glm-4.5-flash
+./picoclaw-agents auth login --provider zhipu
+```
+
+所有方法都支持 API Key token 输入或 OAuth 流程，并在成功认证后自动配置模型。
 
 ![Credentials OAuth](assets/webui/credentials-auth.png)
 

@@ -9,6 +9,8 @@ import { AntigravityCredentialCard } from "./antigravity-credential-card"
 import { DeviceCodeSheet } from "./device-code-sheet"
 import { LogoutConfirmDialog } from "./logout-confirm-dialog"
 import { OpenAICredentialCard } from "./openai-credential-card"
+import { QwenCredentialCard } from "./qwen-credential-card"
+import { ZhipuCredentialCard } from "./zhipu-credential-card"
 
 export function CredentialsPage() {
   const { t } = useTranslation()
@@ -23,6 +25,8 @@ export function CredentialsPage() {
     openaiStatus,
     anthropicStatus,
     antigravityStatus,
+    qwenStatus,
+    zhipuStatus,
     logoutDialogOpen,
     logoutConfirmProvider,
     logoutProviderLabel,
@@ -103,6 +107,18 @@ export function CredentialsPage() {
                 void startBrowserOAuth("google-antigravity")
               }
               onAskLogout={() => askLogout("google-antigravity")}
+            />
+
+            <QwenCredentialCard
+              status={qwenStatus}
+              activeAction={activeAction}
+              onAskLogout={() => askLogout("qwen")}
+            />
+
+            <ZhipuCredentialCard
+              status={zhipuStatus}
+              activeAction={activeAction}
+              onAskLogout={() => askLogout("zhipu")}
             />
           </div>
         )}

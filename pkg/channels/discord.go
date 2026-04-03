@@ -109,9 +109,28 @@ func (c *DiscordChannel) Start(ctx context.Context) error {
 
 	// Register Slash Commands
 	logger.InfoC("discord", "Registering slash commands...")
-	_, err = c.session.ApplicationCommandBulkOverwrite(c.botUserID, "", DiscordCommands)
-	if err != nil {
-		logger.ErrorCF("discord", "Failed to register commands", map[string]any{"error": err.Error()})
+
+	// Try guild-specific commands first (instant update) for development
+	// If no guild ID is set, fall back to global commands (slower sync)
+	guildID := os.Getenv("DISCORD_GUILD_ID")
+	if guildID != "" {
+		logger.InfoCF("discord", "Registering guild-specific commands", map[string]any{
+			"guild_id": guildID,
+		})
+		_, err = c.session.ApplicationCommandBulkOverwrite(c.botUserID, guildID, DiscordCommands)
+		if err != nil {
+			logger.ErrorCF("discord", "Failed to register guild commands", map[string]any{"error": err.Error()})
+		} else {
+			logger.InfoC("discord", "Guild commands registered successfully (instant)")
+		}
+	} else {
+		// Global commands (can take up to 1 hour to sync)
+		_, err = c.session.ApplicationCommandBulkOverwrite(c.botUserID, "", DiscordCommands)
+		if err != nil {
+			logger.ErrorCF("discord", "Failed to register global commands", map[string]any{"error": err.Error()})
+		} else {
+			logger.InfoC("discord", "Global commands registered (may take up to 1 hour to sync)")
+		}
 	}
 
 	c.setRunning(true)

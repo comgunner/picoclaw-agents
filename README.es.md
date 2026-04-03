@@ -33,6 +33,10 @@
 
 ## 📢 Noticias
 
+2026-03-31 🎉 **Integración del Fork ICUETH**: Análisis completo del fork icueth completado. Comparación de arquitectura: A2A horizontal (109 agentes) vs subagentes paralelos. Características identificadas: Sistema de Reuniones de Agentes, Sistema de Personas, memoria RAG/SQLite, soporte MCP, sistema Mailbox. Estrategia de integración definida en 3 fases. Auditoría completada: ✅ CLEAN. Ver [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Auth WebUI de Qwen y Zhipu**: Añadida autenticación de Qwen Portal y Zhipu AI vía WebUI en `http://localhost:18800/credentials`. Comandos CLI: `./picoclaw-agents auth login --provider qwen` y `--provider zhipu`. Auto-configura modelos tras autenticación. Zhipu glm-4.5-flash es 100% GRATIS. Ver [CHANGELOG.md](CHANGELOG.md).
+
 2026-03-28 🎉 **Migración Multi-Origen + Team Mode en Onboard**: Añadido `picoclaw-agents migrate --from nanoclaw` para migrar configs desde NanoClaw. El wizard de onboard ahora incluye **Team Mode** con plantillas predefinidas (Dev Team 9 agentes, Research Team 3 agentes, General Team 3 agentes) y selección de **14 skills nativas**. Mejoras en Context Window: pruning de tool results (-60% tokens), compactación avanzada con override de modelo, y comando manual `/compact`. Ver [CHANGELOG.md](CHANGELOG.md).
 
 2026-03-27 🎉 **Calidad de build y mejoras de canales**: `go build ./...` ahora pasa limpiamente. Añadida API de group trigger a `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender` y `ShouldRespondInGroup` — control granular de chats de grupo (solo menciones, triggers por prefijo). Ver [CHANGELOG.md](CHANGELOG.md).
@@ -345,6 +349,26 @@ Puedes autenticarte con proveedores OAuth directamente desde la Web UI en `http:
 - **Anthropic**: Browser OAuth (flujo PKCE) — Auto-agrega 5 modelos Claude
 - **Google Antigravity**: Browser OAuth — Auto-agrega 15 modelos Gemini
 - **OpenAI**: Solo Device Code — Auto-agrega 8 modelos GPT
+- **Qwen Portal**: API Key (token) — Auto-agrega 6 modelos Qwen
+- **Zhipu AI (z.ai)**: API Key (token) — Auto-agrega 7 modelos GLM 🆓 **100% GRATIS** con `glm-4.5-flash`
+
+**Comandos de Autenticación CLI:**
+
+```bash
+# OpenAI (Codex OAuth - Device Code)
+./picoclaw-agents auth login --provider openai --device-code
+
+# Google Antigravity (OAuth)
+./picoclaw-agents auth login --provider google-antigravity
+
+# Qwen Portal (DashScope)
+./picoclaw-agents auth login --provider qwen
+
+# Zhipu AI (z.ai) - 100% GRATIS con glm-4.5-flash
+./picoclaw-agents auth login --provider zhipu
+```
+
+Todos los métodos soportan entrada de token API Key o flujo OAuth y automáticamente configuran los modelos después de una autenticación exitosa.
 
 ![Credenciales OAuth](assets/webui/credentials-auth.png)
 
@@ -1318,6 +1342,7 @@ El subagente tiene acceso a las herramientas (mensaje, búsqueda web, etc.) y pu
 | `cerebras`               | LLM (Cerebras directo)                        | [cerebras.ai](https://cerebras.ai)                                   |
 | `antigravity`            | LLM (Google Antigravity / OAuth)              | `picoclaw-agents auth login --provider google-antigravity`           |
 | `openai` (Codex OAuth)   | LLM + Código (OpenAI Codex — OAuth)           | `picoclaw-agents auth login --provider openai`                       |
+| `zhipu`                  | LLM (Zhipu AI / z.ai) 🆓 **100% GRATIS**      | `picoclaw-agents auth login --provider zhipu`                        |
 
 ---
 
@@ -1345,7 +1370,25 @@ picoclaw-agents auth login --provider google-antigravity
 
 Esto te da acceso a los modelos gratuitos de Google vía Cloud Code Assist.
 
-**Opción C: OpenAI Codex (OAuth para programación)**
+**Opción C: Qwen Portal (Alibaba Cloud)**
+
+```bash
+# Login con API Key
+picoclaw-agents auth login --provider qwen
+```
+
+Auto-configura 6 modelos Qwen de Alibaba Cloud (DashScope).
+
+**Opción D: Zhipu AI (z.ai) - 100% GRATIS**
+
+```bash
+# Login con API Key - No requiere tarjeta de crédito
+picoclaw-agents auth login --provider zhipu
+```
+
+Auto-configura 7 modelos GLM incluyendo **glm-4.5-flash** (capa gratuita 100%). Ver [z.ai/pricing](https://z.ai/pricing).
+
+**Opción E: OpenAI Codex (OAuth para programación)**
 
 ```bash
 # Primero habilita la autorización con códigos de dispositivo:

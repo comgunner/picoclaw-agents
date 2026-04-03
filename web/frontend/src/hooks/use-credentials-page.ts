@@ -19,6 +19,7 @@ function getProviderLabel(provider: OAuthProvider | ""): string {
   if (provider === "openai") return "OpenAI"
   if (provider === "anthropic") return "Anthropic"
   if (provider === "google-antigravity") return "Google Antigravity"
+  if (provider === "qwen") return "Qwen Portal"
   return ""
 }
 
@@ -176,6 +177,8 @@ export function useCredentialsPage() {
   const openaiStatus = providersMap.get("openai")
   const anthropicStatus = providersMap.get("anthropic")
   const antigravityStatus = providersMap.get("google-antigravity")
+  const qwenStatus = providersMap.get("qwen")
+  const zhipuStatus = providersMap.get("zhipu")
 
   const bumpActionToken = useCallback(() => {
     actionTokenRef.current += 1
@@ -424,6 +427,8 @@ export function useCredentialsPage() {
     openaiStatus,
     anthropicStatus,
     antigravityStatus,
+    qwenStatus,
+    zhipuStatus,
     logoutDialogOpen,
     logoutConfirmProvider,
     logoutProviderLabel,
