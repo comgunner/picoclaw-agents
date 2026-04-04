@@ -15,6 +15,30 @@
 | Khởi động (lõi 0.8GHz) | >500s         | >30s                   | <1s                            | <1s             |
 | Chi phí                | Mac Mini $599 | Hầu hết Linux SBC ~$50 | Bất kỳ bo mạch Linux rả từ $10 | Bất kỳ Linux    |
 
+## 🤝 Hỗ trợ Dự án này
+
+Dự án này được phát triển và duy trì với sự hỗ trợ của các công cụ AI. Tất cả các thay đổi mã trong kho lưu trữ này được thực hiện bằng **Qwen Code**, cũng cung cấp gói miễn phí hào phóng.
+
+**🌟 Qwen Code (Alibaba Cloud)** — Trợ lý lập trình AI với gói miễn phí.
+
+```bash
+./picoclaw-agents auth login --provider qwen
+# Xem các mô hình: http://localhost:18800/models
+```
+
+👉 [Bắt đầu](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+
+**🌟 Zhipu AI (z.ai)** — 100% MIỄN PHÍ với `glm-4.5-flash`
+
+```bash
+./picoclaw-agents auth login --provider zhipu
+```
+
+🚀 Bạn được mời tham gia GLM Coding Plan. Hỗ trợ đầy đủ cho Claude Code, Cline và hơn 20 công cụ lập trình hàng đầu — chỉ từ $10/tháng.
+👉 [Tham gia ngay](https://z.ai/subscribe?ic=RF2YMCHBHL)
+
+> 💡 Sử dụng các liên kết này giúp hỗ trợ phát triển liên tục của PicoClaw-Agents. Cảm ơn!
+
 ## ✨ Đặc điểm
 
 *   🪶 **Siêu nhẹ**: Triển khai bằng Go được tối ưu hóa với dấu chân tối thiểu.

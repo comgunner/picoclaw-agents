@@ -15,6 +15,30 @@
 | Inicialização (0.8GHz) | >500s         | >30s                   | <1s                            | <1s             |
 | Custo                  | Mac Mini 599$ | Maioria Linux SBC ~50$ | Qualquer placa Linux Desde 10$ | Qualquer Linux  |
 
+## 🤝 Apoie Este Projeto
+
+Este projeto é desenvolvido e mantido com a ajuda de ferramentas de IA. Todas as alterações de código neste repositório foram implementadas usando **Qwen Code**, que também oferece um plano gratuito generoso.
+
+**🌟 Qwen Code (Alibaba Cloud)** — Assistente de codificação com IA e plano gratuito.
+
+```bash
+./picoclaw-agents auth login --provider qwen
+# Ver modelos: http://localhost:18800/models
+```
+
+👉 [Começar](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+
+**🌟 Zhipu AI (z.ai)** — 100% GRÁTIS com `glm-4.5-flash`
+
+```bash
+./picoclaw-agents auth login --provider zhipu
+```
+
+🚀 Você foi convidado a participar do GLM Coding Plan. Suporte completo para Claude Code, Cline e mais de 20 ferramentas de codificação — a partir de apenas $10/mês.
+👉 [Participe agora](https://z.ai/subscribe?ic=RF2YMCHBHL)
+
+> 💡 Usar esses links ajuda a apoiar o desenvolvimento contínuo do PicoClaw-Agents. Obrigado!
+
 ## ✨ Recursos
 
 *   🪶 **Ultra-Leve**: Implementação em Go otimizada com consumo mínimo.

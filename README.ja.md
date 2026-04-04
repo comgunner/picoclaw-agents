@@ -15,6 +15,30 @@
 | 起動時間 (0.8GHz core) | >500s         | >30s                | <1s                           | <1s             |
 | コスト                 | Mac Mini 599$ | Most Linux SBC ~50$ | Any Linux Board As low as 10$ | Any Linux       |
 
+## 🤝 プロジェクトを支援
+
+このプロジェクトは AI ツールの助けを得て開発・維持されています。このリポジトリのすべてのコード変更は **Qwen Code** を使用して実装されており、無料プランも提供しています。
+
+**🌟 Qwen Code (Alibaba Cloud)** — 無料プラン付き AI コーディングアシスタント。
+
+```bash
+./picoclaw-agents auth login --provider qwen
+# モデルを表示: http://localhost:18800/models
+```
+
+👉 [始める](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+
+**🌟 Zhipu AI (z.ai)** — `glm-4.5-flash` で 100% 無料
+
+```bash
+./picoclaw-agents auth login --provider zhipu
+```
+
+🚀 GLM Coding Plan への招待があります。Claude Code、Cline、その他20以上のトップコーディングツールをフルサポート — 月額$10から。
+👉 [今すぐ参加](https://z.ai/subscribe?ic=RF2YMCHBHL)
+
+> 💡 これらのリンクを使用することで、PicoClaw-Agents の継続的な開発を支援できます。ありがとうございます！
+
 ## ✨ 特徴
 
 *   🪶 **超軽量**: 最小限のフットプリントを実現する最適化された Go 実装。
