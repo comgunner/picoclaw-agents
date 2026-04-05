@@ -39,6 +39,11 @@ func loadTemplateConfigFromExample() (*Config, bool) {
 
 // DefaultConfig returns the minimal default configuration for PicoClaw.
 // This is used as a base for internal state and migrations.
+//
+// ⚠️  CRITICAL: ContextManager is set to "seahorse" by default. DO NOT remove
+// this. It prevents OpenRouter Free tier 402 errors by enabling budget-aware
+// context assembly. All template functions (GLMDefaultConfig, OpenAIDefaultConfig,
+// etc.) inherit from TemplateDefaultConfig() which also sets this default.
 func DefaultConfig() *Config {
 	return &Config{
 		Agents: AgentsConfig{
@@ -50,6 +55,14 @@ func DefaultConfig() *Config {
 				MaxTokens:           32768,
 				Temperature:         nil, // nil means use provider default
 				MaxToolIterations:   20,
+				ContextManager:      "seahorse",
+				ContextManagerConfig: map[string]any{
+					"context_threshold":       0.75,
+					"fresh_tail_count":        16,
+					"leaf_target_tokens":      1200,
+					"condensed_target_tokens": 2000,
+					"max_compact_iterations":  20,
+				},
 			},
 			List: []AgentConfig{
 				{
@@ -281,6 +294,14 @@ func TemplateDefaultConfig() *Config {
 				MaxTokens:           8192,
 				Temperature:         nil,
 				MaxToolIterations:   20,
+				ContextManager:      "seahorse",
+				ContextManagerConfig: map[string]any{
+					"context_threshold":       0.75,
+					"fresh_tail_count":        16,
+					"leaf_target_tokens":      1200,
+					"condensed_target_tokens": 2000,
+					"max_compact_iterations":  20,
+				},
 			},
 			List: []AgentConfig{
 				{

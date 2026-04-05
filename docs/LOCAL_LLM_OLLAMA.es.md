@@ -102,22 +102,123 @@ ollama pull llama3.2:1b
 ollama run llama3.2:1b
 ```
 
-### Top 10 Modelos de la Librería de Ollama
+## Modelos Populares Organizados por RAM
 
-Visita **https://ollama.com/library** para el catálogo completo. Los modelos más populares:
+Visita **https://ollama.com/library** para el catálogo completo. Modelos agrupados por requisitos mínimos del sistema:
 
-| # | Modelo | Destacado | RAM Mínima | RAM Recomendada |
-|---|--------|-----------|------------|-----------------|
-| 1 | `gemma3` | Google Gemma 3, multilingüe | 2 GB (1b) | 4 GB (4b) |
-| 2 | `llama3.2` | Meta Llama 3.2, rápido y capaz | 2 GB (1b) | 4 GB (3b) |
-| 3 | `qwen2.5` | Alibaba Qwen 2.5, excelente en código | 1 GB (0.5b) | 6 GB (7b) |
-| 4 | `phi4` | Microsoft Phi-4, pequeño pero inteligente | 8 GB (14b) | 16 GB (14b) |
-| 5 | `mistral` | Mistral 7B, buen razonamiento | 4 GB (7b) | 8 GB (7b) |
-| 6 | `deepseek-r1` | DeepSeek R1, chain-of-thought | 2 GB (1.5b) | 8 GB (7b) |
-| 7 | `llava` | Multimodal (texto + imágenes) | 4 GB (7b) | 8 GB (13b) |
-| 8 | `codellama` | Meta CodeLlama, enfocado en código | 4 GB (7b) | 8 GB (13b) |
-| 9 | `deepseek-coder-v2` | DeepSeek Coder V2, top para programación | 8 GB (16b) | 16 GB (16b) |
-| 10 | `nomic-embed-text` | Embeddings de texto, casos de uso RAG | 1 GB | 2 GB |
+### Modelos para ≤ 4 GB de RAM
+
+| Modelo | Tamaño | Ideal Para | Comando |
+|--------|--------|------------|---------|
+| `qwen2.5:0.5b` | ~400MB | Ultra-ligero, RAM mínima | `ollama pull qwen2.5:0.5b` |
+| `qwen2.5-coder:0.5b` | ~400MB | Generación de código | `ollama pull qwen2.5-coder:0.5b` |
+| `llama3.2:1b` | ~800MB | Chat general, respuestas rápidas | `ollama pull llama3.2:1b` |
+| `qwen2.5:1.5b` | ~1GB | Multilingüe, uso general | `ollama pull qwen2.5:1.5b` |
+| `deepseek-r1:1.5b` | ~1GB | Razonamiento chain-of-thought | `ollama pull deepseek-r1:1.5b` |
+| `qwen3:0.6b` | ~400MB | Ultra-ligero, chat rápido | `ollama pull qwen3:0.6b` |
+| `qwen3:1.7b` | ~1GB | Balance velocidad y capacidad | `ollama pull qwen3:1.7b` |
+| `nomic-embed-text` | ~270MB | Embeddings de texto, RAG | `ollama pull nomic-embed-text` |
+
+### Modelos para 8 GB de RAM
+
+| Modelo | Tamaño | Ideal Para | Comando |
+|--------|--------|------------|---------|
+| `llama3.2:3b` | ~2GB | Balance velocidad y capacidad | `ollama pull llama3.2:3b` |
+| `qwen2.5:3b` | ~2GB | Buen rendimiento general | `ollama pull qwen2.5:3b` |
+| `qwen3:4b` | ~3GB | Último Qwen, excelente razonamiento | `ollama pull qwen3:4b` |
+| `qwen3-coder:4b` | ~3GB | Último Qwen Coder, generación de código | `ollama pull qwen3-coder:4b` |
+| `deepseek-coder:6.7b` | ~4GB | Generación y comprensión de código | `ollama pull deepseek-coder:6.7b` |
+| `mistral:7b` | ~4GB | Buen razonamiento, uso general | `ollama pull mistral:7b` |
+| `llava:7b` | ~4GB | Multimodal (texto + imágenes) | `ollama pull llava:7b` |
+| `codellama:7b` | ~4GB | Enfocado en código, calidad Meta | `ollama pull codellama:7b` |
+| `gemma4:e2b` | 7.2 GB | Último de Google, multilingüe | `ollama pull gemma4:e2b` |
+
+### Modelos para 16 GB de RAM o Más
+
+| Modelo | Tamaño | Ideal Para | Comando |
+|--------|--------|------------|---------|
+| `llama3.2:8b` | ~5GB | Uso general de alta calidad | `ollama pull llama3.2:8b` |
+| `qwen2.5:7b` | ~5GB | Excelente en código y razonamiento | `ollama pull qwen2.5:7b` |
+| `qwen3:8b` | ~5GB | Último Qwen, fuerte razonamiento | `ollama pull qwen3:8b` |
+| `qwen3-coder:8b` | ~5GB | Último Qwen Coder, top programación | `ollama pull qwen3-coder:8b` |
+| `phi4:14b` | ~9GB | El más inteligente de Microsoft | `ollama pull phi4:14b` |
+| `qwen3:14b` | ~9GB | Qwen de alta calidad, multilingüe | `ollama pull qwen3:14b` |
+| `qwen3-coder:14b` | ~9GB | Qwen Coder avanzado | `ollama pull qwen3-coder:14b` |
+| `deepseek-r1:7b` | ~5GB | Razonamiento profundo, chain-of-thought | `ollama pull deepseek-r1:7b` |
+| `deepseek-coder-v2:16b` | ~10GB | Modelo de programación top | `ollama pull deepseek-coder-v2:16b` |
+| `qwen3:32b` | ~20GB | Máxima calidad Qwen | `ollama pull qwen3:32b` |
+| `gemma4:e4b` | 9.6 GB | Último de Google, última variante | `ollama pull gemma4:e4b` |
+| `gemma4:26b` | 18 GB | Mejor calidad Gemma 4 | `ollama pull gemma4:26b` |
+| `gemma4:31b` | 20 GB | Máxima calidad Gemma 4 | `ollama pull gemma4:31b` |
+| `llama3.1:70b` (Q4) | ~40GB | Máxima capacidad (cuantizado) | `ollama pull llama3.1:70b` |
+
+### 🆕 Google Gemma 4 — Requisitos Detallados
+
+Gemma 4 es la última familia de modelos abiertos de Google, con excelente capacidad multilingüe. Visita **[https://ollama.com/library/gemma4](https://ollama.com/library/gemma4)** para el catálogo completo.
+
+| Variante | Peso | RAM/VRAM Mínima | RAM/VRAM Ideal | Comando |
+|----------|------|-----------------|----------------|---------|
+| `gemma4:e2b` | 7.2 GB | 8 GB | 12 GB | `ollama pull gemma4:e2b` |
+| `gemma4:e4b` (latest) | 9.6 GB | 12 GB | 16 GB | `ollama pull gemma4:e4b` |
+| `gemma4:26b` | 18 GB | 24 GB | 24 GB+ | `ollama pull gemma4:26b` |
+| `gemma4:31b` | 20 GB | 24 GB | 32 GB | `ollama pull gemma4:31b` |
+
+#### CPU vs GPU para Gemma 4
+
+- **CPU:** Ollama funciona prácticamente con cualquier procesador moderno de los últimos años (requiere soporte para instrucciones AVX). Sin embargo, procesar estos modelos usando únicamente el CPU es un proceso lento.
+- **GPU (Recomendado):** Ollama detecta automáticamente si tienes una tarjeta de video (Nvidia, AMD o un chip de Apple Silicon) y enviará el modelo allí para que funcione mucho más rápido. La clave es que tu tarjeta gráfica tenga suficiente VRAM para alojar el peso del modelo elegido.
+
+#### Guía de Hardware para Gemma 4
+
+| Tu Hardware | Variante Recomendada |
+|-------------|---------------------|
+| 8 GB RAM | `gemma4:e2b` (será lento, 12 GB ideal) |
+| 12 GB RAM | `gemma4:e2b` o `gemma4:e4b` |
+| 16 GB RAM | `gemma4:e4b` (latest) |
+| 24 GB VRAM (GPU) | `gemma4:26b` |
+| 32 GB VRAM (GPU) | `gemma4:31b` (mejor calidad) |
+
+> **Nota para usuarios de PicoClaw-Agents:** Las variantes de Gemma 4 tienen ventanas de contexto moderadas. Para mejores resultados con el bucle del agente, usa `gemma4:e2b` o `gemma4:e4b` en sistemas con RAM limitada. Las variantes más grandes (26b, 31b) requieren VRAM significativa y funcionan mejor en configuraciones con GPU dedicada.
+
+### 🆕 Qwen 3 y Qwen 3 Coder — Requisitos Detallados
+
+Qwen 3 es la última familia de modelos abiertos de Alibaba con excelente capacidad multilingüe y de razonamiento. Qwen 3 Coder es la variante especializada para generación de código. Visita **[https://ollama.com/library/qwen3](https://ollama.com/library/qwen3)** y **[https://ollama.com/library/qwen3-coder](https://ollama.com/library/qwen3-coder)** para los catálogos completos.
+
+#### Qwen 3 (Uso General)
+
+| Variante | Peso | RAM/VRAM Mínima | RAM/VRAM Ideal | Comando |
+|----------|------|-----------------|----------------|---------|
+| `qwen3:0.6b` | ~400MB | 2 GB | 4 GB | `ollama pull qwen3:0.6b` |
+| `qwen3:1.7b` | ~1GB | 4 GB | 4 GB | `ollama pull qwen3:1.7b` |
+| `qwen3:4b` | ~3GB | 6 GB | 8 GB | `ollama pull qwen3:4b` |
+| `qwen3:8b` | ~5GB | 8 GB | 16 GB | `ollama pull qwen3:8b` |
+| `qwen3:14b` | ~9GB | 12 GB | 16 GB | `ollama pull qwen3:14b` |
+| `qwen3:32b` | ~20GB | 24 GB | 32 GB | `ollama pull qwen3:32b` |
+
+#### Qwen 3 Coder (Generación de Código)
+
+| Variante | Peso | RAM/VRAM Mínima | RAM/VRAM Ideal | Comando |
+|----------|------|-----------------|----------------|---------|
+| `qwen3-coder:4b` | ~3GB | 6 GB | 8 GB | `ollama pull qwen3-coder:4b` |
+| `qwen3-coder:8b` | ~5GB | 8 GB | 16 GB | `ollama pull qwen3-coder:8b` |
+| `qwen3-coder:14b` | ~9GB | 12 GB | 16 GB | `ollama pull qwen3-coder:14b` |
+| `qwen3-coder:32b` | ~20GB | 24 GB | 32 GB | `ollama pull qwen3-coder:32b` |
+
+#### CPU vs GPU para Qwen 3
+
+- **CPU:** Funciona con cualquier procesador moderno (requiere soporte AVX). Las variantes pequeñas (0.6b, 1.7b) corren razonablemente solo con CPU. Las variantes más grandes serán lentas.
+- **GPU (Recomendado):** Ollama detecta automáticamente GPUs Nvidia, AMD o Apple Silicon y descarga la computación para una inferencia mucho más rápida. La clave es tener suficiente VRAM para tu variante elegida.
+
+#### Guía de Hardware para Qwen 3
+
+| Tu Hardware | Variante Recomendada |
+|-------------|---------------------|
+| 4 GB RAM | `qwen3:0.6b` o `qwen3:1.7b` |
+| 8 GB RAM | `qwen3:4b` o `qwen3-coder:4b` |
+| 16 GB RAM | `qwen3:8b`, `qwen3:14b`, o variantes coder |
+| 32 GB RAM/VRAM | `qwen3:32b` o `qwen3-coder:32b` (mejor calidad) |
+
+> **Nota para usuarios de PicoClaw-Agents:** Los modelos Qwen 3 tienen buenas ventanas de contexto y funcionan bien con el bucle del agente. Para tareas de código, prefiere las variantes `qwen3-coder`. Para uso general, `qwen3:4b` en sistemas de 8GB o `qwen3:8b` en sistemas de 16GB ofrecen el mejor balance.
 
 ---
 

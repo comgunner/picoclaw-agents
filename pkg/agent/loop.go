@@ -7,6 +7,36 @@
 // Modified by comgunner (https://github.com/comgunner)
 // Custom Fork: https://github.com/comgunner/picoclaw-agents
 
+// ============================================================================
+// ⚠️  CRITICAL: Token Estimation Logic — DO NOT MODIFY WITHOUT REVIEW
+// ============================================================================
+//
+// This file contains the proactive token validation logic that prevents the
+// OpenRouter Free tier 402 error ("Prompt tokens limit exceeded").
+//
+// THE BUG (2026-04-05):
+//   estimateTokens() used to count only Content characters and add a fixed
+//   "+2500" overhead for tool definitions. In reality, 60+ tool definitions
+//   consume ~15,000 tokens. This caused 21,526 tokens to be sent to models
+//   with a ~7,869 token limit, resulting in constant 402 errors.
+//
+// THE FIX:
+//   1. estimateTokens() calls tokenizer.EstimateMessageTokens() for each message
+//      (counts Content, ReasoningContent, ToolCalls, ToolCallID, SystemParts)
+//   2. Proactive check calls tokenizer.EstimateToolDefsTokens(providerToolDefs)
+//      to get REAL tool token counts instead of a fixed "+2500"
+//   3. Auto-switches to essential tools if tool tokens > 30% of context window
+//   4. Progressive truncation in loop: keep 5→3→2→1 messages, re-estimate each step
+//   5. Emergency fallback to PromptLevelMinimal if still over budget
+//
+// IMMUTABLE RULES:
+//   - NEVER use a fixed overhead value (like +2500, +3000) for tool definitions
+//   - ALWAYS call tokenizer.EstimateToolDefsTokens() for actual tool token counts
+//   - ALWAYS call tokenizer.EstimateMessageTokens() for message token counts
+//   - See local_work/MEMORY.md and local_work/openrouter_free_token_fix.md
+//
+// ============================================================================
+
 package agent
 
 import (
@@ -19,7 +49,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"unicode/utf8"
 
 	managementinit "github.com/comgunner/picoclaw/pkg/agents/management/init"
 	"github.com/comgunner/picoclaw/pkg/bus"
@@ -34,6 +63,7 @@ import (
 	"github.com/comgunner/picoclaw/pkg/skills"
 	"github.com/comgunner/picoclaw/pkg/state"
 	"github.com/comgunner/picoclaw/pkg/tasklock"
+	"github.com/comgunner/picoclaw/pkg/tokenizer"
 	"github.com/comgunner/picoclaw/pkg/tools"
 	"github.com/comgunner/picoclaw/pkg/utils"
 )
@@ -64,6 +94,10 @@ type AgentLoop struct {
 
 	contextMiddleware *pcontext.ContextMiddleware
 	runtimeMgr        *RuntimeManager
+
+	// contextManager provides pluggable, budget-aware context management.
+	// One instance per AgentLoop, selected by config (default: "legacy", optional: "seahorse").
+	contextManager ContextManager
 }
 
 // GetProvider returns a cached provider for the given model name or creates a new one.
@@ -220,6 +254,41 @@ func NewAgentLoop(cfg *config.Config, msgBus *bus.MessageBus, provider providers
 	al.contextMiddleware = cm
 
 	al.RegisterTool(tools.NewContextStatusTool(cm))
+
+	// Initialize pluggable ContextManager (default: "legacy", optional: "seahorse")
+	// Selection happens per-agent via config: agents.defaults.context_manager
+	// Legacy is always available. Seahorse is registered by init() in context_seahorse.go.
+	cmName := cfg.Agents.Defaults.ContextManager
+	if cmName == "" {
+		cmName = "legacy"
+	}
+
+	if factory, ok := lookupContextManager(cmName); ok {
+		var cmCfg json.RawMessage
+		if cfg.Agents.Defaults.ContextManagerConfig != nil {
+			cmCfg, _ = json.Marshal(cfg.Agents.Defaults.ContextManagerConfig)
+		}
+		cm, err := factory(cmCfg, al)
+		if err != nil {
+			logger.WarnCF("agent", "Failed to create configured ContextManager, falling back to legacy",
+				map[string]any{"requested": cmName, "error": err.Error()})
+			if legacyFactory, ok2 := lookupContextManager("legacy"); ok2 {
+				cm, _ = legacyFactory(nil, al)
+			}
+		}
+		if cm != nil {
+			al.contextManager = cm
+			logger.InfoCF("agent", "ContextManager initialized", map[string]any{
+				"name": cmName,
+			})
+		}
+	} else {
+		logger.WarnCF("agent", "Requested ContextManager not found, using legacy",
+			map[string]any{"requested": cmName})
+		if legacyFactory, ok2 := lookupContextManager("legacy"); ok2 {
+			al.contextManager, _ = legacyFactory(nil, al)
+		}
+	}
 
 	// Initialize the autonomous runtime manager
 	al.runtimeMgr = NewRuntimeManager(al, suite.MessageBus, suite.Instances)
@@ -821,10 +890,30 @@ func (al *AgentLoop) runAgentLoop(ctx context.Context, agent *AgentInstance, opt
 	// 1. Update tool contexts
 	al.updateToolContexts(agent, opts.Channel, opts.ChatID)
 
-	// 2. Build messages (skip history for heartbeat)
+	// 2. Build messages — use ContextManager for budget-aware assembly if available
 	var history []providers.Message
 	var summary string
-	if !opts.NoHistory {
+	if opts.NoHistory {
+		// Heartbeat or special cases: skip history
+	} else if al.contextManager != nil {
+		// ContextManager.Assemble() reads from its own storage (SQLite or session JSONL)
+		// and returns budget-aware context (may include summaries, compressed history)
+		assembleResp, err := al.contextManager.Assemble(ctx, &AssembleRequest{
+			SessionKey: opts.SessionKey,
+			Budget:     agent.ContextWindow,
+			MaxTokens:  agent.MaxTokens,
+		})
+		if err != nil {
+			logger.WarnCF("agent", "ContextManager.Assemble failed, falling back to raw history",
+				map[string]any{"error": err.Error()})
+			history = agent.Sessions.GetHistory(opts.SessionKey)
+			summary = agent.Sessions.GetSummary(opts.SessionKey)
+		} else if assembleResp != nil {
+			history = assembleResp.History
+			summary = assembleResp.Summary
+		}
+	} else {
+		// Fallback: raw history from session JSONL
 		history = agent.Sessions.GetHistory(opts.SessionKey)
 		summary = agent.Sessions.GetSummary(opts.SessionKey)
 	}
@@ -839,6 +928,14 @@ func (al *AgentLoop) runAgentLoop(ctx context.Context, agent *AgentInstance, opt
 
 	// 3. Save user message to session
 	agent.Sessions.AddMessage(opts.SessionKey, "user", originalUserMessage)
+
+	// Ingest into ContextManager for SQLite-backed storage (seahorse)
+	if al.contextManager != nil && !opts.NoHistory {
+		_ = al.contextManager.Ingest(ctx, &IngestRequest{
+			SessionKey: opts.SessionKey,
+			Message:    providers.Message{Role: "user", Content: originalUserMessage},
+		})
+	}
 
 	// Check token budget before processing
 	if !al.contextMiddleware.BeforeRequest("llm_call") {
@@ -1025,7 +1122,76 @@ func (al *AgentLoop) runLLMIteration(
 			})
 
 		// Build tool definitions
-		providerToolDefs := agent.Tools.ToProviderDefs()
+		// For low-context models (OpenRouter free tier), use only essential tools
+		// (5 vs 60+) to save ~10,000+ tokens in tool definitions.
+		// Check ALL possible sources because the model may change at runtime via WebUI:
+		//   1. Client-specified model in request metadata (WebUI model selector)
+		//   2. The resolved model alias from client input
+		//   3. IsLowContextModel flag (set at agent creation)
+		//   4. Resolved model candidates
+		//   5. The primary model in agent.Model itself
+		var providerToolDefs []providers.ToolDefinition
+		isLowContext := false
+
+		// Check client-specified model first (WebUI model selector)
+		if clientModel, ok := opts.Metadata["model_name"]; ok && clientModel != "" {
+			// Also resolve the alias in case it's "openrouter-free" -> "openrouter/free"
+			resolved := resolveModelAlias(clientModel, al.cfg.ModelList)
+			for _, m := range []string{clientModel, resolved} {
+				cm := strings.ToLower(m)
+				isORFree := strings.HasPrefix(cm, "openrouter/free") ||
+					strings.HasPrefix(cm, "openrouter-free") ||
+					strings.HasPrefix(cm, "openrouter/auto") ||
+					cm == "openrouter-free" || cm == "openrouter/auto"
+				if isORFree {
+					isLowContext = true
+					break
+				}
+			}
+			// Log for debugging
+			logger.DebugCF("agent", "Client model check", map[string]any{
+				"client_model": clientModel,
+				"resolved":     resolved,
+				"is_low_ctx":   isLowContext,
+			})
+		}
+
+		// Fall back to agent-level indicators if client model didn't match
+		if !isLowContext {
+			isLowContext = agent.IsLowContextModel
+		}
+		if !isLowContext {
+			for _, c := range agent.Candidates {
+				lc := strings.ToLower(c.Model)
+				if strings.HasPrefix(lc, "openrouter/free") ||
+					strings.HasPrefix(lc, "openrouter-free") ||
+					strings.HasPrefix(lc, "openrouter/auto") ||
+					lc == "openrouter-free" || lc == "openrouter/auto" {
+					isLowContext = true
+					break
+				}
+			}
+		}
+		if !isLowContext {
+			lm := strings.ToLower(agent.Model)
+			if strings.HasPrefix(lm, "openrouter/free") ||
+				strings.HasPrefix(lm, "openrouter-free") ||
+				strings.HasPrefix(lm, "openrouter/auto") ||
+				lm == "openrouter-free" || lm == "openrouter/auto" {
+				isLowContext = true
+			}
+		}
+
+		if isLowContext {
+			providerToolDefs = agent.Tools.ToProviderDefsEssential()
+		} else {
+			providerToolDefs = agent.Tools.ToProviderDefs()
+		}
+
+		logger.DebugCF("agent", "Tool definitions built", map[string]any{
+			"count":          len(providerToolDefs),
+			"is_low_context": isLowContext,
+		})
 
 		// Log LLM request details
 		logger.DebugCF("agent", "LLM request",
@@ -1183,6 +1349,108 @@ func (al *AgentLoop) runLLMIteration(
 			tl.UpdateState(tasklock.StatusInProgress, "waiting_for_llm_response", messages)
 		}
 
+		// PROACTIVE token validation: Check estimated tokens against model's context window
+		// BEFORE sending to LLM. If exceeded, force compression immediately.
+		// This prevents the 402 "Prompt tokens limit exceeded" error from OpenRouter
+		// by catching the issue before the network call.
+		//
+		// ⚠️  CRITICAL: MUST include toolTokens from EstimateToolDefsTokens().
+		// The original bug used "msgTokens + 2500" which underestimated by ~12,000 tokens
+		// because 60+ tool definitions consume ~15,000 tokens, not 2,500.
+		msgTokens := al.estimateTokens(messages)
+		toolTokens := tokenizer.EstimateToolDefsTokens(providerToolDefs)
+		totalEstimated := msgTokens + toolTokens
+		// Use 90% of context window as safety margin
+		safetyLimit := int(float64(agent.ContextWindow) * 0.9)
+
+		if totalEstimated > safetyLimit {
+			// If tool definitions alone are consuming too much budget, switch to essential tools
+			if toolTokens > int(float64(agent.ContextWindow)*0.3) && !isLowContext {
+				logger.WarnCF("agent", "Tool definitions exceed budget threshold, switching to essential tools", map[string]any{
+					"agent_id":       agent.ID,
+					"tool_tokens":    toolTokens,
+					"context_window": agent.ContextWindow,
+				})
+				isLowContext = true
+				providerToolDefs = agent.Tools.ToProviderDefsEssential()
+				toolTokens = tokenizer.EstimateToolDefsTokens(providerToolDefs)
+				totalEstimated = msgTokens + toolTokens
+			}
+
+			logger.WarnCF("agent", "Proactive token compression triggered", map[string]any{
+				"agent_id":         agent.ID,
+				"estimated_tokens": totalEstimated,
+				"context_window":   agent.ContextWindow,
+				"safety_limit":     safetyLimit,
+				"session_key":      opts.SessionKey,
+			})
+
+			// Force compression to reduce history
+			al.forceCompression(agent, opts.SessionKey)
+			newHistory := agent.Sessions.GetHistory(opts.SessionKey)
+			newSummary := agent.Sessions.GetSummary(opts.SessionKey)
+			messages = agent.ContextBuilder.BuildMessages(
+				newHistory, newSummary, "",
+				nil, opts.Channel, opts.ChatID,
+			)
+
+			// Re-estimate after compression
+			msgTokens = al.estimateTokens(messages)
+			totalEstimated = msgTokens + toolTokens
+
+			if totalEstimated > safetyLimit {
+				logger.WarnCF("agent", "Tokens still high after compression, aggressive truncation", map[string]any{
+					"agent_id":       agent.ID,
+					"estimated":      totalEstimated,
+					"context_window": agent.ContextWindow,
+					"safety_limit":   safetyLimit,
+					"session_key":    opts.SessionKey,
+				})
+
+				// Aggressive truncation: keep reducing until under budget
+				keepCounts := []int{5, 3, 2, 1}
+				for _, keep := range keepCounts {
+					if totalEstimated <= safetyLimit {
+						break
+					}
+					logger.WarnCF("agent", "Truncating to last N messages", map[string]any{
+						"agent_id":      agent.ID,
+						"estimated":     totalEstimated,
+						"safety_limit":  safetyLimit,
+						"keep_messages": keep,
+						"session_key":   opts.SessionKey,
+					})
+					al.truncateToLastMessages(opts.SessionKey, keep)
+					newHistory = agent.Sessions.GetHistory(opts.SessionKey)
+					newSummary = agent.Sessions.GetSummary(opts.SessionKey)
+					messages = agent.ContextBuilder.BuildMessages(
+						newHistory, newSummary, "",
+						nil, opts.Channel, opts.ChatID,
+					)
+					msgTokens = al.estimateTokens(messages)
+					totalEstimated = msgTokens + toolTokens
+				}
+
+				if totalEstimated > safetyLimit {
+					logger.WarnCF("agent", "CRITICAL: Still over budget, emergency minimal", map[string]any{
+						"agent_id":         agent.ID,
+						"estimated_tokens": totalEstimated,
+						"context_window":   agent.ContextWindow,
+						"safety_limit":     safetyLimit,
+						"session_key":      opts.SessionKey,
+					})
+					agent.ContextBuilder.SetPromptLevel(PromptLevelMinimal)
+					al.truncateToLastMessages(opts.SessionKey, 1)
+					newHistory = agent.Sessions.GetHistory(opts.SessionKey)
+					newSummary = agent.Sessions.GetSummary(opts.SessionKey)
+					messages = agent.ContextBuilder.BuildMessages(
+						newHistory, newSummary, "",
+						nil, opts.Channel, opts.ChatID,
+					)
+				}
+			}
+		}
+
 		// Retry loop for context/token errors
 		maxRetries := 4
 		for retry := 0; retry <= maxRetries; retry++ {
@@ -1240,7 +1508,22 @@ func (al *AgentLoop) runLLMIteration(
 					})
 				}
 
-				al.forceCompression(agent, opts.SessionKey)
+				// Use ContextManager.Compact() if available (seahorse or legacy)
+				if al.contextManager != nil {
+					compactErr := al.contextManager.Compact(ctx, &CompactRequest{
+						SessionKey: opts.SessionKey,
+						Reason:     ContextCompressReasonRetry,
+						Budget:     agent.ContextWindow,
+					})
+					if compactErr != nil {
+						logger.ErrorCF("agent", "ContextManager.Compact failed, falling back to forceCompression",
+							map[string]any{"error": compactErr.Error()})
+						al.forceCompression(agent, opts.SessionKey)
+					}
+				} else {
+					al.forceCompression(agent, opts.SessionKey)
+				}
+
 				newHistory := agent.Sessions.GetHistory(opts.SessionKey)
 				newSummary := agent.Sessions.GetSummary(opts.SessionKey)
 				messages = agent.ContextBuilder.BuildMessages(
@@ -1499,6 +1782,15 @@ func (al *AgentLoop) maybeSummarize(agent *AgentInstance, sessionKey, channel, c
 	if al.cfg != nil && al.cfg.ContextManagement.CompactThreshold > 0 {
 		compactThreshold = al.cfg.ContextManagement.CompactThreshold
 	}
+
+	// OpenRouter free models have ~4096 context window.
+	// System prompt (~2000) + tool defs (~800) = ~2800 already used.
+	// Only ~1300 tokens remain for history. Use 25% threshold to compact early.
+	// Use the agent's IsLowContextModel flag for reliable detection.
+	if agent.IsLowContextModel {
+		compactThreshold = 0.25 // Much earlier compaction for low-context models
+	}
+
 	thresholdTokens := int(float64(agent.ContextWindow) * compactThreshold)
 
 	if len(newHistory) > 30 || tokenEstimate > thresholdTokens {
@@ -1622,6 +1914,73 @@ func (al *AgentLoop) forceCompression(agent *AgentInstance, sessionKey string) {
 	})
 }
 
+// truncateToLastMessages aggressively truncates session history to keep only the
+// last N messages plus the system prompt. Used as a last resort when standard
+// compression is insufficient to fit within the model's context window.
+func (al *AgentLoop) truncateToLastMessages(sessionKey string, keep int) {
+	agent := al.registry.GetDefaultAgent()
+	if agent == nil {
+		return
+	}
+
+	history := agent.Sessions.GetHistory(sessionKey)
+	if len(history) <= keep+1 { // +1 for system prompt
+		return
+	}
+
+	// Keep system prompt and last N messages
+	systemMsg := history[0]
+	truncationNote := fmt.Sprintf(
+		"\n\n[System Note: Aggressive truncation — kept only last %d messages due to context limit]",
+		keep,
+	)
+	systemMsg.Content = systemMsg.Content + truncationNote
+
+	startIdx := len(history) - keep
+	if startIdx < 1 {
+		startIdx = 1
+	}
+
+	newHistory := make([]providers.Message, 0, 1+keep)
+	newHistory = append(newHistory, systemMsg)
+	newHistory = append(newHistory, history[startIdx:]...)
+
+	// Clean orphan tool messages (same logic as forceCompression)
+	for len(newHistory) > 0 {
+		checkIdx := 0
+		if newHistory[0].Role == "system" {
+			if len(newHistory) == 1 {
+				break
+			}
+			checkIdx = 1
+		}
+
+		msg := newHistory[checkIdx]
+		if msg.Role == "tool" {
+			newHistory = append(newHistory[:checkIdx], newHistory[checkIdx+1:]...)
+			continue
+		}
+
+		if msg.Role == "assistant" && len(msg.ToolCalls) > 0 {
+			if len(newHistory) <= checkIdx+1 || newHistory[checkIdx+1].Role != "tool" {
+				newHistory = append(newHistory[:checkIdx], newHistory[checkIdx+1:]...)
+				continue
+			}
+		}
+
+		break
+	}
+
+	agent.Sessions.SetHistory(sessionKey, newHistory)
+	agent.Sessions.Save(sessionKey)
+
+	logger.WarnCF("agent", "Aggressive truncation executed", map[string]any{
+		"session_key": sessionKey,
+		"kept_msgs":   len(newHistory),
+		"dropped":     len(history) - len(newHistory),
+	})
+}
+
 // GetStartupInfo returns information about loaded tools and skills for logging.
 func (al *AgentLoop) GetStartupInfo() map[string]any {
 	info := make(map[string]any)
@@ -1732,15 +2091,19 @@ func (al *AgentLoop) summarizeSession(agent *AgentInstance, sessionKey string) {
 }
 
 // estimateTokens estimates the number of tokens in a message list.
-// Uses a safe heuristic of 2.5 characters per token to account for CJK and other
-// overheads better than the previous 3 chars/token.
+// Uses tokenizer.EstimateMessageTokens() to count Content, ReasoningContent,
+// ToolCalls, ToolCallID, and SystemParts — NOT just Content characters.
+//
+// ⚠️  CRITICAL: DO NOT change this to a simple character count (e.g., utf8.RuneCountInString).
+// The original bug used char counting + fixed "+2500" overhead, which underestimated
+// by ~18,000 tokens and caused constant OpenRouter 402 errors.
+// See file header comment and local_work/MEMORY.md for details.
 func (al *AgentLoop) estimateTokens(messages []providers.Message) int {
-	totalChars := 0
+	total := 0
 	for _, m := range messages {
-		totalChars += utf8.RuneCountInString(m.Content)
+		total += tokenizer.EstimateMessageTokens(m)
 	}
-	// 2.5 chars per token = totalChars * 2 / 5
-	return totalChars * 2 / 5
+	return total
 }
 
 func (al *AgentLoop) handleCommand(ctx context.Context, msg bus.InboundMessage) (string, bool) {

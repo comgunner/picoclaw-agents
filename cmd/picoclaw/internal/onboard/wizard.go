@@ -624,7 +624,15 @@ func (w *Wizard) saveConfig() error {
       "model_name": "%s",
       "max_tokens": 8192,
       "temperature": 0.7,
-      "max_tool_iterations": 20
+      "max_tool_iterations": 20,
+      "context_manager": "seahorse",
+      "context_manager_config": {
+        "context_threshold": 0.75,
+        "fresh_tail_count": 16,
+        "leaf_target_tokens": 1200,
+        "condensed_target_tokens": 2000,
+        "max_compact_iterations": 20
+      }
     },
     "list": %s
   },

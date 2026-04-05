@@ -46,50 +46,6 @@
 *   🚀 **并行子智能体**: 支持同时运行多个自主子智能体，每个子智能体可独立配置模型。
 *   🌍 **真正可移植**: 跨 RISC-V、ARM 和 x86 架构的单二进制文件。
 *   🦾 **AI 自举**: 核心代码通过自主 Agent 工作流不断精简和优化。
-
-## 📢 新闻
-
-2026-03-31 🎉 **ICUETH Fork Integration**: Comprehensive analysis completed. Architecture: A2A horizontal (109 agents) vs parallel subagents. Features: Agent Meeting System, Persona System, RAG/SQLite memory, MCP, Mailbox system. 3-phase integration strategy. Audit: ✅ CLEAN. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-31 🎉 **Qwen & Zhipu WebUI Auth**: Added via WebUI at `http://localhost:18800/credentials`. CLI: `./picoclaw-agents auth login --provider qwen/zhipu`. Auto-configures models. Zhipu glm-4.5-flash 100% FREE. See [CHANGELOG.md](CHANGELOG.md).
-2026-03-28 🎉 **多源迁移 + 团队模式 onboard**: 添加 `picoclaw-agents migrate --from nanoclaw` 用于从 NanoClaw 迁移。onboard wizard 现在包含 **Team Mode**,预构建模板 (Dev Team 9 个代理，Research Team 3 个代理，General Team 3 个代理) 和 **14 个原生技能** 选择。上下文窗口改进：工具结果修剪 (-60% tokens),高级压缩与模型覆盖，以及手动 `/compact` 命令。参见 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-27 🎉 **构建质量和频道改进**: `go build ./...` 现在干净通过。添加 group trigger API 到 `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — 细粒度群组聊天控制。参见 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-26 🎉 **MCP Builder 文档**: 完整的 MCP Builder Agent 文档，包含 API 参考、用例和示例。查看 [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md)。
-
-2026-03-26 🎉 **Sandbox 和 Codegen 命令**: 添加 `sandbox init/status` 用于隔离工作区，`util codegen` 用于 Go 代码生成。查看 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-26 🎉 **Auth Token 监控**: 添加 `auth tokens` 和 `auth monitor` 命令用于 OAuth token 过期跟踪。查看 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-27 🎉 **构建质量与频道改进**: `go build ./...` 现已完全通过。为 `BaseChannel` 添加了 group trigger API：`WithGroupTrigger`、`IsAllowedSender` 和 `ShouldRespondInGroup` — 支持精细的群组聊天控制（仅@提及、前缀触发）。查看 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-27 🎉 **WebUI 启动器完全正常运行**: `picoclaw-agents-launcher` 端到端工作 — Start Gateway 按钮、通过 PicoChannel 的 WebSocket 聊天、Skills 页面的原生技能内容，以及所有菜单部分经过验证。使用 `picoclaw-agents-launcher` 或 `picoclaw-agents-launcher -public` 运行。
-
-2026-03-27 🎉 **三个二进制文件发布管道**: GoReleaser 现在生成所有三个二进制文件 — `picoclaw-agents`（CLI）、`picoclaw-agents-launcher`（WebUI）和 `picoclaw-agents-launcher-tui`（TUI）。使用 `./scripts/create-release.sh` 触发。
-
-2026-03-26 🎉 **Config 验证器和 Secret Masking**: 添加 `config validate` 命令用于 schema 验证，在 onboard wizard 中添加密钥掩码。查看 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-26 🎉 **Doctor 命令**: 添加 `doctor` 命令用于环境诊断，包括 WSL 检测和安全检查。查看 [CHANGELOG.md](CHANGELOG.md)。
-
-2026-03-12 🎉 **Antigravity 支持和稳定性**: 完整的 Google Antigravity OAuth 支持，schema 清理，TokenBudget 死锁修复，会话再水合改进，新的 `picoclaw-agents clean` 命令，以及强化的拒绝模式。查看 [CHANGELOG.md](CHANGELOG.md) 了解详情。
-
-2026-03-03 🎉 **原生技能架构**: 引入直接编译到二进制文件中的原生技能（`pkg/skills/queue_batch.go`），消除了外部 `.md` 文件依赖。安全性、性能和类型安全性得到增强。查看 [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md)。
-
-2026-03-02 🎉 **快速路径 Slash 命令和全局跟踪器**: 添加即时 Slash 命令（`/bundle_approve`、`/status` 等）实现零延迟交互。统一所有代理的 `ImageGenTracker` 实现完美的多代理状态一致性。查看 [docs/queue_batch.md](docs/queue_batch.md)。
-
-2026-03-01 🎉 **AI 图像生成和社区管理员**: 添加原生图像生成（Gemini/Ideogram）、脚本到图像工作流、交互式生成后菜单，以及社区管理员代理自动生成社交媒体帖子。查看 [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md)。
-
-2026-03-01 🎉 **外部集成（Binance、社交媒体、Notion）**: 添加用于加密货币交易（Binance futures & spot）、社交媒体发布（Facebook & X/Twitter）和知识管理（Notion）的原生工具。通过 `config.json` 或环境变量配置。查看 [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) 和 [docs/NOTION_util.md](docs/NOTION_util.md) 获取设置指南。
-
-2026-03-01 🎉 **原生技能哨兵 (Skills Sentinel)**: 增加了其内部安全层 (`skills_sentinel.go`)，提供基于模式的实时保护，防止提示注入和系统泄漏。
-2026-03-01 🎉 **Fail-Close 安全机制与稳定性**: 引入了更强大的安全策略。ExecTool 在启动时会严格验证安全规则。
-
-2026-02-27 🎉 **灾后恢复与任务锁**: 引入了原子级任务锁机制，防止 Agent 冲突；支持"启动再水化"，能从异常重启中快速恢复；优化了上下文压缩逻辑（安全提升至 32K token），彻底解决长代码任务中的上下文爆炸问题。
-
-
-<img src="assets/compare.jpg" alt="PicoClaw" width="512">
-
 ## 🦾 演示
 
 ### 🛠️ 标准助手工作流
@@ -1314,6 +1270,15 @@ picoclaw-agents agent --model openrouter-free -m "第二条消息"
 
    1. openrouter/free (Local)
 👉 2. openai/gpt-5.4 (OAuth)
+
+
+**🌟 OpenRouter (免费层级)** — 通过慷慨的免费层级访问 200 多个模型。
+
+```bash
+./picoclaw-agents auth login --provider openrouter-free
+```
+
+👉 [立即加入](https://openrouter.ai/)
    3. antigravity/gemini-3-flash (OAuth)
    4. anthropic/claude-sonnet-4-6 (token)
    5. llama3.2:1b (Local)
@@ -1807,6 +1772,50 @@ picoclaw-agents util binance-mcp-server
 | **Brave Search** | 2000次查询/月 | 网页搜索功能                   |
 | **Groq**         | 提供免费档    | 极速推理 (Llama, Mixtral)      |
 | **Cerebras**     | 提供免费档    | 极速推理 (Llama, Qwen 等)      |
+
+
+## 📢 新闻
+
+2026-04-05 🎉 **上下文管理集成 + 令牌溢出修复**: 集成了 ContextManager 接口（legacy + seahorse）、SQLite Seahorse 引擎（约 6,800 行）、构建前预算检查和 3 级系统提示词（Minimal/Compact/Full）。修复了 WebUI + openrouter-free 的 402 错误（21K → ~300 令牌）。所有 onboard 模板和 auth 登录现在都包含 `context_manager: "seahorse"`。上游补丁已适配。免费提供商指南已发布。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-31 🎉 **ICUETH Fork 集成**: 完成了对 icueth fork 的全面分析。架构对比：A2A 水平（109 个代理）vs 并行子代理。识别的功能：代理会议系统、Persona 系统、RAG/SQLite 内存、MCP 支持、Mailbox 系统。定义了 3 阶段集成策略。审计完成：✅ CLEAN。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-31 🎉 **Qwen 和 Zhipu WebUI 认证**: 通过 WebUI 在 `http://localhost:18800/credentials` 添加了 Qwen Portal 和 Zhipu AI 认证。CLI 命令：`./picoclaw-agents auth login --provider qwen` 和 `--provider zhipu`。认证后自动配置模型。Zhipu glm-4.5-flash 100% 免费。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-28 🎉 **多源迁移 + 团队模式 onboard**: 添加了 `picoclaw-agents migrate --from nanoclaw` 用于从 NanoClaw 迁移。onboard wizard 现在包含 **Team Mode**，预构建模板（Dev Team 9 个代理，Research Team 3 个代理，General Team 3 个代理）和 **14 个原生技能** 选择。上下文窗口改进：工具结果修剪 (-60% tokens)，高级压缩与模型覆盖，以及手动 `/compact` 命令。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-27 🎉 **构建质量和频道改进**: `go build ./...` 现在干净通过。添加 group trigger API 到 `BaseChannel`：`WithGroupTrigger`, `IsAllowedSender`, `ShouldRespondInGroup` — 细粒度群组聊天控制。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-27 🎉 **WebUI Launcher 完全运行**: `picoclaw-agents-launcher` 现在端到端工作 — Start Gateway 按钮、通过 PicoChannel 的 WebSocket 聊天、Skills 页面中的原生技能内容、所有部分已验证。使用 `picoclaw-agents-launcher` 或网络访问 `picoclaw-agents-launcher -public` 运行。
+
+2026-03-27 🎉 **3 二进制发布管道**: GoReleaser 现在生成所有三个二进制文件 — `picoclaw-agents` (CLI)、`picoclaw-agents-launcher` (WebUI) 和 `picoclaw-agents-launcher-tui` (TUI) — 与原始项目的发布结构匹配。使用 `./scripts/create-release.sh` 触发。
+
+2026-03-26 🎉 **MCP Builder 文档**: 完整的 MCP Builder Agent 文档，提供英文和西班牙文，包含 API 参考、用例和示例。参见 [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) 和 [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md)。
+
+2026-03-26 🎉 **Sandbox 和 Codegen 命令**: 添加了 `sandbox init/status` 用于隔离工作空间和 `util codegen` 用于 Go 样板生成。完整详情参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-26 🎉 **Auth Token Monitor**: 添加了 `auth tokens` 和 `auth monitor` 命令用于 OAuth 令牌过期跟踪。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-26 🎉 **Config Validator 和 Secret Masking**: 添加了 `config validate` 命令用于架构验证和 onboard wizard 的秘密屏蔽。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-26 🎉 **Doctor Command**: 添加了 `doctor` 命令用于环境诊断，包括 WSL 检测和安全检查。参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-12 🎉 **Antigravity 支持和稳定性**: 完整的 Google Antigravity OAuth 支持，包括架构清理、TokenBudget 死锁修复、会话再水合改进、新的 `picoclaw-agents clean` 命令和强化的 deny 模式。完整详情参见 [CHANGELOG.md](CHANGELOG.md)。
+
+2026-03-03 🎉 **原生技能架构**: 引入了直接编译到二进制文件中的原生技能 (`pkg/skills/queue_batch.go`)，消除了外部 `.md` 文件依赖。增强了安全性、性能和类型安全。参见 [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md)。
+
+2026-03-02 🎉 **Fast-path 和全局追踪器**: 添加了即时 Slash 命令 (`/bundle_approve`, `/status` 等) 实现零延迟交互。统一了所有代理中的 `ImageGenTracker` 以实现完美的多代理状态一致性。参见 [docs/queue_batch.md](docs/queue_batch.md)。
+
+2026-03-01 🎉 **AI 图像生成和社区经理**: 添加了原生图像生成 (Gemini/Ideogram)、脚本到图像工作流、生成后交互菜单和社区经理代理用于自动生成社交媒体帖子。完整设置和使用示例参见 [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md)。
+
+2026-03-01 🎉 **外部集成 (Binance, Social Media, Notion)**: 添加了用于加密货币交易 (Binance 期货和现货)、社交媒体发布 (Facebook 和 X/Twitter) 和知识管理 (Notion) 的原生工具。通过 `config.json` 或环境变量配置。设置指南参见 [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) 和 [docs/NOTION_util.md](docs/NOTION_util.md)。
+
+2026-03-01 🎉 **Native Skills Sentinel**: 添加了内部安全层 (`skills_sentinel.go`)，提供基于模式的实时保护，防止提示注入和系统泄露。
+2026-03-01 🎉 **安全性和稳定性强化**: 健壮的消息总线关闭处理、弹性 WeCom App 后台处理和强化的 shell 工具初始化验证。
+2026-03-01 🎉 **Fail-Close Security**: 健壮的安全策略。命令执行工具现在在初始化期间执行严格的 deny 模式验证。
+
+2026-02-27 🎉 **灾难恢复和任务锁**: 实现了原子任务锁以防止代理冲突、用于从突然崩溃中恢复的"Boot Rehydration"，以及 Context Compactor（安全地将限制提高到 32K 令牌）以消除长时间编码任务中的上下文爆炸。
+
 
 ## ⚠️ 免责声明
 

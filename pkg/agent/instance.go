@@ -45,6 +45,14 @@ type AgentInstance struct {
 	SkillsFilter   []string
 	Candidates     []providers.FallbackCandidate
 
+	// IsLowContextModel indicates this agent uses a model with small context window
+	// (e.g., OpenRouter free tier ~4096 tokens). When true:
+	// - Condensed system prompt (~100 vs ~2500 tokens)
+	// - Essential tools only (5 vs 60+) to save ~10,000+ tokens
+	// - Aggressive history compaction (25% threshold)
+	// - Capped max_tokens (1000)
+	IsLowContextModel bool
+
 	// A2A Components (Agent-to-Agent Communication)
 	mailbox          any // *mailbox.Mailbox - assigned by orchestrator
 	departmentRouter any //nolint:unused // *DepartmentRouter - reserved for future A2A routing
@@ -69,6 +77,13 @@ func NewAgentInstance(
 
 	model := resolveAgentModel(agentCfg, defaults)
 	fallbacks := resolveAgentFallbacks(agentCfg, defaults)
+
+	// Detect OpenRouter free early for context builder config
+	lowerModel := strings.ToLower(model)
+	isOpenRouterFree := strings.HasPrefix(lowerModel, "openrouter/free") ||
+		strings.HasPrefix(lowerModel, "openrouter-free") ||
+		strings.HasPrefix(lowerModel, "openrouter/auto") ||
+		lowerModel == "openrouter-free" || lowerModel == "openrouter/auto"
 
 	// Resolve the provider for this specific agent's model
 	provider, resolvedModel, err := factory(model)
@@ -156,6 +171,19 @@ func NewAgentInstance(
 		maxTokens = 8192
 	}
 
+	// OpenRouter free tier: cap at 1000 to avoid 402 "not enough credits" errors.
+	if isOpenRouterFree {
+		if maxTokens > 1000 {
+			logger.InfoCF("agent", "Reducing max_tokens for OpenRouter free tier",
+				map[string]any{
+					"original_max": maxTokens,
+					"capped_max":   1000,
+					"model":        model,
+				})
+			maxTokens = 1000
+		}
+	}
+
 	temperature := 0.7
 	if defaults.Temperature != nil {
 		temperature = *defaults.Temperature
@@ -182,24 +210,56 @@ func NewAgentInstance(
 		runtimeCfg = defaults.Runtime
 	}
 
+	// Determine context window (actual model capacity, not output limit).
+	// This affects when context compaction triggers.
+	// Priority: 1) explicit context_window in config, 2) OpenRouter free heuristic, 3) maxTokens, 4) 8192 default.
+	contextWindow := 8192
+
+	// Check if the model has an explicit context_window in config
+	mc := findModelConfig(model, modelList)
+	if mc != nil && mc.ContextWindow > 0 {
+		contextWindow = mc.ContextWindow
+	} else if maxTokens > 0 {
+		contextWindow = maxTokens
+	}
+
+	// OpenRouter free models have ~4096 token context window.
+	// If we leave it at 8192, compaction triggers too late (at 6553) and
+	// the model fails with "Context window exceeded" before compaction.
+	if isOpenRouterFree && contextWindow > 4096 {
+		contextWindow = 4096
+	}
+
+	// Set prompt level based on context window size
+	// < 8K: Minimal (~100 tokens system prompt)
+	// 8K-32K: Compact (~500 tokens)
+	// > 32K: Full (~3000 tokens)
+	if isOpenRouterFree || contextWindow < 8192 {
+		contextBuilder.SetPromptLevel(PromptLevelMinimal)
+	} else if contextWindow < 32768 {
+		contextBuilder.SetPromptLevel(PromptLevelCompact)
+	}
+	// else: PromptLevelFull (default)
+
 	return &AgentInstance{
-		ID:             agentID,
-		Name:           agentName,
-		Model:          modelCfg.Primary, // FIX: Use resolved model (e.g. "gpt-4o") not alias (e.g. "chatgpt-gpt-4o")
-		Fallbacks:      fallbacks,
-		Workspace:      workspace,
-		MaxIterations:  maxIter,
-		MaxTokens:      maxTokens,
-		Temperature:    temperature,
-		ContextWindow:  maxTokens,
-		Provider:       provider,
-		Sessions:       sessionsManager,
-		ContextBuilder: contextBuilder,
-		Tools:          toolsRegistry,
-		Subagents:      subagents,
-		Runtime:        runtimeCfg,
-		SkillsFilter:   skillsFilter,
-		Candidates:     candidates,
+		ID:                agentID,
+		Name:              agentName,
+		Model:             modelCfg.Primary, // FIX: Use resolved model (e.g. "gpt-4o") not alias (e.g. "chatgpt-gpt-4o")
+		Fallbacks:         fallbacks,
+		Workspace:         workspace,
+		MaxIterations:     maxIter,
+		MaxTokens:         maxTokens,
+		Temperature:       temperature,
+		ContextWindow:     contextWindow,
+		Provider:          provider,
+		Sessions:          sessionsManager,
+		ContextBuilder:    contextBuilder,
+		Tools:             toolsRegistry,
+		Subagents:         subagents,
+		Runtime:           runtimeCfg,
+		SkillsFilter:      skillsFilter,
+		Candidates:        candidates,
+		IsLowContextModel: isOpenRouterFree,
 	}
 }
 
@@ -278,6 +338,17 @@ func resolveModelAlias(name string, modelList []config.ModelConfig) string {
 	}
 	// FIX #901: Normalize if not found in model_list
 	return providers.NormalizeModelName(name)
+}
+
+// findModelConfig returns the full ModelConfig for a given model name alias.
+// Returns nil if not found.
+func findModelConfig(name string, modelList []config.ModelConfig) *config.ModelConfig {
+	for _, m := range modelList {
+		if m.ModelName == name {
+			return &m
+		}
+	}
+	return nil
 }
 
 func resolveModelAliases(names []string, modelList []config.ModelConfig) []string {

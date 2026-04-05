@@ -109,6 +109,18 @@ func (sm *SessionManager) GetHistory(key string) []providers.Message {
 	return history
 }
 
+// ListSessions returns all active session keys.
+func (sm *SessionManager) ListSessions() []string {
+	sm.mu.RLock()
+	defer sm.mu.RUnlock()
+
+	keys := make([]string, 0, len(sm.sessions))
+	for k := range sm.sessions {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 func (sm *SessionManager) GetSummary(key string) string {
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()

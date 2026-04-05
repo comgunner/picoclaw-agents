@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 
 	"github.com/caarlos0/env/v11"
+
 	"github.com/comgunner/picoclaw/pkg/logger"
 )
 
@@ -163,14 +164,17 @@ type AgentRuntimeConfig struct {
 }
 
 type AgentConfig struct {
-	ID        string              `json:"id"`
-	Default   bool                `json:"default,omitempty"`
-	Name      string              `json:"name,omitempty"`
-	Workspace string              `json:"workspace,omitempty"`
-	Model     *AgentModelConfig   `json:"model,omitempty"`
-	Skills    []string            `json:"skills,omitempty"`
-	Subagents *SubagentsConfig    `json:"subagents,omitempty"`
-	Runtime   *AgentRuntimeConfig `json:"runtime,omitempty"`
+	ID                   string              `json:"id"`
+	Default              bool                `json:"default,omitempty"`
+	Name                 string              `json:"name,omitempty"`
+	Workspace            string              `json:"workspace,omitempty"`
+	Model                *AgentModelConfig   `json:"model,omitempty"`
+	Skills               []string            `json:"skills,omitempty"`
+	Subagents            *SubagentsConfig    `json:"subagents,omitempty"`
+	ContextWindow        int                 `json:"context_window,omitempty"`  // Per-agent context window override
+	ContextManager       string              `json:"context_manager,omitempty"` // Per-agent context manager override
+	ContextManagerConfig map[string]any      `json:"context_manager_config,omitempty"`
+	Runtime              *AgentRuntimeConfig `json:"runtime,omitempty"`
 }
 
 type SubagentsConfig struct {
@@ -208,20 +212,23 @@ type SessionConfig struct {
 }
 
 type AgentDefaults struct {
-	Workspace           string              `json:"workspace"                       env:"PICOCLAW_AGENTS_DEFAULTS_WORKSPACE"`
-	RestrictToWorkspace bool                `json:"restrict_to_workspace"           env:"PICOCLAW_AGENTS_DEFAULTS_RESTRICT_TO_WORKSPACE"`
-	Provider            string              `json:"provider"                        env:"PICOCLAW_AGENTS_DEFAULTS_PROVIDER"`
-	ModelName           string              `json:"model_name,omitempty"            env:"PICOCLAW_AGENTS_DEFAULTS_MODEL_NAME"`
-	Model               string              `json:"model,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_MODEL"` // Deprecated: use model_name instead
-	ModelFallbacks      []string            `json:"model_fallbacks,omitempty"`
-	ImageModel          string              `json:"image_model,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_IMAGE_MODEL"`
-	ImageModelFallbacks []string            `json:"image_model_fallbacks,omitempty"`
-	MaxTokens           int                 `json:"max_tokens"                      env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOKENS"`
-	Temperature         *float64            `json:"temperature,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_TEMPERATURE"`
-	TopP                *float64            `json:"top_p,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_TOP_P"`
-	EnableThinking      bool                `json:"enable_thinking,omitempty"       env:"PICOCLAW_AGENTS_DEFAULTS_ENABLE_THINKING"`
-	MaxToolIterations   int                 `json:"max_tool_iterations"             env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOOL_ITERATIONS"`
-	Runtime             *AgentRuntimeConfig `json:"runtime,omitempty"`
+	Workspace            string              `json:"workspace"                       env:"PICOCLAW_AGENTS_DEFAULTS_WORKSPACE"`
+	RestrictToWorkspace  bool                `json:"restrict_to_workspace"           env:"PICOCLAW_AGENTS_DEFAULTS_RESTRICT_TO_WORKSPACE"`
+	Provider             string              `json:"provider"                        env:"PICOCLAW_AGENTS_DEFAULTS_PROVIDER"`
+	ModelName            string              `json:"model_name,omitempty"            env:"PICOCLAW_AGENTS_DEFAULTS_MODEL_NAME"`
+	Model                string              `json:"model,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_MODEL"` // Deprecated: use model_name instead
+	ModelFallbacks       []string            `json:"model_fallbacks,omitempty"`
+	ImageModel           string              `json:"image_model,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_IMAGE_MODEL"`
+	ImageModelFallbacks  []string            `json:"image_model_fallbacks,omitempty"`
+	MaxTokens            int                 `json:"max_tokens"                      env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOKENS"`
+	Temperature          *float64            `json:"temperature,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_TEMPERATURE"`
+	TopP                 *float64            `json:"top_p,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_TOP_P"`
+	EnableThinking       bool                `json:"enable_thinking,omitempty"       env:"PICOCLAW_AGENTS_DEFAULTS_ENABLE_THINKING"`
+	MaxToolIterations    int                 `json:"max_tool_iterations"             env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOOL_ITERATIONS"`
+	ContextWindow        int                 `json:"context_window,omitempty"`         // Max context tokens (input + output). 0 = auto-detect
+	ContextManager       string              `json:"context_manager,omitempty"`        // Pluggable context manager: "" (default/legacy), "seahorse"
+	ContextManagerConfig map[string]any      `json:"context_manager_config,omitempty"` // JSON config passed to context manager factory
+	Runtime              *AgentRuntimeConfig `json:"runtime,omitempty"`
 }
 
 // GetModelName returns the effective model name for the agent defaults.
@@ -550,6 +557,7 @@ type ModelConfig struct {
 	RPM            int    `json:"rpm,omitempty"`              // Requests per minute limit
 	MaxTokensField string `json:"max_tokens_field,omitempty"` // Field name for max tokens (e.g., "max_completion_tokens")
 	RequestTimeout int    `json:"request_timeout,omitempty"`
+	ContextWindow  int    `json:"context_window,omitempty"` // Max context tokens (input + output). 0 = use default
 
 	// Extended capabilities (used by web launcher)
 	ThinkingLevel string         `json:"thinking_level,omitempty"` // "", "low", "medium", "high"
@@ -864,13 +872,45 @@ func LoadConfig(path string) (*Config, error) {
 		logger.InfoC("config", "Zhipu models sanitized - obsolete models were auto-corrected")
 	}
 
+	// Runtime default: ensure context_manager is set if missing from user config
+	if cfg.Agents.Defaults.ContextManager == "" {
+		cfg.Agents.Defaults.ContextManager = "seahorse"
+		cfg.Agents.Defaults.ContextManagerConfig = map[string]any{
+			"context_threshold":       0.75,
+			"fresh_tail_count":        16,
+			"leaf_target_tokens":      1200,
+			"condensed_target_tokens": 2000,
+			"max_compact_iterations":  20,
+		}
+	}
+
 	// Store path so it can be used for runtime config updates
 	cfg.SetConfigPath(path)
 
 	return cfg, nil
 }
 
+// SaveConfig writes the config to disk.
+//
+// ⚠️  CRITICAL: This function auto-migrates context_manager to "seahorse" if
+// the field is empty. DO NOT remove this auto-migration — it ensures existing
+// users who onboarded before 2026-04-05 get the OpenRouter Free tier token
+// overflow fix without manual intervention.
 func SaveConfig(path string, cfg *Config) error {
+	// Auto-migrate: if context_manager is empty, set default
+	if cfg.Agents.Defaults.ContextManager == "" {
+		cfg.Agents.Defaults.ContextManager = "seahorse"
+		if cfg.Agents.Defaults.ContextManagerConfig == nil {
+			cfg.Agents.Defaults.ContextManagerConfig = map[string]any{
+				"context_threshold":       0.75,
+				"fresh_tail_count":        16,
+				"leaf_target_tokens":      1200,
+				"condensed_target_tokens": 2000,
+				"max_compact_iterations":  20,
+			}
+		}
+	}
+
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err

@@ -34,8 +34,20 @@ This project is developed and maintained with the help of AI tools. All code cha
 ./picoclaw-agents auth login --provider zhipu
 ```
 
+
+
+
+**🌟 OpenRouter (Free Tier)** — Access 200+ models with generous free tier.
+
+```bash
+./picoclaw-agents auth login --provider openrouter-free
+```
+
+👉 [Join now](https://openrouter.ai/)
+
 🚀 You've been invited to join the GLM Coding Plan. Full support for Claude Code, Cline, and 20+ top coding tools — starting at just $10/month.
 👉 [Join now](https://z.ai/subscribe?ic=RF2YMCHBHL)
+
 
 > 💡 Using these links helps support the ongoing development of PicoClaw-Agents. Thank you!
 
@@ -54,47 +66,6 @@ This project is developed and maintained with the help of AI tools. All code cha
 *   ⚡ **Fast-path Slash Commands**: Instant system commands via `/` or `#` that bypass the LLM for zero-latency approvals, status checks, and lotes (bundle) management. Works on Telegram, Discord, and CLI.
 *   🖇️ **Global State Synchronization**: Global ImageGenTracker, a shared memory space across all agents (PM, Subagents) to ensure perfect consistency in multi-agent workflows.
 *   🚀 **Native Skills Architecture**: Native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external file dependencies and enhancing security. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
-
-## 📢 News
-
-2026-03-31 🎉 **ICUETH Fork Integration**: Comprehensive analysis of icueth fork completed. Architecture comparison: A2A horizontal (109 agents) vs parallel subagents. Identified features: Agent Meeting System, Persona System, RAG/SQLite memory, MCP support, Mailbox system. Integration strategy defined in 3 phases. Audit completed: ✅ CLEAN. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-31 🎉 **Qwen & Zhipu WebUI Auth**: Added Qwen Portal and Zhipu AI authentication via WebUI at `http://localhost:18800/credentials`. CLI commands: `./picoclaw-agents auth login --provider qwen` and `--provider zhipu`. Auto-configures models on authentication. Zhipu glm-4.5-flash is 100% FREE. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-28 🎉 **Multi-Source Migration + Team Mode Onboard**: Added `picoclaw-agents migrate --from nanoclaw` for migration from NanoClaw configs. Onboard wizard now features **Team Mode** with pre-built templates (Dev Team 9 agents, Research Team 3 agents, General Team 3 agents) and **14 native skills** selection. Context Window improvements: tool result pruning (-60% tokens), advanced compaction with model override, and `/compact` manual command. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-27 🎉 **Build quality & channel improvements**: `go build ./...` now passes cleanly. Added group trigger API to `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, and `ShouldRespondInGroup` — enabling fine-grained group chat control (mention-only, prefix-based triggers). See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-27 🎉 **WebUI Launcher fully operational**: `picoclaw-agents-launcher` now works end-to-end — Start Gateway button, WebSocket chat via PicoChannel, native skill content in Skills page, and all menu sections validated. Run with `picoclaw-agents-launcher` or `picoclaw-agents-launcher -public` for network access.
-
-2026-03-27 🎉 **3-binary release pipeline**: GoReleaser now produces all three binaries — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI), and `picoclaw-agents-launcher-tui` (TUI) — matching the original project's release structure. Trigger with `./scripts/create-release.sh`.
-
-2026-03-26 🎉 **MCP Builder Documentation**: Complete MCP Builder Agent documentation in English and Spanish with API reference, use cases, and examples. See [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) and [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md).
-
-2026-03-26 🎉 **Sandbox & Codegen Commands**: Added `sandbox init/status` for isolated workspaces and `util codegen` for Go boilerplate generation. See [CHANGELOG.md](CHANGELOG.md) for full details.
-
-2026-03-26 🎉 **Auth Token Monitor**: Added `auth tokens` and `auth monitor` commands for OAuth token expiration tracking. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-26 🎉 **Config Validator & Secret Masking**: Added `config validate` command for schema validation and secret masking in onboard wizard. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-26 🎉 **Doctor Command**: Added `doctor` command for environment diagnostics including WSL detection and security checks. See [CHANGELOG.md](CHANGELOG.md).
-
-2026-03-12 🎉 **Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw-agents clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
-
-2026-03-03 🎉 **Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
-
-2026-03-02 🎉 **Fast-path & Global Tracker**: Added instant Slash Commands (`/bundle_approve`, `/status`, etc.) for zero-latency interaction. Unified the `ImageGenTracker` across all agents for perfect multi-agent state consistency. See [docs/queue_batch.md](docs/queue_batch.md).
-
-2026-03-01 🎉 **AI Image Generation & Community Manager**: Added native image generation (Gemini/Ideogram), script-to-image workflows, interactive post-generation menus, and community manager agent for auto-generating social media posts. See [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) for complete setup and usage examples.
-
-2026-03-01 🎉 **External Integrations (Binance, Social Media, Notion)**: Added native tools for cryptocurrency trading (Binance futures & spot), social media publishing (Facebook & X/Twitter), and knowledge management (Notion). Configure via `config.json` or environment variables. See [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) and [docs/NOTION_util.md](docs/NOTION_util.md) for setup guides.
-
-2026-03-01 🎉 **Native Skills Sentinel**: Added internal security layer (`skills_sentinel.go`) that provides real-time pattern-based protection against prompt injection and system leaks.
-2026-03-01 🎉 **Security & Stability Hardening**: Robust message bus closure handling, resilient WeCom App background processing, and reinforced initialization validation for the shell tool.
-2026-03-01 🎉 **Fail-Close Security**: Robust security policy. The command execution tool now performs strict validation of deny patterns during initialization.
-
-2026-02-27 🎉 **Disaster Recovery & Task Locks**: Implemented atomic Task Locks to prevent agent collisions, "Boot Rehydration" for recovery from abrupt crashes, and Context Compactor (safely raising limit to 32K tokens) to eradicate context explosions in long coding tasks.
-
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
 
@@ -2046,6 +2017,50 @@ This happens when another instance of the bot is running. Make sure only one `pi
 | **Brave Search** | 2000 queries/month  | Web search functionality               |
 | **Groq**         | Free tier available | Fast inference (Llama, Mixtral)        |
 | **Cerebras**     | Free tier available | Fast inference (Llama, Qwen, etc.)     |
+
+## 📢 News
+
+2026-04-05 🎉 **Context Management Integration + Token Overflow Fix**: Integrated ContextManager interface (legacy + seahorse), Seahorse SQLite engine (~6,800 lines), budget check pre-build, and 3-level system prompt (Minimal/Compact/Full). WebUI + openrouter-free error 402 fixed (21K → ~300 tokens). All onboard templates and auth logins now include `context_manager: "seahorse"`. Upstream patches adapted. Free tier providers guide published. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **ICUETH Fork Integration**: Comprehensive analysis of icueth fork completed. Architecture comparison: A2A horizontal (109 agents) vs parallel subagents. Identified features: Agent Meeting System, Persona System, RAG/SQLite memory, MCP support, Mailbox system. Integration strategy defined in 3 phases. Audit completed: ✅ CLEAN. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-31 🎉 **Qwen & Zhipu WebUI Auth**: Added Qwen Portal and Zhipu AI authentication via WebUI at `http://localhost:18800/credentials`. CLI commands: `./picoclaw-agents auth login --provider qwen` and `--provider zhipu`. Auto-configures models on authentication. Zhipu glm-4.5-flash is 100% FREE. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-28 🎉 **Multi-Source Migration + Team Mode Onboard**: Added `picoclaw-agents migrate --from nanoclaw` for migration from NanoClaw configs. Onboard wizard now features **Team Mode** with pre-built templates (Dev Team 9 agents, Research Team 3 agents, General Team 3 agents) and **14 native skills** selection. Context Window improvements: tool result pruning (-60% tokens), advanced compaction with model override, and `/compact` manual command. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-27 🎉 **Build quality & channel improvements**: `go build ./...` now passes cleanly. Added group trigger API to `BaseChannel`: `WithGroupTrigger`, `IsAllowedSender`, and `ShouldRespondInGroup` — enabling fine-grained group chat control (mention-only, prefix-based triggers). See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-27 🎉 **WebUI Launcher fully operational**: `picoclaw-agents-launcher` now works end-to-end — Start Gateway button, WebSocket chat via PicoChannel, native skill content in Skills page, and all menu sections validated. Run with `picoclaw-agents-launcher` or `picoclaw-agents-launcher -public` for network access.
+
+2026-03-27 🎉 **3-binary release pipeline**: GoReleaser now produces all three binaries — `picoclaw-agents` (CLI), `picoclaw-agents-launcher` (WebUI), and `picoclaw-agents-launcher-tui` (TUI) — matching the original project's release structure. Trigger with `./scripts/create-release.sh`.
+
+2026-03-26 🎉 **MCP Builder Documentation**: Complete MCP Builder Agent documentation in English and Spanish with API reference, use cases, and examples. See [docs/MCP_BUILDER_AGENT.md](docs/MCP_BUILDER_AGENT.md) and [docs/MCP_BUILDER_AGENT.es.md](docs/MCP_BUILDER_AGENT.es.md).
+
+2026-03-26 🎉 **Sandbox & Codegen Commands**: Added `sandbox init/status` for isolated workspaces and `util codegen` for Go boilerplate generation. See [CHANGELOG.md](CHANGELOG.md) for full details.
+
+2026-03-26 🎉 **Auth Token Monitor**: Added `auth tokens` and `auth monitor` commands for OAuth token expiration tracking. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-26 🎉 **Config Validator & Secret Masking**: Added `config validate` command for schema validation and secret masking in onboard wizard. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-26 🎉 **Doctor Command**: Added `doctor` command for environment diagnostics including WSL detection and security checks. See [CHANGELOG.md](CHANGELOG.md).
+
+2026-03-12 🎉 **Antigravity Support & Stability**: Full Google Antigravity OAuth support with schema sanitization, TokenBudget deadlock fix, session rehydration improvements, new `picoclaw-agents clean` command, and hardened deny patterns. See [CHANGELOG.md](CHANGELOG.md) for full details.
+
+2026-03-03 🎉 **Native Skills Architecture**: Introduced native skills compiled directly into the binary (`pkg/skills/queue_batch.go`), eliminating external `.md` file dependencies. Enhanced security, performance, and type safety. See [docs/QUEUE_BATCH.en.md](docs/QUEUE_BATCH.en.md).
+
+2026-03-02 🎉 **Fast-path & Global Tracker**: Added instant Slash Commands (`/bundle_approve`, `/status`, etc.) for zero-latency interaction. Unified the `ImageGenTracker` across all agents for perfect multi-agent state consistency. See [docs/queue_batch.md](docs/queue_batch.md).
+
+2026-03-01 🎉 **AI Image Generation & Community Manager**: Added native image generation (Gemini/Ideogram), script-to-image workflows, interactive post-generation menus, and community manager agent for auto-generating social media posts. See [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) for complete setup and usage examples.
+
+2026-03-01 🎉 **External Integrations (Binance, Social Media, Notion)**: Added native tools for cryptocurrency trading (Binance futures & spot), social media publishing (Facebook & X/Twitter), and knowledge management (Notion). Configure via `config.json` or environment variables. See [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) and [docs/NOTION_util.md](docs/NOTION_util.md) for setup guides.
+
+2026-03-01 🎉 **Native Skills Sentinel**: Added internal security layer (`skills_sentinel.go`) that provides real-time pattern-based protection against prompt injection and system leaks.
+2026-03-01 🎉 **Security & Stability Hardening**: Robust message bus closure handling, resilient WeCom App background processing, and reinforced initialization validation for the shell tool.
+2026-03-01 🎉 **Fail-Close Security**: Robust security policy. The command execution tool now performs strict validation of deny patterns during initialization.
+
+2026-02-27 🎉 **Disaster Recovery & Task Locks**: Implemented atomic Task Locks to prevent agent collisions, "Boot Rehydration" for recovery from abrupt crashes, and Context Compactor (safely raising limit to 32K tokens) to eradicate context explosions in long coding tasks.
+
+---
 
 ## ⚠️ Disclaimer
 

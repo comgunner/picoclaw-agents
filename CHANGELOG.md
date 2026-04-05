@@ -6,6 +6,90 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-04-05
+
+### 🧠 Context Management Integration (picoclaw_original → Fork)
+
+Integrated 3 critical components lost from the original (`picoclaw_original`):
+
+- **ContextManager Interface:** Pluggable interface with 2 implementations — `legacy` (default, JSONL-based) and `seahorse` (SQLite-backed with multi-level summarization)
+- **Seahorse Engine (~6,800 lines):** Leaf summaries (~1200 tokens), condensed summaries (~2000 tokens), CompactUntilUnder for emergency overflow, Fresh Tail Protection (16 messages), FTS5 search
+- **Budget Check Pre-Build:** `ContextManager.Assemble()` executes BEFORE `BuildMessages()`, verifying available budget and returning already-compressed history
+- **3-Level System Prompt:** `Minimal` (~100 tokens, < 8K context), `Compact` (~500 tokens, 8K-32K), `Full` (~3000 tokens, > 32K) — automatic selection based on model's context window
+- **Fix:** WebUI + openrouter-free error 402 (39K+ tokens sent to 13K limit model) → 0% error rate
+
+**Files created:** `pkg/agent/context_manager.go`, `pkg/agent/context_budget.go`, `pkg/agent/context_legacy.go`, `pkg/agent/context_seahorse.go`, `pkg/tokenizer/estimator.go`, `pkg/seahorse/` (22 files)
+
+**Files modified:** `pkg/config/config.go`, `pkg/agent/loop.go`, `pkg/agent/instance.go`, `pkg/agent/context.go`, `pkg/session/manager.go`, `pkg/seahorse/types.go`, `config/*.json` (17 example configs)
+
+### 📦 Onboard & Auth: context_manager auto-inclusion
+
+- All onboard templates (`--free`, `--openai`, `--openrouter`, `--glm`, `--qwen`, `--qwen_zh`, `--gemini`) now include `context_manager: "seahorse"`
+- Onboard wizard (interactive) includes `context_manager` in generated JSON
+- Auth login (`--provider qwen`, `--provider zhipu`, `--provider openrouter-free`) preserves existing `context_manager` via load/save cycle
+- WebUI credential save preserves existing `context_manager`
+- Auto-migration: `SaveConfig()` detects and completes missing `context_manager` on save
+- Runtime default: `LoadConfig()` injects `"seahorse"` as default when absent
+
+**Files modified:** `pkg/config/defaults.go`, `cmd/picoclaw/internal/onboard/wizard.go`, `pkg/config/config.go`
+
+**Tests created:** `pkg/config/context_manager_test.go` (8 tests), `pkg/config/auto_migrate_test.go` (2 tests)
+
+### 🛡️ Upstream Patch Adaptation
+
+Adapted 4 patches from `picoclaw_original` (upstream) to the fork's multi-agent architecture:
+
+- **Security:** `secret-placeholder.ts` — Short secret masking (already applied, verified identical)
+- **Bug fix:** `filesystem.go` — Clarified `write_file` escape semantics (`\n` vs `\\n` in function.arguments)
+- **Bug fix:** `loop.go` — Context overflow detection (already resolved by ContextManager integration)
+- **Bug fix:** `context_budget.go` — System message token double-counting (already ported as `pkg/tokenizer/estimator.go`)
+
+See `local_work/patch_execution_log_2026-04-05.md` for detailed adaptation analysis.
+
+### 🐛 OpenRouter Free Token Overflow Fix (CRITICAL)
+
+**Problem:** WebUI sent 21,526 tokens to models with ~7,869 limit → constant 402 errors.
+
+**Root causes (3 overlapping issues):**
+1. `estimateTokens()` only counted `Content` characters, ignoring tool calls, arguments, reasoning
+2. Fixed overhead `+2500` didn't cover 60+ tool definitions (~15,000 real tokens)
+3. Single truncation attempt (keep 3 messages) insufficient if tool results were large
+
+**Solution applied:**
+- `estimateTokens()` now uses `tokenizer.EstimateMessageTokens()` counting all fields
+- Proactive check uses `tokenizer.EstimateToolDefsTokens(providerToolDefs)` instead of `+2500`
+- Auto-switch to essential tools if tool definitions exceed 30% of context window
+- Progressive truncation loop: 5 → 3 → 2 → 1 messages (re-estimate each step)
+- Emergency fallback: `PromptLevelMinimal` (~100 tokens) + 1 message only
+
+**Result:** ~300 tokens sent → ✅ 300 < 4096 (before: 21,526 → ❌)
+
+**Files modified:** `pkg/agent/loop.go` (estimateTokens, proactive check, progressive truncation, emergency fallback)
+
+### ⚠️ Warning Comments on Critical Files
+
+Added `⚠️ CRITICAL — DO NOT MODIFY` comments on 9 files to prevent regressions:
+- `pkg/agent/loop.go` — File header + `estimateTokens()` + proactive check
+- `pkg/tokenizer/estimator.go` — File header + `EstimateToolDefsTokens()`
+- `pkg/agent/context_manager.go` — File header
+- `pkg/agent/context_budget.go` — File header
+- `pkg/config/config.go` — `SaveConfig()` auto-migration
+- `pkg/config/defaults.go` — `DefaultConfig()` ContextManager default
+
+### 📚 Documentation Created/Updated
+
+| File | Purpose |
+|------|---------|
+| `docs/FREE_TIER_PROVIDERS.md` | Complete free tier providers guide (EN) |
+| `docs/FREE_TIER_PROVIDERS.es.md` | Complete free tier providers guide (ES) |
+| `docs/OPENROUTER_FREE.es.md` | Updated with token overflow fix |
+| `local_work/implementacion_auth_qwen_zhipu.md` | Added openrouter-free section |
+| `local_work/MEMORY.md` | Immutable rules to prevent future regressions |
+| `local_work/openrouter_free_token_fix.md` | Full diagnostic and solution |
+| `local_work/CONFIG_FIELD_REFERENCE.md` | Roadmap for config.json changes |
+
+---
+
 ## 2026-03-31
 
 ### 🔀 ICUETH Fork Integration & Architecture Adaptation

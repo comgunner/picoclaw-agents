@@ -1,7 +1,41 @@
 # OpenRouter Free Tier con PicoClaw-Agents
 
-**Última actualización:** 28 de marzo de 2026
-**Versión:** v1.3.0-alpha-fix901
+**Última actualización:** 5 de abril de 2026
+**Versión:** v1.3.0 (2026.4.5)
+**Estado:** ✅ Token overflow fix aplicado — error 402 resuelto
+
+---
+
+## 🔥 Actualización Crítica — Fix de Token Overflow (2026-04-05)
+
+### Problema Resuelto
+Antes de esta fecha, la WebUI enviaba **21,526 tokens** a modelos con límite de ~7,869, causando error 402 constante:
+```
+Prompt tokens limit exceeded: 21526 > 7869
+```
+
+### Qué se Fixeó
+1. **Estimación real de tokens**: `estimateTokens()` ahora cuenta tool calls, arguments, reasoning — no solo caracteres
+2. **Tool definitions reales**: Ya no usa `+2500` fijo; calcula ~15,000 tokens reales de 60+ herramientas
+3. **Auto-switch a esencial**: Si tool definitions exceden 30% del budget → usa solo 5 herramientas esenciales (~200 tokens)
+4. **Truncamiento progresivo**: 5→3→2→1 mensajes, re-estimando en cada paso
+5. **Emergency fallback**: Prompt minimal de ~100 tokens si todo lo demás falla
+
+### Resultado
+- **Antes**: ~21,526 tokens enviados → ❌ error 402
+- **Después**: ~300 tokens enviados → ✅ funciona perfecto
+
+### Comandos Después del Fix
+```bash
+# Limpiar sesiones contaminadas
+./build/picoclaw-agents clean --all
+
+# Limpiar localStorage del navegador (F12 → Console)
+localStorage.removeItem('picoclaw:last-session-id')
+
+# Relanzar
+./build/picoclaw-agents-launcher -public
+```
 
 ---
 
