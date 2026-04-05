@@ -219,6 +219,52 @@ func (r *ToolRegistry) ToProviderDefs() []providers.ToolDefinition {
 	return definitions
 }
 
+// ToProviderDefsEssential returns only essential tool definitions for
+// low-context models. This saves thousands of tokens by limiting tools
+// to the core set needed for basic operation.
+// Essential tools: read_file, write_file, edit_file, list_dir, exec, message
+func (r *ToolRegistry) ToProviderDefsEssential() []providers.ToolDefinition {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	essential := map[string]bool{
+		"read_file":  true,
+		"write_file": true,
+		"edit_file":  true,
+		"list_dir":   true,
+		"exec":       true,
+		"message":    true,
+	}
+
+	definitions := make([]providers.ToolDefinition, 0, len(essential))
+	for _, name := range r.sortedToolNames() {
+		if !essential[name] {
+			continue
+		}
+		tool := r.tools[name]
+		schema := ToolToSchema(tool)
+
+		fn, ok := schema["function"].(map[string]any)
+		if !ok {
+			continue
+		}
+
+		n, _ := fn["name"].(string)
+		desc, _ := fn["description"].(string)
+		params, _ := fn["parameters"].(map[string]any)
+
+		definitions = append(definitions, providers.ToolDefinition{
+			Type: "function",
+			Function: providers.ToolFunctionDefinition{
+				Name:        n,
+				Description: desc,
+				Parameters:  params,
+			},
+		})
+	}
+	return definitions
+}
+
 // List returns a list of all registered tool names.
 func (r *ToolRegistry) List() []string {
 	r.mu.RLock()
