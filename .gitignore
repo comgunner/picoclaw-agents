@@ -196,3 +196,8 @@ public
 
 # Test coverage output
 coverage.out
+
+# macOS metadata files
+._*
+.DS_Store
+
