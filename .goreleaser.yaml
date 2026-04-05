@@ -39,6 +39,9 @@ builds:
     ignore:
       - goos: windows
         goarch: arm
+      # modernc.org/sqlite doesn't compile on freebsd_arm_7 (libc type mismatch)
+      - goos: freebsd
+        goarch: arm
 
   - id: picoclaw-agents-launcher
     binary: picoclaw-agents-launcher
@@ -69,6 +72,9 @@ builds:
     ignore:
       - goos: windows
         goarch: arm
+      # modernc.org/sqlite doesn't compile on freebsd_arm_7 (libc type mismatch)
+      - goos: freebsd
+        goarch: arm
 
   - id: picoclaw-agents-launcher-tui
     binary: picoclaw-agents-launcher-tui
@@ -94,6 +100,9 @@ builds:
     main: ./cmd/picoclaw-launcher-tui
     ignore:
       - goos: windows
+        goarch: arm
+      # modernc.org/sqlite doesn't compile on freebsd_arm_7 (libc type mismatch)
+      - goos: freebsd
         goarch: arm
 
 dockers_v2:
