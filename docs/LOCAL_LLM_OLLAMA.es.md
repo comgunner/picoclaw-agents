@@ -226,9 +226,31 @@ Qwen 3 es la última familia de modelos abiertos de Alibaba con excelente capaci
 
 > **Verificado:** Todos los parámetros abajo son **configuraciones oficiales de Ollama** documentadas en la especificación [Ollama Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md).
 
-Ollama ofrece tres formas de aplicar límites de recursos:
+### Dónde Vive la Configuración de Ollama (Por Sistema Operativo)
 
-### Método A: Vía `/set` en el CLI (Interactivo)
+Ollama **no usa un archivo `.env`**. La configuración se maneja mediante variables de entorno al iniciar el servidor:
+
+| SO | Archivo / Ubicación de Config | Ejemplo |
+|----|----------------------|---------|
+| **macOS** | `~/.config/ollama/config.json` (raro)<br>O launchd plist: `~/Library/LaunchAgents/com.ollama.ollama.plist` | Ver sección macOS abajo |
+| **Linux** | Override systemd: `systemctl edit ollama.service`<br>O `~/.bashrc` / `~/.zshrc` | Ver sección Linux abajo |
+| **Windows** | Variables de Entorno del Sistema (Configuración → Sistema → Acerca de → Avanzado → Variables de Entorno)<br>O perfil PowerShell: `$PROFILE` | Ver sección Windows abajo |
+| **Termux** | `~/.bashrc` o `~/.zshrc` | Ver sección Termux abajo |
+
+**Variables de entorno más comunes:**
+
+| Variable | Propósito | Default |
+|----------|---------|---------|
+| `OLLAMA_HOST` | Dirección de escucha (ej: `0.0.0.0:11434` para acceso en red) | `127.0.0.1:11434` |
+| `OLLAMA_KEEP_ALIVE` | Cuánto tiempo el modelo permanece en RAM (`5m`, `1h`, `-1` siempre) | `5m` |
+| `OLLAMA_NUM_PARALLEL` | Máx solicitudes concurrentes | `1` |
+| `OLLAMA_MAX_LOADED_MODELS` | Máx modelos cargados simultáneamente | `1` |
+| `OLLAMA_GPU_ENABLED` | Poner a `0` para desactivar GPU completamente | `1` |
+| `OLLAMA_TMPDIR` | Directorio temporal para carga de modelos | Temp del sistema |
+
+### Tres Formas de Aplicar Límites de Recursos
+
+### Método A: Vía `/set` en el CLI (Interactivo, Solo Sesión)
 
 Cuando ejecutas un modelo interactivamente (`ollama run llama3`), ajusta parámetros sobre la marcha:
 
@@ -238,39 +260,138 @@ Cuando ejecutas un modelo interactivamente (`ollama run llama3`), ajusta paráme
 /set parameter num_gpu 10
 ```
 
-Los cambios tienen efecto inmediato solo para la sesión actual.
+Los cambios tienen efecto inmediato pero **se pierden al salir de la sesión**.
 
-### Método B: Vía Modelfile (Recomendado — Permanente)
+### Método B: Vía Modelfile (Permanente — Recomendado para picoclaw-agents)
 
-Crea un `Modelfile` para que las restricciones sean permanentes para un modelo específico:
+Crea un `Modelfile` para construir un modelo personalizado con límites de recursos permanentes:
 
 ```Modelfile
-FROM llama3
-PARAMETER num_thread 4
-PARAMETER num_gpu 10
-PARAMETER num_ctx 2048
+FROM llama3.2:3b
+PARAMETER num_thread 6
+PARAMETER num_ctx 4096
+PARAMETER num_gpu 25
+PARAMETER num_batch 256
+PARAMETER num_keep 4
+SYSTEM Eres un asistente útil para PicoClaw-Agents.
 ```
 
-Construye el modelo personalizado:
+Construye y úsalo:
 
 ```bash
-ollama create my-llama3-limited -f Modelfile
-ollama run my-llama3-limited
+# Crear el modelo personalizado
+ollama create picoclaw-llama -f Modelfile
+
+# Verificar que existe
+ollama list
+
+# Ejecutarlo
+ollama run picoclaw-llama
+
+# Conectar picoclaw-agents
+picoclaw-agents agent --model picoclaw-llama -m "Hola"
+```
+
+**Ahora configura picoclaw-agents** para usar tu modelo personalizado editando `~/.picoclaw/config.json`:
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-llama",
+      "model": "picoclaw-llama",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-llama"
+    }
+  }
+}
 ```
 
 ### Método C: Vía Variables de Entorno (Nivel Servidor)
 
-Controla el comportamiento global de memoria de Ollama:
+#### macOS — Usando launchd (App de Escritorio)
+
+Si instalaste Ollama vía `.dmg`, se ejecuta como servicio launchd:
 
 ```bash
-# Limitar asignación de memoria GPU
-OLLAMA_GPU_MEMORY=4096 ollama serve
+# Detener Ollama
+launchctl stop com.ollama.ollama
 
-# Limitar tiempo de retención del modelo (se descarga tras 5 minutos)
-OLLAMA_KEEP_ALIVE=5m ollama serve
+# Editar el plist de launchd (si existe)
+nano ~/Library/LaunchAgents/com.ollama.ollama.plist
 
-# Desactivar GPU completamente (modo solo CPU)
-OLLAMA_GPU_ENABLED=0 ollama serve
+# O usar variables de entorno al iniciar manualmente:
+# Primero cierra la app de la barra de menú, luego:
+OLLAMA_NUM_PARALLEL=2 OLLAMA_KEEP_ALIVE=1h ollama serve
+```
+
+**Usando la app de terminal en vez del servicio de fondo:**
+
+```bash
+# Primero cierra la app de la barra de menú
+# Luego inicia con variables de entorno:
+OLLAMA_KEEP_ALIVE=1h OLLAMA_NUM_PARALLEL=2 ollama serve
+```
+
+#### Linux — Usando systemd
+
+```bash
+# Editar el override del servicio systemd
+systemctl edit ollama.service
+
+# Agregar estas líneas en el editor:
+[Service]
+Environment="OLLAMA_NUM_PARALLEL=2"
+Environment="OLLAMA_KEEP_ALIVE=1h"
+Environment="OLLAMA_HOST=0.0.0.0:11434"
+
+# Recargar y reiniciar
+systemctl daemon-reload
+systemctl restart ollama.service
+
+# Verificar
+systemctl status ollama.service
+env | grep OLLAMA
+```
+
+#### Windows — Usando Variables de Entorno del Sistema
+
+```powershell
+# Método 1: Establecer permanentemente vía PowerShell (requiere reinicio)
+[System.Environment]::SetEnvironmentVariable("OLLAMA_KEEP_ALIVE", "1h", "User")
+[System.Environment]::SetEnvironmentVariable("OLLAMA_NUM_PARALLEL", "2", "User")
+
+# Método 2: Solo para la sesión actual
+$env:OLLAMA_KEEP_ALIVE = "1h"
+$env:OLLAMA_NUM_PARALLEL = "2"
+
+# Reiniciar servicio Ollama
+Restart-Service Ollama
+
+# O si se ejecuta manualmente, iniciar con variables:
+$env:OLLAMA_KEEP_ALIVE = "1h"
+ollama serve
+```
+
+#### Termux — Usando Config de Shell
+
+```bash
+# Agregar a ~/.bashrc o ~/.zshrc (persistente)
+echo 'export OLLAMA_KEEP_ALIVE=30m' >> ~/.bashrc
+echo 'export OLLAMA_NUM_PARALLEL=1' >> ~/.bashrc
+source ~/.bashrc
+
+# O establecer solo para la sesión actual
+export OLLAMA_KEEP_ALIVE=30m
+export OLLAMA_NUM_PARALLEL=1
+
+# Iniciar Ollama
+ollama serve
 ```
 
 ### Todos los Parámetros Oficiales de Recursos
@@ -286,7 +407,7 @@ OLLAMA_GPU_ENABLED=0 ollama serve
 | `use_mmap` | bool | true | Usar mapeo de memoria para cargar modelos |
 | `numa` | bool | false | Habilitar optimización de memoria NUMA |
 
-### Ejemplos por Plataforma
+### Ejemplos por Plataforma para picoclaw-agents
 
 #### Windows — Limitar VRAM de GPU
 

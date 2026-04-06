@@ -226,9 +226,31 @@ Qwen 3 is Alibaba's latest open model family with excellent multilingual and rea
 
 > **Verified:** All parameters below are **official Ollama settings** documented in the [Ollama Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md) specification.
 
-Ollama provides three ways to apply resource limits:
+### Where Ollama Configuration Lives (Per OS)
 
-### Method A: Via `/set` in the CLI (Interactive)
+Ollama does not use a `.env` file. Configuration is managed through environment variables when starting the server. Here's where and how to set them:
+
+| OS | Config File / Location | Example |
+|----|----------------------|---------|
+| **macOS** | `~/.config/ollama/config.json` (rarely used)<br>Or launchd plist: `~/Library/LaunchAgents/com.ollama.ollama.plist` | See macOS section below |
+| **Linux** | systemd service override: `systemctl edit ollama.service`<br>Or `~/.bashrc` / `~/.zshrc` | See Linux section below |
+| **Windows** | System Environment Variables (Settings → System → About → Advanced → Environment Variables)<br>Or PowerShell profile: `$PROFILE` | See Windows section below |
+| **Termux** | `~/.bashrc` or `~/.zshrc` | See Termux section below |
+
+**Common environment variables:**
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `OLLAMA_HOST` | Bind address (e.g., `0.0.0.0:11434` for network access) | `127.0.0.1:11434` |
+| `OLLAMA_KEEP_ALIVE` | How long model stays in RAM after use (`5m`, `1h`, `-1` forever) | `5m` |
+| `OLLAMA_NUM_PARALLEL` | Max concurrent requests | `1` |
+| `OLLAMA_MAX_LOADED_MODELS` | Max models loaded simultaneously | `1` |
+| `OLLAMA_GPU_ENABLED` | Set to `0` to disable GPU entirely | `1` |
+| `OLLAMA_TMPDIR` | Temp directory for model loading | System temp |
+
+### Three Ways to Apply Resource Limits
+
+### Method A: Via `/set` in the CLI (Interactive, Session Only)
 
 When running a model interactively (`ollama run llama3`), adjust parameters on the fly:
 
@@ -238,39 +260,138 @@ When running a model interactively (`ollama run llama3`), adjust parameters on t
 /set parameter num_gpu 10
 ```
 
-Changes take effect immediately for the current session only.
+Changes take effect immediately but **are lost when you exit the session**.
 
-### Method B: Via Modelfile (Recommended — Permanent)
+### Method B: Via Modelfile (Permanent — Recommended for picoclaw-agents)
 
-Create a `Modelfile` to make restrictions permanent for a specific model:
+Create a `Modelfile` to build a custom model with permanent resource limits:
 
 ```Modelfile
-FROM llama3
-PARAMETER num_thread 4
-PARAMETER num_gpu 10
-PARAMETER num_ctx 2048
+FROM llama3.2:3b
+PARAMETER num_thread 6
+PARAMETER num_ctx 4096
+PARAMETER num_gpu 25
+PARAMETER num_batch 256
+PARAMETER num_keep 4
+SYSTEM You are a helpful assistant for PicoClaw-Agents.
 ```
 
-Build the custom model:
+Build and use it:
 
 ```bash
-ollama create my-llama3-limited -f Modelfile
-ollama run my-llama3-limited
+# Create the custom model
+ollama create picoclaw-llama -f Modelfile
+
+# Verify it exists
+ollama list
+
+# Run it
+ollama run picoclaw-llama
+
+# Connect picoclaw-agents to it
+picoclaw-agents agent --model picoclaw-llama -m "Hello"
+```
+
+**Now configure picoclaw-agents** to use your custom model by editing `~/.picoclaw/config.json`:
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-llama",
+      "model": "picoclaw-llama",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-llama"
+    }
+  }
+}
 ```
 
 ### Method C: Via Environment Variables (Server-Level)
 
-Control Ollama's global memory behavior:
+#### macOS — Using launchd (Desktop App)
+
+If you installed Ollama via the `.dmg`, it runs as a launchd service:
 
 ```bash
-# Limit GPU memory allocation
-OLLAMA_GPU_MEMORY=4096 ollama serve
+# Stop Ollama
+launchctl stop com.ollama.ollama
 
-# Limit model keep-alive time (unloads after 5 minutes)
-OLLAMA_KEEP_ALIVE=5m ollama serve
+# Edit the launchd plist (if it exists)
+nano ~/Library/LaunchAgents/com.ollama.ollama.plist
 
-# Disable GPU entirely (CPU-only mode)
-OLLAMA_GPU_ENABLED=0 ollama serve
+# Or use environment variables inline when starting manually:
+# First quit the menu bar app, then:
+OLLAMA_NUM_PARALLEL=2 OLLAMA_KEEP_ALIVE=1h ollama serve
+```
+
+**Using terminal app instead of background service:**
+
+```bash
+# Quit the menu bar app first
+# Then start with env vars:
+OLLAMA_KEEP_ALIVE=1h OLLAMA_NUM_PARALLEL=2 ollama serve
+```
+
+#### Linux — Using systemd
+
+```bash
+# Edit the systemd service override
+systemctl edit ollama.service
+
+# Add these lines in the editor:
+[Service]
+Environment="OLLAMA_NUM_PARALLEL=2"
+Environment="OLLAMA_KEEP_ALIVE=1h"
+Environment="OLLAMA_HOST=0.0.0.0:11434"
+
+# Reload and restart
+systemctl daemon-reload
+systemctl restart ollama.service
+
+# Verify
+systemctl status ollama.service
+env | grep OLLAMA
+```
+
+#### Windows — Using System Environment Variables
+
+```powershell
+# Method 1: Set permanently via PowerShell (requires restart)
+[System.Environment]::SetEnvironmentVariable("OLLAMA_KEEP_ALIVE", "1h", "User")
+[System.Environment]::SetEnvironmentVariable("OLLAMA_NUM_PARALLEL", "2", "User")
+
+# Method 2: Set for current session only
+$env:OLLAMA_KEEP_ALIVE = "1h"
+$env:OLLAMA_NUM_PARALLEL = "2"
+
+# Restart Ollama service
+Restart-Service Ollama
+
+# Or if running manually, start with env vars:
+$env:OLLAMA_KEEP_ALIVE = "1h"
+ollama serve
+```
+
+#### Termux — Using Shell Config
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc (persistent)
+echo 'export OLLAMA_KEEP_ALIVE=30m' >> ~/.bashrc
+echo 'export OLLAMA_NUM_PARALLEL=1' >> ~/.bashrc
+source ~/.bashrc
+
+# Or set for current session only
+export OLLAMA_KEEP_ALIVE=30m
+export OLLAMA_NUM_PARALLEL=1
+
+# Start Ollama
+ollama serve
 ```
 
 ### All Official Resource Parameters
@@ -286,7 +407,7 @@ OLLAMA_GPU_ENABLED=0 ollama serve
 | `use_mmap` | bool | true | Use memory mapping for model loading |
 | `numa` | bool | false | Enable NUMA memory optimization |
 
-### Platform-Specific Examples
+### Platform-Specific Examples for picoclaw-agents
 
 #### Windows — Limit GPU VRAM
 
