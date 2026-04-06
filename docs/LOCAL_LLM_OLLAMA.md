@@ -264,52 +264,268 @@ Changes take effect immediately but **are lost when you exit the session**.
 
 ### Method B: Via Modelfile (Permanent — Recommended for picoclaw-agents)
 
-Create a `Modelfile` to build a custom model with permanent resource limits:
+#### Where to Save the Modelfile
 
-```Modelfile
-FROM llama3.2:3b
-PARAMETER num_thread 6
-PARAMETER num_ctx 4096
-PARAMETER num_gpu 25
-PARAMETER num_batch 256
-PARAMETER num_keep 4
-SYSTEM You are a helpful assistant for PicoClaw-Agents.
-```
+The Modelfile is a plain text file that **you create and keep wherever you want**. Ollama reads it once to build your custom model, then the model is stored permanently in Ollama's internal storage. The Modelfile itself can be deleted after building — but it's good practice to keep it for reference.
 
-Build and use it:
+| OS | Recommended Location | Internal Model Storage |
+|----|---------------------|----------------------|
+| **macOS** | `~/ollama-modelfiles/` | `~/.ollama/models/` |
+| **Linux** | `~/ollama-modelfiles/` | `~/.ollama/models/` |
+| **Windows** | `C:\Users\You\ollama-modelfiles\` | `C:\Users\You\.ollama\models\` |
+| **Termux** | `~/ollama-modelfiles/` | `~/.ollama/models/` |
+
+**Workflow:**
 
 ```bash
-# Create the custom model
-ollama create picoclaw-llama -f Modelfile
+# 1. Create a directory for your Modelfiles (anywhere you want)
+mkdir -p ~/ollama-modelfiles
+cd ~/ollama-modelfiles
 
-# Verify it exists
+# 2. Create the Modelfile (use any text editor)
+nano Modelfile    # or: vim Modelfile, code Modelfile
+
+# 3. Build the custom model (Ollama reads the file once)
+ollama create my-custom-model -f Modelfile
+
+# 4. The model is now stored in Ollama's internal storage
+#    You can delete the Modelfile if you want, but keeping it is useful
 ollama list
 
-# Run it
-ollama run picoclaw-llama
-
-# Connect picoclaw-agents to it
-picoclaw-agents agent --model picoclaw-llama -m "Hello"
+# 5. Use the model
+ollama run my-custom-model
 ```
 
-**Now configure picoclaw-agents** to use your custom model by editing `~/.picoclaw/config.json`:
+**Key concept:** The Modelfile is like a **recipe**. Once you bake the cake (`ollama create`), you don't need the recipe anymore — but it's handy if you want to bake another one later.
+
+#### Example 1: Gemma 4:e2b — Limited to 8GB RAM
+
+For a Mac or laptop with 8GB RAM, keeping RAM usage under control while still running Gemma 4:
+
+```bash
+mkdir -p ~/ollama-modelfiles
+cd ~/ollama-modelfiles
+```
+
+Create `Modelfile-gemma4-8gb`:
+
+```Modelfile
+FROM gemma4:e2b
+
+# CPU threads — minimum that still works (4 is safe for most CPUs)
+PARAMETER num_thread 4
+
+# Context window — reduced from default 8192 to 2048
+# This saves ~600MB+ of RAM during inference
+PARAMETER num_ctx 2048
+
+# GPU layers — on 8GB unified memory, leave room for OS + picoclaw
+# gemma4:e2b has ~40 layers total; 20 on GPU leaves ~20 on CPU
+PARAMETER num_gpu 20
+
+# Batch size — smaller batches = less RAM at once
+PARAMETER num_batch 128
+
+# Keep first 4 tokens (system prompt) always in context
+PARAMETER num_keep 4
+
+# Optional: custom system prompt for picoclaw-agents
+SYSTEM You are PicoClaw, a helpful AI assistant. Be concise and action-oriented.
+```
+
+Build and connect:
+
+```bash
+# Build the model (this downloads gemma4:e2b if not already pulled)
+ollama create picoclaw-gemma4-8gb -f Modelfile-gemma4-8gb
+
+# Verify
+ollama list | grep gemma
+
+# Test it
+ollama run picoclaw-gemma4-8gb "Hello, how much RAM do you use?"
+
+# Configure picoclaw-agents — add to ~/.picoclaw/config.json:
+```
 
 ```json
 {
   "model_list": [
     {
-      "model_name": "picoclaw-llama",
-      "model": "picoclaw-llama",
+      "model_name": "picoclaw-gemma4-8gb",
+      "model": "picoclaw-gemma4-8gb",
       "api_base": "http://localhost:11434/v1",
       "api_key": "ollama"
     }
   ],
   "agents": {
     "defaults": {
-      "model_name": "picoclaw-llama"
+      "model_name": "picoclaw-gemma4-8gb",
+      "max_tokens": 2048
     }
   }
 }
+```
+
+**Expected RAM usage:** ~5-6GB total (model ~3GB + context + overhead)
+
+#### Example 2: Qwen 3:8b — Minimal Settings for 16GB System
+
+For a desktop/laptop with 16GB RAM, running Qwen 3:8b efficiently:
+
+```bash
+cd ~/ollama-modelfiles
+```
+
+Create `Modelfile-qwen3-16gb`:
+
+```Modelfile
+FROM qwen3:8b
+
+# CPU threads — match your CPU core count (6 is conservative)
+PARAMETER num_thread 6
+
+# Context window — 4096 tokens, balanced for agent loop
+PARAMETER num_ctx 4096
+
+# GPU layers — qwen3:8b has ~35 layers; offload 25 to GPU, 10 stay on CPU
+PARAMETER num_gpu 25
+
+# Batch size — moderate for good throughput without spiking RAM
+PARAMETER num_batch 256
+
+# Keep system prompt tokens
+PARAMETER num_keep 4
+```
+
+Build and connect:
+
+```bash
+# Build
+ollama create picoclaw-qwen3-16gb -f Modelfile-qwen3-16gb
+
+# Test
+ollama run picoclaw-qwen3-16gb "Write a Python function to reverse a string"
+
+# Configure picoclaw-agents:
+```
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-qwen3-16gb",
+      "model": "picoclaw-qwen3-16gb",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-qwen3-16gb",
+      "max_tokens": 4096
+    }
+  }
+}
+```
+
+**Expected RAM/VRAM usage:** ~6-8GB total
+
+#### Example 3: Qwen 2.5-Coder:0.5b — Absolute Minimum (Ultra-Low RAM)
+
+For the smallest possible footprint — Termux, Raspberry Pi, or any constrained system. This is the **minimum viable configuration**:
+
+```bash
+cd ~/ollama-modelfiles
+```
+
+Create `Modelfile-qwen-coder-minimal`:
+
+```Modelfile
+FROM qwen2.5-coder:0.5b
+
+# Minimum threads — 2 is the lowest that still works
+PARAMETER num_thread 2
+
+# Minimum context — 512 tokens is the absolute floor
+# (below this the model may error or produce garbage)
+PARAMETER num_ctx 512
+
+# No GPU offload — this model is so small it fits entirely in CPU RAM
+# Setting num_gpu 0 ensures zero VRAM usage
+PARAMETER num_gpu 0
+
+# Smallest batch size — minimum RAM during prompt processing
+PARAMETER num_batch 64
+
+# No keep — save every token of the tiny context window
+PARAMETER num_keep 0
+```
+
+Build and connect:
+
+```bash
+# Build (~400MB model)
+ollama create picoclaw-coder-minimal -f Modelfile-qwen-coder-minimal
+
+# Test — note: short responses due to tiny context window
+ollama run picoclaw-coder-minimal "def hello():"
+
+# Configure picoclaw-agents:
+```
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-coder-minimal",
+      "model": "picoclaw-coder-minimal",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-coder-minimal",
+      "max_tokens": 512,
+      "max_tool_iterations": 5
+    }
+  }
+}
+```
+
+**Expected RAM usage:** ~600MB total (model ~400MB + context + overhead)
+**VRAM usage:** 0MB (CPU-only)
+
+This configuration works on:
+- Termux (Android, 2GB+ RAM)
+- Raspberry Pi 4 (2GB RAM)
+- Old laptops (2GB+ RAM)
+- Any system where you need AI with minimal footprint
+
+#### Quick Reference: Modelfile Parameter Ranges
+
+| Parameter | Absolute Min | Typical | Max |
+|-----------|-------------|---------|-----|
+| `num_thread` | 1 | 4-8 | CPU cores |
+| `num_ctx` | 512 | 2048-4096 | Model max (32K-128K) |
+| `num_gpu` | 0 (CPU-only) | 20-35 | All layers |
+| `num_batch` | 32 | 128-512 | 2048 |
+| `num_keep` | 0 | 4-8 | num_ctx / 2 |
+
+#### Rebuilding After Changes
+
+If you edit the Modelfile, rebuild the model:
+
+```bash
+# Edit the Modelfile
+nano ~/ollama-modelfiles/Modelfile-gemma4-8gb
+
+# Rebuild (overwrites the previous version)
+ollama create picoclaw-gemma4-8gb -f ~/ollama-modelfiles/Modelfile-gemma4-8gb
+
+# The old model is replaced — no need to delete first
+ollama list
 ```
 
 ### Method C: Via Environment Variables (Server-Level)

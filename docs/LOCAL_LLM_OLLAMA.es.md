@@ -264,52 +264,268 @@ Los cambios tienen efecto inmediato pero **se pierden al salir de la sesión**.
 
 ### Método B: Vía Modelfile (Permanente — Recomendado para picoclaw-agents)
 
-Crea un `Modelfile` para construir un modelo personalizado con límites de recursos permanentes:
+#### Dónde Guardar el Modelfile
 
-```Modelfile
-FROM llama3.2:3b
-PARAMETER num_thread 6
-PARAMETER num_ctx 4096
-PARAMETER num_gpu 25
-PARAMETER num_batch 256
-PARAMETER num_keep 4
-SYSTEM Eres un asistente útil para PicoClaw-Agents.
-```
+El Modelfile es un archivo de texto plano que **creas y guardas donde quieras**. Ollama lo lee una sola vez para construir tu modelo personalizado, y luego el modelo se almacena permanentemente en el almacenamiento interno de Ollama. El Modelfile se puede borrar después de construir — pero es buena práctica conservarlo como referencia.
 
-Construye y úsalo:
+| SO | Ubicación Recomendada | Almacenamiento Interno del Modelo |
+|----|----------------------|----------------------------------|
+| **macOS** | `~/ollama-modelfiles/` | `~/.ollama/models/` |
+| **Linux** | `~/ollama-modelfiles/` | `~/.ollama/models/` |
+| **Windows** | `C:\Users\TuUsuario\ollama-modelfiles\` | `C:\Users\TuUsuario\.ollama\models\` |
+| **Termux** | `~/ollama-modelfiles/` | `~/.ollama/models/` |
+
+**Flujo de trabajo:**
 
 ```bash
-# Crear el modelo personalizado
-ollama create picoclaw-llama -f Modelfile
+# 1. Crear un directorio para tus Modelfiles (donde quieras)
+mkdir -p ~/ollama-modelfiles
+cd ~/ollama-modelfiles
 
-# Verificar que existe
+# 2. Crear el Modelfile (usa cualquier editor de texto)
+nano Modelfile    # o: vim Modelfile, code Modelfile
+
+# 3. Construir el modelo personalizado (Ollama lee el archivo una vez)
+ollama create mi-modelo-personalizado -f Modelfile
+
+# 4. El modelo ahora está almacenado en el almacenamiento interno de Ollama
+#    Puedes borrar el Modelfile si quieres, pero es útil conservarlo
 ollama list
 
-# Ejecutarlo
-ollama run picoclaw-llama
-
-# Conectar picoclaw-agents
-picoclaw-agents agent --model picoclaw-llama -m "Hola"
+# 5. Usar el modelo
+ollama run mi-modelo-personalizado
 ```
 
-**Ahora configura picoclaw-agents** para usar tu modelo personalizado editando `~/.picoclaw/config.json`:
+**Concepto clave:** El Modelfile es como una **receta**. Una vez que horneas el pastel (`ollama create`), ya no necesitas la receta — pero es útil si quieres hornear otro después.
+
+#### Ejemplo 1: Gemma 4:e2b — Limitado a 8GB de RAM
+
+Para una Mac o laptop con 8GB de RAM, manteniendo el uso de RAM bajo control:
+
+```bash
+mkdir -p ~/ollama-modelfiles
+cd ~/ollama-modelfiles
+```
+
+Crea `Modelfile-gemma4-8gb`:
+
+```Modelfile
+FROM gemma4:e2b
+
+# Hilos de CPU — mínimo que funciona (4 es seguro para la mayoría)
+PARAMETER num_thread 4
+
+# Ventana de contexto — reducida de 8192 a 2048 por defecto
+# Esto ahorra ~600MB+ de RAM durante inferencia
+PARAMETER num_ctx 2048
+
+# Capas GPU — en 8GB de memoria unificada, deja espacio para SO + picoclaw
+# gemma4:e2b tiene ~40 capas; 20 en GPU deja ~20 en CPU
+PARAMETER num_gpu 20
+
+# Tamaño de lote — lotes más pequeños = menos RAM a la vez
+PARAMETER num_batch 128
+
+# Mantener primeros 4 tokens (prompt del sistema) siempre en contexto
+PARAMETER num_keep 4
+
+# Opcional: prompt del sistema personalizado para picoclaw-agents
+SYSTEM Eres PicoClaw, un asistente útil de IA. Sé conciso y orientado a la acción.
+```
+
+Construye y conecta:
+
+```bash
+# Construir el modelo (descarga gemma4:e2b si no está descargado)
+ollama create picoclaw-gemma4-8gb -f Modelfile-gemma4-8gb
+
+# Verificar
+ollama list | grep gemma
+
+# Probar
+ollama run picoclaw-gemma4-8gb "Hola, cuánta RAM usas?"
+
+# Configurar picoclaw-agents — agregar a ~/.picoclaw/config.json:
+```
 
 ```json
 {
   "model_list": [
     {
-      "model_name": "picoclaw-llama",
-      "model": "picoclaw-llama",
+      "model_name": "picoclaw-gemma4-8gb",
+      "model": "picoclaw-gemma4-8gb",
       "api_base": "http://localhost:11434/v1",
       "api_key": "ollama"
     }
   ],
   "agents": {
     "defaults": {
-      "model_name": "picoclaw-llama"
+      "model_name": "picoclaw-gemma4-8gb",
+      "max_tokens": 2048
     }
   }
 }
+```
+
+**Uso esperado de RAM:** ~5-6GB total (modelo ~3GB + contexto + overhead)
+
+#### Ejemplo 2: Qwen 3:8b — Configuración Mínima para Sistema de 16GB
+
+Para un escritorio/laptop con 16GB de RAM, ejecutando Qwen 3:8b eficientemente:
+
+```bash
+cd ~/ollama-modelfiles
+```
+
+Crea `Modelfile-qwen3-16gb`:
+
+```Modelfile
+FROM qwen3:8b
+
+# Hilos de CPU — iguala tu número de núcleos (6 es conservador)
+PARAMETER num_thread 6
+
+# Ventana de contexto — 4096 tokens, equilibrado para el bucle del agente
+PARAMETER num_ctx 4096
+
+# Capas GPU — qwen3:8b tiene ~35 capas; descarga 25 a GPU, 10 quedan en CPU
+PARAMETER num_gpu 25
+
+# Tamaño de lote — moderado para buen rendimiento sin picos de RAM
+PARAMETER num_batch 256
+
+# Mantener tokens del prompt del sistema
+PARAMETER num_keep 4
+```
+
+Construye y conecta:
+
+```bash
+# Construir
+ollama create picoclaw-qwen3-16gb -f Modelfile-qwen3-16gb
+
+# Probar
+ollama run picoclaw-qwen3-16gb "Escribe una función Python para invertir una cadena"
+
+# Configurar picoclaw-agents:
+```
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-qwen3-16gb",
+      "model": "picoclaw-qwen3-16gb",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-qwen3-16gb",
+      "max_tokens": 4096
+    }
+  }
+}
+```
+
+**Uso esperado de RAM/VRAM:** ~6-8GB total
+
+#### Ejemplo 3: Qwen 2.5-Coder:0.5b — Mínimo Absoluto (Ultra-Baja RAM)
+
+Para el menor consumo posible — Termux, Raspberry Pi, o cualquier sistema limitado. Esta es la **configuración mínima viable**:
+
+```bash
+cd ~/ollama-modelfiles
+```
+
+Crea `Modelfile-qwen-coder-minimal`:
+
+```Modelfile
+FROM qwen2.5-coder:0.5b
+
+# Mínimo de hilos — 2 es el mínimo que funciona
+PARAMETER num_thread 2
+
+# Contexto mínimo — 512 tokens es el piso absoluto
+# (por debajo de esto el modelo puede dar error o producir basura)
+PARAMETER num_ctx 512
+
+# Sin descarga a GPU — este modelo es tan pequeño que cabe en RAM de CPU
+# num_gpu 0 asegura cero uso de VRAM
+PARAMETER num_gpu 0
+
+# Tamaño de lote mínimo — mínimo RAM durante procesamiento de prompts
+PARAMETER num_batch 64
+
+# Sin keep — ahorrar cada token de la pequeña ventana de contexto
+PARAMETER num_keep 0
+```
+
+Construye y conecta:
+
+```bash
+# Construir (modelo ~400MB)
+ollama create picoclaw-coder-minimal -f Modelfile-qwen-coder-minimal
+
+# Probar — nota: respuestas cortas por la ventana de contexto tan pequeña
+ollama run picoclaw-coder-minimal "def hola():"
+
+# Configurar picoclaw-agents:
+```
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-coder-minimal",
+      "model": "picoclaw-coder-minimal",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-coder-minimal",
+      "max_tokens": 512,
+      "max_tool_iterations": 5
+    }
+  }
+}
+```
+
+**Uso esperado de RAM:** ~600MB total (modelo ~400MB + contexto + overhead)
+**Uso de VRAM:** 0MB (solo CPU)
+
+Esta configuración funciona en:
+- Termux (Android, 2GB+ RAM)
+- Raspberry Pi 4 (2GB RAM)
+- Laptops antiguos (2GB+ RAM)
+- Cualquier sistema donde necesites IA con mínimo consumo
+
+#### Referencia Rápida: Rangos de Parámetros del Modelfile
+
+| Parámetro | Mínimo Absoluto | Típico | Máximo |
+|-----------|----------------|---------|--------|
+| `num_thread` | 1 | 4-8 | Núcleos CPU |
+| `num_ctx` | 512 | 2048-4096 | Máx del modelo (32K-128K) |
+| `num_gpu` | 0 (solo CPU) | 20-35 | Todas las capas |
+| `num_batch` | 32 | 128-512 | 2048 |
+| `num_keep` | 0 | 4-8 | num_ctx / 2 |
+
+#### Reconstruir Después de Cambios
+
+Si editas el Modelfile, reconstruye el modelo:
+
+```bash
+# Editar el Modelfile
+nano ~/ollama-modelfiles/Modelfile-gemma4-8gb
+
+# Reconstruir (sobrescribe la versión anterior)
+ollama create picoclaw-gemma4-8gb -f ~/ollama-modelfiles/Modelfile-gemma4-8gb
+
+# El modelo anterior es reemplazado — no necesitas borrarlo primero
+ollama list
 ```
 
 ### Método C: Vía Variables de Entorno (Nivel Servidor)
