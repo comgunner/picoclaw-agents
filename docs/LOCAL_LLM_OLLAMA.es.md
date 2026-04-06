@@ -503,6 +503,192 @@ Esta configuración funciona en:
 - Laptops antiguos (2GB+ RAM)
 - Cualquier sistema donde necesites IA con mínimo consumo
 
+---
+
+#### 🍎 Bonus: Mac Mini M1 — Límite de 1GB RAM (4 Configuraciones Ultra-Bajas)
+
+Para Mac Mini M1 ejecutando otras tareas, donde quieres limitar Ollama a **1GB de RAM máximo**.
+
+> **⚠️ Importante:** Primero crea el directorio de Modelfiles:
+> ```bash
+> mkdir -p ~/ollama-modelfiles
+> cd ~/ollama-modelfiles
+> ```
+
+##### Configuración 1: Qwen 2.5:0.5b — Agente Mínimo Absoluto
+
+El modelo Qwen más pequeño. Funciona con prácticamente nada:
+
+```Modelfile
+FROM qwen2.5:0.5b
+
+# Mínimo absoluto de hilos (M1 tiene 8 núcleos, pero usamos 2 para ahorrar RAM)
+PARAMETER num_thread 2
+
+# Contexto mínimo viable — 512 tokens
+PARAMETER num_ctx 512
+
+# Sin descarga a GPU — todo en CPU para controlar memoria con precisión
+PARAMETER num_gpu 0
+
+# Tamaño de lote más pequeño
+PARAMETER num_batch 32
+
+# Sin keep
+PARAMETER num_keep 0
+```
+
+```bash
+ollama create picoclaw-qwen25-min -f ~/ollama-modelfiles/Modelfile-qwen25-min
+```
+
+**RAM esperada:** ~500MB | **VRAM:** 0MB | **Velocidad:** ~5-8 tokens/seg en M1
+
+##### Configuración 2: Qwen 3:0.6b — Pequeño pero Capaz
+
+Un poco más grande que 0.5b pero aún muy liviano:
+
+```Modelfile
+FROM qwen3:0.6b
+
+# 2 hilos — apenas usa CPU
+PARAMETER num_thread 2
+
+# Contexto pequeño — suficiente para Q&A simple
+PARAMETER num_ctx 512
+
+# Solo CPU para memoria predecible
+PARAMETER num_gpu 0
+
+# Lote mínimo
+PARAMETER num_batch 32
+
+PARAMETER num_keep 0
+```
+
+```bash
+ollama create picoclaw-qwen3-tiny -f ~/ollama-modelfiles/Modelfile-qwen3-tiny
+```
+
+**RAM esperada:** ~550MB | **VRAM:** 0MB | **Velocidad:** ~6-10 tokens/seg en M1
+
+##### Configuración 3: Qwen 2.5-Coder:0.5b — Asistente de Código Mínimo
+
+El modelo más pequeño con capacidad de código:
+
+```Modelfile
+FROM qwen2.5-coder:0.5b
+
+# 2 hilos — mínimo
+PARAMETER num_thread 2
+
+# 512 tokens de contexto — suficiente para snippets cortos
+PARAMETER num_ctx 512
+
+# Solo CPU
+PARAMETER num_gpu 0
+
+# Lote pequeño
+PARAMETER num_batch 32
+
+PARAMETER num_keep 0
+```
+
+```bash
+ollama create picoclaw-coder-tiny -f ~/ollama-modelfiles/Modelfile-coder-tiny
+```
+
+**RAM esperada:** ~500MB | **VRAM:** 0MB | **Velocidad:** ~5-8 tokens/seg en M1
+
+##### Configuración 4: Gemma 2:2b — Gemma Más Pequeño Disponible
+
+El modelo Gemma más pequeño disponible es `gemma2:2b` (~1.7GB de peso). Para ajustarse a ~1GB de RAM, usamos **límites agresivos**:
+
+```Modelfile
+FROM gemma2:2b
+
+# 2 hilos — mínimo uso de CPU
+PARAMETER num_thread 2
+
+# Contexto más pequeño posible para este modelo
+PARAMETER num_ctx 512
+
+# Sin descarga a GPU — previene picos de VRAM
+PARAMETER num_gpu 0
+
+# Lote absoluto mínimo
+PARAMETER num_batch 32
+
+PARAMETER num_keep 0
+```
+
+```bash
+ollama create picoclaw-gemma2-tiny -f ~/ollama-modelfiles/Modelfile-gemma2-tiny
+```
+
+**RAM esperada:** ~900MB-1.1GB | **VRAM:** 0MB | **Velocidad:** ~3-5 tokens/seg en M1
+
+> **⚠️ Nota sobre Gemma 2:2b:** El tamaño base de este modelo es ~1.7GB. Incluso con límites agresivos, el uso de RAM rondará 900MB-1.1GB durante inferencia. Si necesitas estrictamente menos de 1GB, usa las variantes Qwen 0.5b/0.6b de arriba.
+
+##### Comparación Rápida: Mac Mini M1 Límite 1GB
+
+| Modelo | RAM | VRAM | Velocidad | Mejor Para |
+|--------|-----|------|-----------|------------|
+| `qwen2.5:0.5b` | ~500MB | 0MB | ~5-8 t/s | Q&A general |
+| `qwen3:0.6b` | ~550MB | 0MB | ~6-10 t/s | Mejor razonamiento |
+| `qwen2.5-coder:0.5b` | ~500MB | 0MB | ~5-8 t/s | Código simple |
+| `gemma2:2b` | ~900MB-1.1GB | 0MB | ~3-5 t/s | Mejor calidad en este nivel |
+
+##### Configuración de picoclaw-agents para los 4:
+
+```json
+{
+  "model_list": [
+    {
+      "model_name": "picoclaw-qwen25-min",
+      "model": "picoclaw-qwen25-min",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    },
+    {
+      "model_name": "picoclaw-qwen3-tiny",
+      "model": "picoclaw-qwen3-tiny",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    },
+    {
+      "model_name": "picoclaw-coder-tiny",
+      "model": "picoclaw-coder-tiny",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    },
+    {
+      "model_name": "picoclaw-gemma2-tiny",
+      "model": "picoclaw-gemma2-tiny",
+      "api_base": "http://localhost:11434/v1",
+      "api_key": "ollama"
+    }
+  ],
+  "agents": {
+    "defaults": {
+      "model_name": "picoclaw-qwen3-tiny",
+      "max_tokens": 512,
+      "max_tool_iterations": 3
+    }
+  }
+}
+```
+
+##### Verificar Uso de RAM en Mac Mini M1
+
+```bash
+# Verificar memoria del proceso Ollama
+ps aux | grep ollama | grep -v grep | awk '{printf "PID %s: %s MB RSS\n", $2, $6/1024}'
+
+# O usar Monitor de Actividad → pestaña Memoria → filtrar "ollama"
+# Deberías ver los 4 modelos bajo ~1GB en reposo
+```
+
 #### Referencia Rápida: Rangos de Parámetros del Modelfile
 
 | Parámetro | Mínimo Absoluto | Típico | Máximo |
