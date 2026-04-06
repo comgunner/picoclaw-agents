@@ -370,6 +370,11 @@ ollama run picoclaw-gemma4-8gb "Hola, cuánta RAM usas?"
 
 **Uso esperado de RAM:** ~5-6GB total (modelo ~3GB + contexto + overhead)
 
+**Úsalo:**
+```bash
+./build/picoclaw-agents agent --model picoclaw-gemma4-8gb -m "Hola"
+```
+
 #### Ejemplo 2: Qwen 3:8b — Configuración Mínima para Sistema de 16GB
 
 Para un escritorio/laptop con 16GB de RAM, ejecutando Qwen 3:8b eficientemente:
@@ -432,6 +437,11 @@ ollama run picoclaw-qwen3-16gb "Escribe una función Python para invertir una ca
 ```
 
 **Uso esperado de RAM/VRAM:** ~6-8GB total
+
+**Úsalo:**
+```bash
+./build/picoclaw-agents agent --model picoclaw-qwen3-16gb -m "Hola"
+```
 
 #### Ejemplo 3: Qwen 2.5-Coder:0.5b — Mínimo Absoluto (Ultra-Baja RAM)
 
@@ -499,6 +509,11 @@ ollama run picoclaw-coder-minimal "def hola():"
 
 **Uso esperado de RAM:** ~600MB total (modelo ~400MB + contexto + overhead)
 **Uso de VRAM:** 0MB (solo CPU)
+
+**Úsalo:**
+```bash
+./build/picoclaw-agents agent --model picoclaw-coder-minimal -m "def hola():"
+```
 
 Esta configuración funciona en:
 - Termux (Android, 2GB+ RAM)
@@ -731,6 +746,36 @@ ps aux | grep ollama | grep -v grep | awk '{printf "PID %s: %s MB RSS\n", $2, $6
 # O usar Monitor de Actividad → pestaña Memoria → filtrar "ollama"
 # Deberías ver los 4 modelos bajo ~1GB en reposo
 ```
+
+##### Usar tus Modelos con picoclaw-agents
+
+Después de agregar modelos a `~/.picoclaw/config.json`, úsalos desde cualquier plataforma:
+
+**CLI (Mensaje directo):**
+```bash
+./build/picoclaw-agents agent --model picoclaw-qwen25-min -m "hola"
+./build/picoclaw-agents agent --model picoclaw-qwen3-tiny -m "Escribe una función Python"
+./build/picoclaw-agents agent --model picoclaw-coder-tiny -m "def hola():"
+./build/picoclaw-agents agent --model picoclaw-gemma2-tiny -m "Explica la recursión"
+```
+
+**CLI (Modo interactivo):**
+```bash
+./build/picoclaw-agents agent --model picoclaw-qwen25-min
+# Escribe tus mensajes interactivamente
+```
+
+**Telegram/Discord (vía gateway):**
+Una vez que el gateway esté corriendo (`./build/picoclaw-agents gateway`), cambia modelos en la conversación:
+```
+/model picoclaw-qwen25-min
+hola
+```
+
+**WebUI (picoclaw-agents-launcher):**
+1. Abre http://localhost:18800/chat
+2. Selecciona `picoclaw-qwen25-min` del menú de modelos
+3. Empieza a chatear
 
 #### Referencia Rápida: Rangos de Parámetros del Modelfile
 
