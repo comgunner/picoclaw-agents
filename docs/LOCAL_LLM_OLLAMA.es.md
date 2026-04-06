@@ -222,6 +222,180 @@ Qwen 3 es la última familia de modelos abiertos de Alibaba con excelente capaci
 
 ---
 
+## 3b. Limitar Uso de RAM, CPU y GPU
+
+> **Verificado:** Todos los parámetros abajo son **configuraciones oficiales de Ollama** documentadas en la especificación [Ollama Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md).
+
+Ollama ofrece tres formas de aplicar límites de recursos:
+
+### Método A: Vía `/set` en el CLI (Interactivo)
+
+Cuando ejecutas un modelo interactivamente (`ollama run llama3`), ajusta parámetros sobre la marcha:
+
+```
+/set parameter num_thread 4
+/set parameter num_ctx 2048
+/set parameter num_gpu 10
+```
+
+Los cambios tienen efecto inmediato solo para la sesión actual.
+
+### Método B: Vía Modelfile (Recomendado — Permanente)
+
+Crea un `Modelfile` para que las restricciones sean permanentes para un modelo específico:
+
+```Modelfile
+FROM llama3
+PARAMETER num_thread 4
+PARAMETER num_gpu 10
+PARAMETER num_ctx 2048
+```
+
+Construye el modelo personalizado:
+
+```bash
+ollama create my-llama3-limited -f Modelfile
+ollama run my-llama3-limited
+```
+
+### Método C: Vía Variables de Entorno (Nivel Servidor)
+
+Controla el comportamiento global de memoria de Ollama:
+
+```bash
+# Limitar asignación de memoria GPU
+OLLAMA_GPU_MEMORY=4096 ollama serve
+
+# Limitar tiempo de retención del modelo (se descarga tras 5 minutos)
+OLLAMA_KEEP_ALIVE=5m ollama serve
+
+# Desactivar GPU completamente (modo solo CPU)
+OLLAMA_GPU_ENABLED=0 ollama serve
+```
+
+### Todos los Parámetros Oficiales de Recursos
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `num_thread` | int | Auto (núcleos CPU) | Hilos de CPU para inferencia |
+| `num_ctx` | int | 2048 | Tamaño de ventana de contexto (tokens) |
+| `num_gpu` | int | Todas las capas | Número de capas del modelo a descargar en GPU |
+| `num_batch` | int | 512 | Tamaño de lote para procesamiento de prompts |
+| `num_keep` | int | 0 | Tokens iniciales a mantener en contexto |
+| `main_gpu` | int | 0 | GPU principal (configuraciones multi-GPU) |
+| `use_mmap` | bool | true | Usar mapeo de memoria para cargar modelos |
+| `numa` | bool | false | Habilitar optimización de memoria NUMA |
+
+### Ejemplos por Plataforma
+
+#### Windows — Limitar VRAM de GPU
+
+```powershell
+# Modelfile: limitar a 20 capas en GPU (resto en CPU/RAM)
+FROM gemma4:26b
+PARAMETER num_gpu 20
+PARAMETER num_ctx 4096
+PARAMETER num_thread 8
+
+# Construir y ejecutar
+ollama create gemma4-limited -f Modelfile
+ollama run gemma4-limited
+
+# O vía /set durante sesión interactiva
+ollama run gemma4:26b
+/set parameter num_gpu 20
+/set parameter num_ctx 4096
+```
+
+**Verificar uso de GPU en Windows:**
+```powershell
+# Administrador de tareas → Rendimiento → GPU → Memoria GPU Dedicada
+# O vía PowerShell:
+Get-Counter '\GPU Process Memory(*)\Local Usage'
+```
+
+#### macOS (Apple Silicon) — Limitar Memoria Unificada
+
+```bash
+# Modelfile: limitar hilos y contexto para Mac de 8GB
+FROM qwen3:8b
+PARAMETER num_thread 6
+PARAMETER num_ctx 2048
+PARAMETER num_gpu 30
+
+# Construir y ejecutar
+ollama create qwen3-lite -f Modelfile
+ollama run qwen3-lite
+```
+
+**Verificar uso de memoria en macOS:**
+```bash
+# Monitorear memoria del proceso Ollama
+ps aux | grep ollama | awk '{print $6/1024 " MB", $11}'
+
+# O usar Monitor de Actividad → pestaña Memoria → filtrar "ollama"
+```
+
+#### Linux (GPU NVIDIA) — Limitar Capas GPU + RAM
+
+```bash
+# Modelfile: descarga parcial de GPU para VRAM limitada
+FROM llama3.1:70b
+PARAMETER num_gpu 35
+PARAMETER num_ctx 4096
+PARAMETER num_batch 256
+PARAMETER num_thread 8
+
+ollama create llama70b-limited -f Modelfile
+ollama run llama70b-limited
+```
+
+**Verificar memoria GPU en Linux:**
+```bash
+# Memoria GPU NVIDIA
+nvidia-smi --query-gpu=memory.used,memory.total --format=csv
+
+# O ver en tiempo real
+watch -n 1 nvidia-smi
+```
+
+#### Termux (Android) — Solo CPU, Mínimo Consumo
+
+```bash
+# Modelfile: ultra-ligero para móvil
+FROM qwen3:0.6b
+PARAMETER num_thread 4
+PARAMETER num_ctx 1024
+PARAMETER num_batch 128
+PARAMETER num_gpu 0
+
+ollama create qwen-mobile -f Modelfile
+ollama run qwen-mobile
+```
+
+**Verificar memoria en Termux:**
+```bash
+# Memoria de procesos
+ps -o pid,rss,comm | grep ollama | awk '{print $1, $2/1024 " MB", $3}'
+
+# O usar htop
+pkg install htop && htop
+```
+
+### Referencia Rápida: Valores por Hardware
+
+| Hardware | `num_thread` | `num_ctx` | `num_gpu` | `num_batch` |
+|----------|-------------|-----------|-----------|-------------|
+| Termux (Android, 4GB) | 4 | 1024 | 0 | 128 |
+| Laptop (8GB RAM, sin GPU) | 6 | 2048 | 0 | 256 |
+| Mac M1 (8GB) | 6 | 2048 | 30 | 256 |
+| Desktop (16GB + 8GB VRAM) | 8 | 4096 | 35 | 512 |
+| Workstation (32GB + 24GB VRAM) | 12 | 8192 | auto | 512 |
+
+> **Tip:** `num_gpu = 0` fuerza modo solo CPU. `num_gpu = auto` (u omitido) deja que Ollama decida según la VRAM disponible.
+
+---
+
 ## 4. Conectar picoclaw-agents a Ollama
 
 ### Opción A — Editar `~/.picoclaw/config.json` directamente

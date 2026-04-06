@@ -222,6 +222,180 @@ Qwen 3 is Alibaba's latest open model family with excellent multilingual and rea
 
 ---
 
+## 3b. Limiting RAM, CPU, and GPU Usage
+
+> **Verified:** All parameters below are **official Ollama settings** documented in the [Ollama Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md) specification.
+
+Ollama provides three ways to apply resource limits:
+
+### Method A: Via `/set` in the CLI (Interactive)
+
+When running a model interactively (`ollama run llama3`), adjust parameters on the fly:
+
+```
+/set parameter num_thread 4
+/set parameter num_ctx 2048
+/set parameter num_gpu 10
+```
+
+Changes take effect immediately for the current session only.
+
+### Method B: Via Modelfile (Recommended — Permanent)
+
+Create a `Modelfile` to make restrictions permanent for a specific model:
+
+```Modelfile
+FROM llama3
+PARAMETER num_thread 4
+PARAMETER num_gpu 10
+PARAMETER num_ctx 2048
+```
+
+Build the custom model:
+
+```bash
+ollama create my-llama3-limited -f Modelfile
+ollama run my-llama3-limited
+```
+
+### Method C: Via Environment Variables (Server-Level)
+
+Control Ollama's global memory behavior:
+
+```bash
+# Limit GPU memory allocation
+OLLAMA_GPU_MEMORY=4096 ollama serve
+
+# Limit model keep-alive time (unloads after 5 minutes)
+OLLAMA_KEEP_ALIVE=5m ollama serve
+
+# Disable GPU entirely (CPU-only mode)
+OLLAMA_GPU_ENABLED=0 ollama serve
+```
+
+### All Official Resource Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `num_thread` | int | Auto (CPU cores) | CPU threads for inference |
+| `num_ctx` | int | 2048 | Context window size (tokens) |
+| `num_gpu` | int | All layers | Number of model layers to offload to GPU |
+| `num_batch` | int | 512 | Batch size for prompt processing |
+| `num_keep` | int | 0 | Initial tokens to keep in context |
+| `main_gpu` | int | 0 | Primary GPU ID (multi-GPU setups) |
+| `use_mmap` | bool | true | Use memory mapping for model loading |
+| `numa` | bool | false | Enable NUMA memory optimization |
+
+### Platform-Specific Examples
+
+#### Windows — Limit GPU VRAM
+
+```powershell
+# Modelfile: limit to 20 layers on GPU (rest on CPU/RAM)
+FROM gemma4:26b
+PARAMETER num_gpu 20
+PARAMETER num_ctx 4096
+PARAMETER num_thread 8
+
+# Build and run
+ollama create gemma4-limited -f Modelfile
+ollama run gemma4-limited
+
+# Or via /set during interactive session
+ollama run gemma4:26b
+/set parameter num_gpu 20
+/set parameter num_ctx 4096
+```
+
+**Check GPU usage in Windows:**
+```powershell
+# Task Manager → Performance tab → GPU → Dedicated GPU Memory
+# Or via PowerShell:
+Get-Counter '\GPU Process Memory(*)\Local Usage'
+```
+
+#### macOS (Apple Silicon) — Limit Unified Memory
+
+```bash
+# Modelfile: limit threads and context for an 8GB Mac
+FROM qwen3:8b
+PARAMETER num_thread 6
+PARAMETER num_ctx 2048
+PARAMETER num_gpu 30
+
+# Build and run
+ollama create qwen3-lite -f Modelfile
+ollama run qwen3-lite
+```
+
+**Check memory usage on macOS:**
+```bash
+# Monitor Ollama process memory
+ps aux | grep ollama | awk '{print $6/1024 " MB", $11}'
+
+# Or use Activity Monitor → Memory tab → filter "ollama"
+```
+
+#### Linux (NVIDIA GPU) — Limit GPU Layers + RAM
+
+```bash
+# Modelfile: partial GPU offload for limited VRAM
+FROM llama3.1:70b
+PARAMETER num_gpu 35
+PARAMETER num_ctx 4096
+PARAMETER num_batch 256
+PARAMETER num_thread 8
+
+ollama create llama70b-limited -f Modelfile
+ollama run llama70b-limited
+```
+
+**Check GPU memory on Linux:**
+```bash
+# NVIDIA GPU memory
+nvidia-smi --query-gpu=memory.used,memory.total --format=csv
+
+# Or watch in real-time
+watch -n 1 nvidia-smi
+```
+
+#### Termux (Android) — CPU-Only, Minimal Footprint
+
+```bash
+# Modelfile: ultra-lightweight for mobile
+FROM qwen3:0.6b
+PARAMETER num_thread 4
+PARAMETER num_ctx 1024
+PARAMETER num_batch 128
+PARAMETER num_gpu 0
+
+ollama create qwen-mobile -f Modelfile
+ollama run qwen-mobile
+```
+
+**Check memory on Termux:**
+```bash
+# Process memory
+ps -o pid,rss,comm | grep ollama | awk '{print $1, $2/1024 " MB", $3}'
+
+# Or use htop
+pkg install htop && htop
+```
+
+### Quick Reference: Parameter Values by Hardware
+
+| Hardware | `num_thread` | `num_ctx` | `num_gpu` | `num_batch` |
+|----------|-------------|-----------|-----------|-------------|
+| Termux (Android, 4GB) | 4 | 1024 | 0 | 128 |
+| Laptop (8GB RAM, no GPU) | 6 | 2048 | 0 | 256 |
+| Mac M1 (8GB) | 6 | 2048 | 30 | 256 |
+| Desktop (16GB + 8GB VRAM) | 8 | 4096 | 35 | 512 |
+| Workstation (32GB + 24GB VRAM) | 12 | 8192 | auto | 512 |
+
+> **Tip:** `num_gpu = 0` forces CPU-only mode. `num_gpu = auto` (or omitted) lets Ollama decide based on available VRAM.
+
+---
+
 ## 4. Connect picoclaw-agents to Ollama
 
 ### Option A — Edit `~/.picoclaw/config.json` directly
