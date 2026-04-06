@@ -686,6 +686,47 @@
         "max_size": 50,
         "ttl_seconds": 300
       }
+    },
+    "mcp": {
+      "enabled": true,
+      "default_timeout": "30s",
+      "servers": {
+        "github": {
+          "transport": "stdio",
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-github"],
+          "env": {
+            "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_your_token_here"
+          },
+          "description": "GitHub: repos, issues, PRs"
+        },
+        "filesystem": {
+          "transport": "stdio",
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
+          "enabled_tools": ["read_file", "write_file", "list_dir"],
+          "timeout": "60s",
+          "description": "Filesystem access (sandboxed)"
+        },
+        "notion": {
+          "transport": "stdio",
+          "command": "picoclaw-agents",
+          "args": ["util", "notion-mcp-server"],
+          "env": {
+            "NOTION_API_KEY": "your_notion_api_key"
+          },
+          "description": "Notion: pages, databases"
+        },
+        "google_workspace": {
+          "transport": "stdio",
+          "command": "picoclaw-agents",
+          "args": ["util", "google-workspace-mcp-server"],
+          "env": {
+            "GOOGLE_WORKSPACE_CREDENTIALS": "~/.picoclaw/google-credentials.json"
+          },
+          "description": "Gmail + Google Calendar"
+        }
+      }
     }
   },
   "heartbeat": {

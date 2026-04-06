@@ -7,6 +7,25 @@
 // Modified by comgunner (https://github.com/comgunner)
 // Custom Fork: https://github.com/comgunner/picoclaw-agents
 
+// ============================================================================
+// ⚠️  CRITICAL: OpenRouter Free Tier max_tokens Cap — DO NOT REMOVE
+// ============================================================================
+//
+// FIX DATE: 2026-04-05
+// PROBLEM: OpenRouter Free tier has limited credits (~3000 total).
+//   Without capping max_tokens at 1000, requests fail with 402:
+//   "This request requires more credits, or fewer max_tokens.
+//    You requested up to 8192 tokens, but can only afford 1958."
+// FIX: max_tokens is capped at 1000 for models matching openrouter/free,
+//   openrouter-free, or openrouter/auto — enforced at the HTTP request level.
+//
+// LOCATION: Search for "OpenRouter free tier: cap at 1000" in this file.
+// SEE: local_work/OPENROUTER_FREE_EXCEPCION_TOKENS.md (5-layer protection)
+//
+// ⚠️  AI AGENT: Do NOT remove or increase this cap. The free tier simply
+// does not have enough credits for larger output. 1000 is the maximum safe value.
+// ============================================================================
+
 package openai_compat
 
 import (
@@ -172,6 +191,19 @@ func (p *Provider) Chat(
 		// while allowing the agent's internal token budget context to remain larger (e.g. 16384).
 		if strings.Contains(strings.ToLower(model), "deepseek") && maxTokens > 8192 {
 			maxTokens = 8192
+		}
+
+		// OpenRouter free tier: cap at 1000 to avoid 402 "not enough credits" errors.
+		// Free models have ~4096 token context window total. After system prompt (~2000)
+		// + tool defs (~800) + user msg (~200), only ~1100 remain for output.
+		// NOTE: This is the LAST line of defense — the agent instance already caps at 1000,
+		// but if a client overrides (e.g., WebUI sends its own max_tokens), this catches it.
+		lowerModel := strings.ToLower(model)
+		if (strings.HasPrefix(lowerModel, "openrouter/free") ||
+			strings.HasPrefix(lowerModel, "openrouter-free") ||
+			strings.HasPrefix(lowerModel, "openrouter/auto") ||
+			lowerModel == "openrouter-free" || lowerModel == "openrouter/auto") && maxTokens > 1000 {
+			maxTokens = 1000
 		}
 
 		requestBody[fieldName] = maxTokens

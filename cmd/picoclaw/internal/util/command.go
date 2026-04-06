@@ -1,6 +1,9 @@
 package util
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/mcp"
+	"github.com/spf13/cobra"
+)
 
 func NewUtilCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -12,7 +15,14 @@ func NewUtilCommand() *cobra.Command {
 		newBinanceMCPServerCommand(),
 		newSocialMediaMCPServerCommand(),
 		newNotionMCPServerCommand(),
+		newGoogleWorkspaceMCPServerCommand(),
 		newCodegenCommand(),
+		mcp.NewMCPCommand(),
+		// Productivity tools
+		newBenchCommand(),
+		newReaperCommand(),
+		newArchLintCommand(),
+		newMdAuditCommand(),
 	)
 	return cmd
 }

@@ -11,13 +11,16 @@ package agent
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	managementinit "github.com/comgunner/picoclaw/pkg/agents/management/init"
 	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/logger"
+	"github.com/comgunner/picoclaw/pkg/mcp"
 	"github.com/comgunner/picoclaw/pkg/providers"
 	"github.com/comgunner/picoclaw/pkg/routing"
 	"github.com/comgunner/picoclaw/pkg/session"
@@ -60,6 +63,9 @@ type AgentInstance struct {
 	Role       string // Agent role (e.g., "coordinator", "developer", "tester")
 	Status     string // Current status (e.g., "idle", "running", "waiting")
 	LastActive int64  // Last activity timestamp (Unix seconds)
+
+	// MCP Components
+	mcpCloser io.Closer // MCP client manager for cleanup
 }
 
 // ProviderFactory is a function that returns a provider for a given model.
@@ -127,6 +133,11 @@ func NewAgentInstance(
 	toolsRegistry.Register(tools.NewMemoryStoreTool(workspace))
 	toolsRegistry.Register(tools.NewVersionControlTool(workspace))
 	toolsRegistry.Register(tools.NewSelfDiagnosticsTool(workspace, filepath.Join(workspace, "..", "config.json")))
+	// Productivity tools
+	toolsRegistry.Register(tools.NewBenchTool(workspace))
+	toolsRegistry.Register(tools.NewReaperTool())
+	toolsRegistry.Register(tools.NewArchLintTool(workspace))
+	toolsRegistry.Register(tools.NewMdAuditTool(workspace))
 
 	// Register all 12 Agent Management tools (agent_list, agent_get, agent_can_spawn, etc.)
 	managementinit.RegisterManagementTools(cfg, toolsRegistry)
@@ -143,6 +154,41 @@ func NewAgentInstance(
 				"version_control",
 			},
 		})
+
+	// Initialize MCP client if enabled
+	var mcpCloser io.Closer
+	if cfg != nil && cfg.Tools.MCP.Enabled && len(cfg.Tools.MCP.Servers) > 0 {
+		mcpClient := &mcp.MCPClientManager{}
+		errs := mcpClient.ConnectAll(cfg.Tools.MCP.Servers)
+		if len(errs) > 0 {
+			logger.WarnCF("mcp", "Some MCP servers failed to connect",
+				map[string]any{"failed": len(errs)})
+		}
+
+		// Register MCP tools in ToolRegistry
+		count := 0
+		for name, srvCfg := range cfg.Tools.MCP.Servers {
+			server := mcpClient.GetServer(name)
+			if server == nil {
+				continue
+			}
+			timeout := cfg.Tools.MCP.DefaultTimeout
+			if srvCfg.Timeout > 0 {
+				timeout = srvCfg.Timeout
+			}
+			if timeout == 0 {
+				timeout = 30 // default 30 seconds
+			}
+			for _, info := range server.Tools() {
+				tool := tools.NewMCPOperatorTool(name, info, mcpClient, time.Duration(timeout)*time.Second)
+				toolsRegistry.Register(tool)
+				count++
+			}
+		}
+		logger.InfoCF("mcp", "MCP tools registered",
+			map[string]any{"tools": count, "servers": len(cfg.Tools.MCP.Servers)})
+		mcpCloser = mcpClient // io.Closer interface
+	}
 
 	sessionsDir := filepath.Join(workspace, "sessions")
 	sessionsManager := session.NewSessionManager(sessionsDir)
@@ -260,6 +306,7 @@ func NewAgentInstance(
 		SkillsFilter:      skillsFilter,
 		Candidates:        candidates,
 		IsLowContextModel: isOpenRouterFree,
+		mcpCloser:         mcpCloser,
 	}
 }
 

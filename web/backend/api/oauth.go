@@ -23,6 +23,7 @@ const (
 	oauthProviderGoogleAntigravity = "google-antigravity"
 	oauthProviderQwen              = "qwen"
 	oauthProviderZhipu             = "zhipu"
+	oauthProviderOpenRouterFree    = "openrouter-free"
 
 	oauthMethodBrowser    = "browser"
 	oauthMethodDeviceCode = "device_code"
@@ -46,6 +47,7 @@ var oauthProviderOrder = []string{
 	oauthProviderGoogleAntigravity,
 	oauthProviderQwen,
 	oauthProviderZhipu,
+	oauthProviderOpenRouterFree,
 }
 
 var oauthProviderMethods = map[string][]string{
@@ -54,6 +56,7 @@ var oauthProviderMethods = map[string][]string{
 	oauthProviderGoogleAntigravity: {oauthMethodBrowser},
 	oauthProviderQwen:              {oauthMethodToken}, // Qwen usa API Key, no OAuth
 	oauthProviderZhipu:             {oauthMethodToken}, // Zhipu usa API Key, no OAuth
+	oauthProviderOpenRouterFree:    {oauthMethodToken}, // OpenRouter Free tier
 }
 
 var oauthProviderLabels = map[string]string{
@@ -62,6 +65,7 @@ var oauthProviderLabels = map[string]string{
 	oauthProviderGoogleAntigravity: "Google Antigravity",
 	oauthProviderQwen:              "Qwen Portal",
 	oauthProviderZhipu:             "Zhipu AI (z.ai)",
+	oauthProviderOpenRouterFree:    "OpenRouter Free",
 }
 
 var (
@@ -539,7 +543,7 @@ func normalizeOAuthProvider(raw string) (string, error) {
 		return oauthProviderQwen, nil
 	case "zhipu", "z.ai", "glm":
 		return oauthProviderZhipu, nil
-	case oauthProviderOpenAI, oauthProviderAnthropic, oauthProviderGoogleAntigravity, oauthProviderQwen:
+	case oauthProviderOpenAI, oauthProviderAnthropic, oauthProviderGoogleAntigravity, oauthProviderQwen, oauthProviderOpenRouterFree:
 		return provider, nil
 	default:
 		return "", fmt.Errorf("unsupported provider %q", raw)

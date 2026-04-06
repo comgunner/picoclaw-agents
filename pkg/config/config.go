@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync/atomic"
 
 	"github.com/caarlos0/env/v11"
@@ -645,8 +646,61 @@ type MCPDiscoveryConfig struct {
 
 // MCPToolsConfig configures the MCP (Model Context Protocol) tool layer.
 type MCPToolsConfig struct {
-	Enabled   bool               `json:"enabled"   env:"PICOCLAW_TOOLS_MCP_ENABLED"`
-	Discovery MCPDiscoveryConfig `json:"discovery"`
+	Enabled        bool                       `json:"enabled"        env:"PICOCLAW_TOOLS_MCP_ENABLED"`
+	Discovery      MCPDiscoveryConfig         `json:"discovery"`
+	Servers        map[string]MCPServerConfig `json:"servers,omitempty"`
+	DefaultTimeout int                        `json:"default_timeout,omitempty"` // seconds, 30s default
+}
+
+// MCPServerConfig configures a single MCP server connection.
+type MCPServerConfig struct {
+	Transport    string            `json:"transport"`              // "stdio", "sse", "http"
+	Command      string            `json:"command,omitempty"`
+	Args         []string          `json:"args,omitempty"`
+	Env          map[string]string `json:"env,omitempty"`
+	URL          string            `json:"url,omitempty"`
+	Headers      map[string]string `json:"headers,omitempty"`
+	EnabledTools []string          `json:"enabled_tools,omitempty"` // ["*"] = all
+	Timeout      int               `json:"timeout,omitempty"`       // seconds, 0 = use default
+	Description  string            `json:"description,omitempty"`
+}
+
+// AllowedStdioCommands is the default whitelist for MCP stdio subprocesses.
+// Prevents arbitrary shell access via malicious MCP server config.
+var AllowedStdioCommands = map[string]bool{
+	"npx":             true,
+	"node":            true,
+	"python":          true,
+	"python3":         true,
+	"pipx":            true,
+	"uvx":             true,
+	"go":              true,
+	"picoclaw-agents": true,
+}
+
+// ValidateCommand checks if a command is in the allowed list.
+func (c *MCPServerConfig) ValidateCommand() error {
+	if c.Transport != "stdio" {
+		return nil // non-stdio transports don't spawn local processes
+	}
+	if c.Command == "" {
+		return fmt.Errorf("stdio transport requires command")
+	}
+	// Extract base command (first element, resolve basename)
+	cmd := filepath.Base(c.Command)
+	if !AllowedStdioCommands[cmd] {
+		return fmt.Errorf("command %q not allowed for MCP stdio (allowed: %v)", cmd, allowedList())
+	}
+	return nil
+}
+
+func allowedList() []string {
+	var list []string
+	for cmd := range AllowedStdioCommands {
+		list = append(list, cmd)
+	}
+	slices.Sort(list)
+	return list
 }
 
 type ExecConfig struct {

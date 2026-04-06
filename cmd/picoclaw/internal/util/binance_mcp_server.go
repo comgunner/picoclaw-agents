@@ -50,6 +50,9 @@ func newBinanceMCPServerCommand() *cobra.Command {
 func newSocialMediaMCPServerCommand() *cobra.Command {
 	var fbPageID string
 	var fbPageToken string
+	var fbAppID string
+	var fbAppSecret string
+	var fbUserToken string
 	var xAPIKey string
 	var xAPISecret string
 	var xAccessToken string
@@ -60,45 +63,26 @@ func newSocialMediaMCPServerCommand() *cobra.Command {
 		Short: "Start Social Media MCP server over stdio (Facebook + X)",
 		Args:  cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
-			// Resolve Facebook credentials
-			resolvedFBPageID := strings.TrimSpace(fbPageID)
-			resolvedFBPageToken := strings.TrimSpace(fbPageToken)
-			if resolvedFBPageID == "" {
-				resolvedFBPageID = strings.TrimSpace(os.Getenv(utils.EnvSocialFacebookPageID))
+			cfg := &utils.SocialMediaMCPConfig{
+				FacebookPageID:    orEnv("PICOCLAW_TOOLS_SOCIAL_FACEBOOK_DEFAULT_PAGE_ID", fbPageID),
+				FacebookPageToken: orEnv("PICOCLAW_TOOLS_SOCIAL_FACEBOOK_DEFAULT_PAGE_TOKEN", fbPageToken),
+				FacebookAppID:     orEnv("PICOCLAW_TOOLS_SOCIAL_FACEBOOK_APP_ID", fbAppID),
+				FacebookAppSecret: orEnv("PICOCLAW_TOOLS_SOCIAL_FACEBOOK_APP_SECRET", fbAppSecret),
+				FacebookUserToken: orEnv("PICOCLAW_TOOLS_SOCIAL_FACEBOOK_USER_TOKEN", fbUserToken),
+				XAPIKey:           orEnv("PICOCLAW_TOOLS_SOCIAL_X_API_KEY", xAPIKey),
+				XAPISecret:        orEnv("PICOCLAW_TOOLS_SOCIAL_X_API_SECRET", xAPISecret),
+				XAccessToken:      orEnv("PICOCLAW_TOOLS_SOCIAL_X_ACCESS_TOKEN", xAccessToken),
+				XAccessSecret:     orEnv("PICOCLAW_TOOLS_SOCIAL_X_ACCESS_TOKEN_SECRET", xAccessTokenSecret),
 			}
-			if resolvedFBPageToken == "" {
-				resolvedFBPageToken = strings.TrimSpace(os.Getenv(utils.EnvSocialFacebookPageToken))
-			}
-
-			// Resolve X credentials
-			resolvedXAPIKey := strings.TrimSpace(xAPIKey)
-			resolvedXAPISecret := strings.TrimSpace(xAPISecret)
-			resolvedXAccessToken := strings.TrimSpace(xAccessToken)
-			resolvedXAccessTokenSecret := strings.TrimSpace(xAccessTokenSecret)
-
-			if resolvedXAPIKey == "" {
-				resolvedXAPIKey = strings.TrimSpace(os.Getenv(utils.EnvSocialXAPIKey))
-			}
-			if resolvedXAPISecret == "" {
-				resolvedXAPISecret = strings.TrimSpace(os.Getenv(utils.EnvSocialXAPISecret))
-			}
-			if resolvedXAccessToken == "" {
-				resolvedXAccessToken = strings.TrimSpace(os.Getenv(utils.EnvSocialXAccessToken))
-			}
-			if resolvedXAccessTokenSecret == "" {
-				resolvedXAccessTokenSecret = strings.TrimSpace(os.Getenv(utils.EnvSocialXAccessTokenSecret))
-			}
-
-			// TODO: Implement ServeSocialMediaMCPStdio in utils
-			fmt.Printf("Social Media MCP Server (placeholder)\n")
-			fmt.Printf("Facebook Page ID: %s\n", resolvedFBPageID)
-			fmt.Printf("X API Key configured: %v\n", resolvedXAPIKey != "")
-			return nil
+			return utils.ServeSocialMediaMCPStdio(cfg)
 		},
 	}
 
 	cmd.Flags().StringVar(&fbPageID, "fb-page-id", "", "Facebook Page ID")
 	cmd.Flags().StringVar(&fbPageToken, "fb-page-token", "", "Facebook Page Token")
+	cmd.Flags().StringVar(&fbAppID, "fb-app-id", "", "Facebook App ID")
+	cmd.Flags().StringVar(&fbAppSecret, "fb-app-secret", "", "Facebook App Secret")
+	cmd.Flags().StringVar(&fbUserToken, "fb-user-token", "", "Facebook User Token")
 	cmd.Flags().StringVar(&xAPIKey, "x-api-key", "", "X API Key")
 	cmd.Flags().StringVar(&xAPISecret, "x-api-secret", "", "X API Secret")
 	cmd.Flags().StringVar(&xAccessToken, "x-access-token", "", "X Access Token")
@@ -115,19 +99,41 @@ func newNotionMCPServerCommand() *cobra.Command {
 		Short: "Start Notion MCP server over stdio",
 		Args:  cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
-			resolvedAPIKey := strings.TrimSpace(apiKey)
-			if resolvedAPIKey == "" {
-				resolvedAPIKey = strings.TrimSpace(os.Getenv(utils.EnvNotionAPIKey))
+			cfg := &utils.NotionMCPConfig{
+				APIKey: orEnv("NOTION_API_KEY", apiKey),
 			}
-
-			// TODO: Implement ServeNotionMCPStdio in utils
-			fmt.Printf("Notion MCP Server (placeholder)\n")
-			fmt.Printf("API Key configured: %v\n", resolvedAPIKey != "")
-			return nil
+			return utils.ServeNotionMCPStdio(cfg)
 		},
 	}
 
-	cmd.Flags().StringVar(&apiKey, "api-key", "", "Notion API key (overrides PICOCLAW_TOOLS_NOTION_API_KEY)")
+	cmd.Flags().StringVar(&apiKey, "api-key", "", "Notion API key")
 
+	return cmd
+}
+
+// orEnv returns the env var value if non-empty, otherwise the fallback.
+func orEnv(envKey, fallback string) string {
+	if v := os.Getenv(envKey); v != "" {
+		return strings.TrimSpace(v)
+	}
+	return strings.TrimSpace(fallback)
+}
+
+func newGoogleWorkspaceMCPServerCommand() *cobra.Command {
+	var credentialsPath string
+
+	cmd := &cobra.Command{
+		Use:   "google-workspace-mcp-server",
+		Short: "Start Google Workspace MCP server over stdio (Gmail + Calendar)",
+		Args:  cobra.NoArgs,
+		RunE: func(_ *cobra.Command, _ []string) error {
+			cfg := &utils.GoogleWorkspaceMCPConfig{
+				CredentialsJSON: orEnv("GOOGLE_WORKSPACE_CREDENTIALS", credentialsPath),
+			}
+			return utils.ServeGoogleWorkspaceMCPStdio(cfg)
+		},
+	}
+
+	cmd.Flags().StringVar(&credentialsPath, "credentials", "", "Path to Google credentials JSON")
 	return cmd
 }

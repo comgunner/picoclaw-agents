@@ -88,6 +88,66 @@ Added `⚠️ CRITICAL — DO NOT MODIFY` comments on 9 files to prevent regress
 | `local_work/openrouter_free_token_fix.md` | Full diagnostic and solution |
 | `local_work/CONFIG_FIELD_REFERENCE.md` | Roadmap for config.json changes |
 
+### 🧹 Repository Cleanup
+
+- Removed accidental macOS metadata files (`._*`) committed in previous session
+- Updated `.gitignore` with `._*` pattern to prevent future recurrence
+
+---
+
+## 2026-04-04
+
+### 📣 README: Referral Section (multilingual)
+
+Added "Powered by / Referral" section to all 7 README language variants (EN, ES, FR, JA, PT-BR, VI, ZH):
+
+- **Qwen Code** — AI coding assistant by Alibaba (referral link)
+- **Zhipu AI (z.ai)** — Free GLM models, no credit card required (referral link)
+
+---
+
+## 2026-04-02
+
+### 🤝 A2A (Agent-to-Agent) Protocol Integration
+
+Implemented full A2A communication layer allowing agents to coordinate, delegate, and collaborate across instances:
+
+- **`pkg/agentcomm/shared.go`** — Shared types and interfaces for inter-agent communication (A2ARequest, A2AResponse, AgentCapability)
+- **`pkg/agent/a2a_integration.go`** — A2A protocol handler: capability advertisement, request routing, response aggregation
+- **`pkg/agent/orchestrator.go`** — Multi-agent orchestrator: parallel task dispatch, result merging, timeout management
+- **`pkg/agent/department_router.go`** — Semantic department routing: maps user intents to specialist agents via keyword/embedding matching
+- **`cmd/picoclaw/internal/agent/subagent_a2a.go`** — CLI subcommand for A2A agent spawning and management
+
+**Test coverage:** `a2a_integration_test.go` (195 lines), `integration_a2a_test.go` (441 lines), `orchestrator_test.go` (427 lines), `department_router_test.go` (307 lines), `agentcomm/shared_test.go` (315 lines)
+
+### 📬 Mailbox System
+
+New async inter-agent message passing system (`pkg/mailbox/`):
+
+- **`mailbox.go`** — Per-agent inbox with delivery guarantees and TTL expiry
+- **`hub.go`** — Central hub routing messages between registered agents, broadcast support
+
+**Test coverage:** `mailbox_test.go` (377 lines), `hub_test.go` (471 lines)
+
+### 🔑 Qwen OAuth Package
+
+Full OAuth/session management for Qwen Portal (DashScope) extracted into dedicated package (`pkg/auth/qwen_*.go`):
+
+- `qwen_oauth.go` — Device code + PKCE flow
+- `qwen_client.go` — Authenticated HTTP client with token refresh
+- `qwen_session.go` — Session persistence and rotation
+- `qwen_types.go` — Type definitions
+
+**Test coverage:** `qwen_types_test.go` (480 lines), `qwen_security_test.go` (431 lines)
+
+### 📚 Documentation
+
+| File | Purpose |
+|------|---------|
+| `docs/CREDITS_A2A_INTEGRATION.md` | Attribution and design rationale for A2A integration |
+| `docs/TELEGRAM_WARP_PROXY_FIX.md` | Fix for Telegram connectivity via WARP proxy (EN) |
+| `docs/TELEGRAM_WARP_PROXY_FIX.es.md` | Fix for Telegram connectivity via WARP proxy (ES) |
+
 ---
 
 ## 2026-03-31

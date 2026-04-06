@@ -1223,13 +1223,34 @@ func OpenRouterDefaultConfig() *Config {
 	return cfg
 }
 
+// ============================================================================
+// ⚠️  CRITICAL: OpenRouter Free max_tokens — DO NOT REMOVE OR INCREASE ABOVE 4096
+// ============================================================================
+//
+// FIX DATE: 2026-04-05
+// PROBLEM: OpenRouter Free tier has limited credits.
+//   If the account runs out of credits, API returns 402:
+//   "This request requires more credits, or fewer max_tokens."
+//   Example: requested 8192, can only afford 1958.
+// FIX: max_tokens set to 4096 (conservative for free tier).
+// NOTE: If 402 persists, the user must add credits at openrouter.ai/settings/credits
+//   OR switch to a different free provider (qwen, zhipu).
+// SEE: local_work/CHANGELOG_050426.md (OpenRouter Free section)
+//
+// ⚠️  AI AGENT: If you are modifying this function, DO NOT set max_tokens
+// above 4096 or remove the MaxTokens line. The free tier has limited credits.
+// ============================================================================
+
 // OpenRouterFreeDefaultConfig returns a configuration template that uses only
 // OpenRouter free-tier models — no API balance required.
 // Uses "openrouter/auto" with require_parameters:true so OpenRouter routes only
 // to free models that support function/tool calling.
+//
+// max_tokens: 4096 — conservative for OpenRouter Free tier credit limits.
 func OpenRouterFreeDefaultConfig() *Config {
 	cfg := TemplateDefaultConfig()
 	cfg.Agents.Defaults.Model = "openrouter-free"
+	cfg.Agents.Defaults.MaxTokens = 4096 // Conservative for free tier credits
 	for i := range cfg.Agents.List {
 		cfg.Agents.List[i].Model = &AgentModelConfig{
 			Primary: "openrouter-free",
