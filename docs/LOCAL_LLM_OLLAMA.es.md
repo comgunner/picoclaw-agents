@@ -519,6 +519,12 @@ Para Mac Mini M1 ejecutando otras tareas, donde quieres limitar Ollama a **1GB d
 
 El modelo Qwen más pequeño. Funciona con prácticamente nada:
 
+```bash
+nano ~/ollama-modelfiles/Modelfile-qwen25-min
+```
+
+Pega el siguiente contenido:
+
 ```Modelfile
 FROM qwen2.5:0.5b
 
@@ -538,6 +544,10 @@ PARAMETER num_batch 32
 PARAMETER num_keep 0
 ```
 
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
+Construye:
+
 ```bash
 ollama create picoclaw-qwen25-min -f ~/ollama-modelfiles/Modelfile-qwen25-min
 ```
@@ -547,6 +557,12 @@ ollama create picoclaw-qwen25-min -f ~/ollama-modelfiles/Modelfile-qwen25-min
 ##### Configuración 2: Qwen 3:0.6b — Pequeño pero Capaz
 
 Un poco más grande que 0.5b pero aún muy liviano:
+
+```bash
+nano ~/ollama-modelfiles/Modelfile-qwen3-tiny
+```
+
+Pega el siguiente contenido:
 
 ```Modelfile
 FROM qwen3:0.6b
@@ -566,6 +582,10 @@ PARAMETER num_batch 32
 PARAMETER num_keep 0
 ```
 
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
+Construye:
+
 ```bash
 ollama create picoclaw-qwen3-tiny -f ~/ollama-modelfiles/Modelfile-qwen3-tiny
 ```
@@ -575,6 +595,12 @@ ollama create picoclaw-qwen3-tiny -f ~/ollama-modelfiles/Modelfile-qwen3-tiny
 ##### Configuración 3: Qwen 2.5-Coder:0.5b — Asistente de Código Mínimo
 
 El modelo más pequeño con capacidad de código:
+
+```bash
+nano ~/ollama-modelfiles/Modelfile-coder-tiny
+```
+
+Pega el siguiente contenido:
 
 ```Modelfile
 FROM qwen2.5-coder:0.5b
@@ -594,6 +620,10 @@ PARAMETER num_batch 32
 PARAMETER num_keep 0
 ```
 
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
+Construye:
+
 ```bash
 ollama create picoclaw-coder-tiny -f ~/ollama-modelfiles/Modelfile-coder-tiny
 ```
@@ -603,6 +633,12 @@ ollama create picoclaw-coder-tiny -f ~/ollama-modelfiles/Modelfile-coder-tiny
 ##### Configuración 4: Gemma 2:2b — Gemma Más Pequeño Disponible
 
 El modelo Gemma más pequeño disponible es `gemma2:2b` (~1.7GB de peso). Para ajustarse a ~1GB de RAM, usamos **límites agresivos**:
+
+```bash
+nano ~/ollama-modelfiles/Modelfile-gemma2-tiny
+```
+
+Pega el siguiente contenido:
 
 ```Modelfile
 FROM gemma2:2b
@@ -621,6 +657,10 @@ PARAMETER num_batch 32
 
 PARAMETER num_keep 0
 ```
+
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
+Construye:
 
 ```bash
 ollama create picoclaw-gemma2-tiny -f ~/ollama-modelfiles/Modelfile-gemma2-tiny

@@ -519,6 +519,12 @@ For Mac Mini M1 running other workloads, where you want to cap Ollama at **1GB R
 
 The absolute smallest Qwen model. Runs on virtually nothing:
 
+```bash
+nano ~/ollama-modelfiles/Modelfile-qwen25-min
+```
+
+Paste the following content:
+
 ```Modelfile
 FROM qwen2.5:0.5b
 
@@ -538,6 +544,10 @@ PARAMETER num_batch 32
 PARAMETER num_keep 0
 ```
 
+Save with `Ctrl+O`, then `Enter`, then `Ctrl+X`.
+
+Build:
+
 ```bash
 ollama create picoclaw-qwen25-min -f ~/ollama-modelfiles/Modelfile-qwen25-min
 ```
@@ -547,6 +557,12 @@ ollama create picoclaw-qwen25-min -f ~/ollama-modelfiles/Modelfile-qwen25-min
 ##### Configuration 2: Qwen 3:0.6b — Tiny but Capable
 
 Slightly larger than 0.5b but still very lightweight:
+
+```bash
+nano ~/ollama-modelfiles/Modelfile-qwen3-tiny
+```
+
+Paste the following content:
 
 ```Modelfile
 FROM qwen3:0.6b
@@ -566,6 +582,10 @@ PARAMETER num_batch 32
 PARAMETER num_keep 0
 ```
 
+Save with `Ctrl+O`, then `Enter`, then `Ctrl+X`.
+
+Build:
+
 ```bash
 ollama create picoclaw-qwen3-tiny -f ~/ollama-modelfiles/Modelfile-qwen3-tiny
 ```
@@ -575,6 +595,12 @@ ollama create picoclaw-qwen3-tiny -f ~/ollama-modelfiles/Modelfile-qwen3-tiny
 ##### Configuration 3: Qwen 2.5-Coder:0.5b — Minimal Coding Assistant
 
 The smallest model with coding capability:
+
+```bash
+nano ~/ollama-modelfiles/Modelfile-coder-tiny
+```
+
+Paste the following content:
 
 ```Modelfile
 FROM qwen2.5-coder:0.5b
@@ -594,6 +620,10 @@ PARAMETER num_batch 32
 PARAMETER num_keep 0
 ```
 
+Save with `Ctrl+O`, then `Enter`, then `Ctrl+X`.
+
+Build:
+
 ```bash
 ollama create picoclaw-coder-tiny -f ~/ollama-modelfiles/Modelfile-coder-tiny
 ```
@@ -602,7 +632,13 @@ ollama create picoclaw-coder-tiny -f ~/ollama-modelfiles/Modelfile-coder-tiny
 
 ##### Configuration 4: Gemma 2:2b — Smallest Gemma Available
 
-The smallest Gemma model available is `gemma2:2b` (~1.7GB model weight). To fit within ~1GB RAM, we use **heavy quantization** and **aggressive limits**:
+The smallest Gemma model available is `gemma2:2b` (~1.7GB model weight). To fit within ~1GB RAM, we use **aggressive limits**:
+
+```bash
+nano ~/ollama-modelfiles/Modelfile-gemma2-tiny
+```
+
+Paste the following content:
 
 ```Modelfile
 FROM gemma2:2b
@@ -621,6 +657,10 @@ PARAMETER num_batch 32
 
 PARAMETER num_keep 0
 ```
+
+Save with `Ctrl+O`, then `Enter`, then `Ctrl+X`.
+
+Build:
 
 ```bash
 ollama create picoclaw-gemma2-tiny -f ~/ollama-modelfiles/Modelfile-gemma2-tiny
