@@ -304,10 +304,10 @@ Para una Mac o laptop con 8GB de RAM, manteniendo el uso de RAM bajo control:
 
 ```bash
 mkdir -p ~/ollama-modelfiles
-cd ~/ollama-modelfiles
+nano ~/ollama-modelfiles/Modelfile-gemma4-8gb
 ```
 
-Crea `Modelfile-gemma4-8gb`:
+Pega el siguiente contenido:
 
 ```Modelfile
 FROM gemma4:e2b
@@ -333,11 +333,12 @@ PARAMETER num_keep 4
 SYSTEM Eres PicoClaw, un asistente útil de IA. Sé conciso y orientado a la acción.
 ```
 
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
 Construye y conecta:
 
 ```bash
-# Construir el modelo (descarga gemma4:e2b si no está descargado)
-ollama create picoclaw-gemma4-8gb -f Modelfile-gemma4-8gb
+ollama create picoclaw-gemma4-8gb -f ~/ollama-modelfiles/Modelfile-gemma4-8gb
 
 # Verificar
 ollama list | grep gemma
@@ -374,10 +375,10 @@ ollama run picoclaw-gemma4-8gb "Hola, cuánta RAM usas?"
 Para un escritorio/laptop con 16GB de RAM, ejecutando Qwen 3:8b eficientemente:
 
 ```bash
-cd ~/ollama-modelfiles
+nano ~/ollama-modelfiles/Modelfile-qwen3-16gb
 ```
 
-Crea `Modelfile-qwen3-16gb`:
+Pega el siguiente contenido:
 
 ```Modelfile
 FROM qwen3:8b
@@ -398,11 +399,12 @@ PARAMETER num_batch 256
 PARAMETER num_keep 4
 ```
 
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
 Construye y conecta:
 
 ```bash
-# Construir
-ollama create picoclaw-qwen3-16gb -f Modelfile-qwen3-16gb
+ollama create picoclaw-qwen3-16gb -f ~/ollama-modelfiles/Modelfile-qwen3-16gb
 
 # Probar
 ollama run picoclaw-qwen3-16gb "Escribe una función Python para invertir una cadena"
@@ -436,10 +438,10 @@ ollama run picoclaw-qwen3-16gb "Escribe una función Python para invertir una ca
 Para el menor consumo posible — Termux, Raspberry Pi, o cualquier sistema limitado. Esta es la **configuración mínima viable**:
 
 ```bash
-cd ~/ollama-modelfiles
+nano ~/ollama-modelfiles/Modelfile-qwen-coder-minimal
 ```
 
-Crea `Modelfile-qwen-coder-minimal`:
+Pega el siguiente contenido:
 
 ```Modelfile
 FROM qwen2.5-coder:0.5b
@@ -462,11 +464,12 @@ PARAMETER num_batch 64
 PARAMETER num_keep 0
 ```
 
+Guarda con `Ctrl+O`, luego `Enter`, luego `Ctrl+X`.
+
 Construye y conecta:
 
 ```bash
-# Construir (modelo ~400MB)
-ollama create picoclaw-coder-minimal -f Modelfile-qwen-coder-minimal
+ollama create picoclaw-coder-minimal -f ~/ollama-modelfiles/Modelfile-qwen-coder-minimal
 
 # Probar — nota: respuestas cortas por la ventana de contexto tan pequeña
 ollama run picoclaw-coder-minimal "def hola():"
