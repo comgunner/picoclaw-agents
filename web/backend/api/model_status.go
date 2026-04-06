@@ -88,6 +88,12 @@ func probeLocalModelAvailability(m *config.ModelConfig) bool {
 	case "claude-cli", "claudecli", "codex-cli", "codexcli":
 		return true
 	default:
+		// Ollama Modelfile models without ollama/ prefix in the model name.
+		// When api_base points to localhost:11434, use the Ollama probe
+		// even if the model name doesn't have the "ollama/" prefix.
+		if isOllamaAPIBase(apiBase) {
+			return probeOllamaModelFunc(apiBase, modelID)
+		}
 		if hasLocalAPIBase(apiBase) {
 			return probeOpenAICompatibleModelFunc(apiBase, modelID, m.APIKey)
 		}
@@ -181,6 +187,27 @@ func hasLocalAPIBase(raw string) bool {
 	default:
 		return false
 	}
+}
+
+// isOllamaAPIBase checks if the api_base points to a local Ollama instance
+// (port 11434 on localhost). Used to detect Ollama Modelfile models that
+// don't have the "ollama/" prefix in their model name.
+func isOllamaAPIBase(apiBase string) bool {
+	apiBase = strings.TrimSpace(apiBase)
+	if apiBase == "" {
+		return false
+	}
+	u, err := url.Parse(apiBase)
+	if err != nil || u.Hostname() == "" {
+		return false
+	}
+	port := u.Port()
+	// Ollama default port is 11434; if no port specified, default to Ollama
+	return (strings.ToLower(u.Hostname()) == "localhost" ||
+		u.Hostname() == "127.0.0.1" ||
+		u.Hostname() == "::1" ||
+		u.Hostname() == "0.0.0.0") &&
+		(port == "11434" || port == "")
 }
 
 func probeTCPService(raw string) bool {
