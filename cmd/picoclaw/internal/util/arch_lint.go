@@ -5,8 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/comgunner/picoclaw/pkg/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/comgunner/picoclaw/pkg/utils"
 )
 
 func newArchLintCommand() *cobra.Command {

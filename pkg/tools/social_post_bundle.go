@@ -4,6 +4,7 @@ package tools
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,12 +32,14 @@ type SocialPostBundleTool struct {
 	bus                *bus.MessageBus
 	channel            string
 	chatID             string
+	imageGenTool       *ImageGenAntigravityTool // ← Antigravity OAuth for images
 }
 
 func NewSocialPostBundleTool(
 	geminiKey, geminiTextModel, geminiImageModel, ideogramKey, ideogramURL,
 	aspectRatio, outputDir, imageScriptPath, imageGenScriptPath, workspace string,
 	queue *QueueManager, bus *bus.MessageBus, tracker *utils.ImageGenTracker,
+	imageGenTool *ImageGenAntigravityTool,
 ) *SocialPostBundleTool {
 	if geminiTextModel == "" {
 		geminiTextModel = "gemini-2.5-flash"
@@ -65,6 +68,7 @@ func NewSocialPostBundleTool(
 		tracker:            tracker,
 		queue:              queue,
 		bus:                bus,
+		imageGenTool:       imageGenTool,
 	}
 }
 
@@ -148,7 +152,13 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 			"id_dir":  idDir,
 		})
 
-		// 1. Generar Guion
+		// Check cancellation before starting
+		if t.queue != nil && t.queue.IsCancelled(taskID) {
+			logger.InfoF("SocialPostBundle: Task canceled, stopping", map[string]any{"task_id": taskID})
+			return
+		}
+
+		// 1. Generar Guion — PRIMARY: Antigravity OAuth con retry automático
 		logger.InfoF("SocialPostBundle: Starting script generation", map[string]any{
 			"task_id":  taskID,
 			"topic":    topic,
@@ -156,20 +166,37 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 			"category": category,
 		})
 
-		scriptRes, err := utils.GenerateTextScript(bgCtx, t.geminiAPIKey, t.geminiTextModel, utils.TextScriptRequest{
+		req := utils.TextScriptRequest{
 			Topic:        topic,
 			Category:     category,
 			Language:     language,
 			TemplatePath: t.imageScriptPath,
-		})
+		}
+
+		// Try Antigravity OAuth with automatic retry on 429
+		scriptRes, scriptErr := GenerateTextScriptAntigravity(bgCtx, t.geminiTextModel, req)
+		if scriptErr != nil {
+			// Check if it's a rate limit error — retry once more after delay
+			if isTextScriptRateLimit(scriptErr) {
+				logger.WarnF("SocialPostBundle: Rate limited, retrying once after 30s", map[string]any{
+					"task_id": taskID,
+				})
+				select {
+				case <-time.After(30 * time.Second):
+					scriptRes, scriptErr = GenerateTextScriptAntigravity(bgCtx, t.geminiTextModel, req)
+				case <-bgCtx.Done():
+					scriptErr = fmt.Errorf("context canceled during retry wait: %w", bgCtx.Err())
+				}
+			}
+		}
 
 		var finalResult *ToolResult
-		if err != nil {
+		if scriptErr != nil {
 			logger.ErrorF("SocialPostBundle: Script generation failed", map[string]any{
 				"task_id": taskID,
-				"error":   err.Error(),
+				"error":   scriptErr.Error(),
 			})
-			finalResult = ErrorResult(t.buildUserFriendlyError(err, taskID))
+			finalResult = ErrorResult(t.buildUserFriendlyError(scriptErr, taskID))
 		} else {
 			logger.InfoF("SocialPostBundle: Script generated successfully", map[string]any{
 				"task_id":           taskID,
@@ -186,6 +213,10 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 			})
 
 			// 2. Generar Prompt Visual
+			if t.queue != nil && t.queue.IsCancelled(taskID) {
+				logger.InfoF("SocialPostBundle: Task canceled before visual prompt", map[string]any{"task_id": taskID})
+				return
+			}
 			logger.InfoF("SocialPostBundle: Starting visual prompt generation", map[string]any{
 				"task_id":       taskID,
 				"script_length": len(scriptRes.Script),
@@ -216,17 +247,70 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 				})
 			}
 
-			// 3. Generar Imagen
+			// 3. Generar Imagen — usa Antigravity OAuth (predeterminado)
+			if t.queue != nil && t.queue.IsCancelled(taskID) {
+				logger.InfoF(
+					"SocialPostBundle: Task canceled before image generation",
+					map[string]any{"task_id": taskID},
+				)
+				return
+			}
 			logger.InfoF("SocialPostBundle: Starting image generation", map[string]any{
 				"task_id":       taskID,
-				"provider":      provider,
+				"provider":      "antigravity",
 				"prompt_length": len(visualPrompt),
 				"aspect_ratio":  t.aspectRatio,
 			})
 
 			imagePath := filepath.Join(idDir, fmt.Sprintf("%s.-imagen.jpg", id))
-			if provider == "ideogram" && t.ideogramAPIKey != "" {
-				logger.InfoF("SocialPostBundle: Generating image with Ideogram", map[string]any{
+			var imageErr error
+
+			// Use Antigravity OAuth tool for image generation
+			if t.imageGenTool != nil {
+				imgCtx, imgCancel := context.WithTimeout(bgCtx, 120*time.Second)
+				defer imgCancel()
+
+				imgResult := t.imageGenTool.Execute(imgCtx, map[string]any{
+					"prompt":       visualPrompt,
+					"aspect_ratio": t.aspectRatio,
+				})
+
+				if imgResult.IsError {
+					imageErr = fmt.Errorf("%s", imgResult.ForLLM)
+					logger.ErrorF("SocialPostBundle: Image generation failed", map[string]any{
+						"task_id":  taskID,
+						"provider": "antigravity",
+						"error":    imgResult.ForLLM,
+					})
+				} else {
+					// Extract image path from the result text
+					generatedPath := extractImagePathFromResult(imgResult.ForLLM)
+					if generatedPath != "" {
+						// Copy image to the bundle's output directory
+						expectedPath := filepath.Join(idDir, fmt.Sprintf("%s.-imagen.jpg", id))
+						if copyErr := copyFile(generatedPath, expectedPath); copyErr == nil {
+							imagePath = expectedPath
+							logger.InfoF("SocialPostBundle: Image copied to bundle directory", map[string]any{
+								"task_id":     taskID,
+								"source":      generatedPath,
+								"destination": expectedPath,
+							})
+						} else {
+							logger.WarnF("SocialPostBundle: Failed to copy image, using original path", map[string]any{
+								"task_id": taskID,
+								"error":   copyErr.Error(),
+							})
+							imagePath = generatedPath
+						}
+					}
+					logger.InfoF("SocialPostBundle: Image generated successfully (Antigravity OAuth)", map[string]any{
+						"task_id":    taskID,
+						"image_path": imagePath,
+					})
+				}
+			} else if provider == "ideogram" && t.ideogramAPIKey != "" {
+				// Fallback: Ideogram API
+				logger.InfoF("SocialPostBundle: Generating image with Ideogram (fallback)", map[string]any{
 					"task_id":    taskID,
 					"image_path": imagePath,
 				})
@@ -238,35 +322,35 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 					StyleType:      "REALISTIC",
 					NumImages:      1,
 				}
-				err = utils.GenerateImageWithIdeogram(bgCtx, ideogramCfg, visualPrompt, imagePath)
+				imageErr = utils.GenerateImageWithIdeogram(bgCtx, ideogramCfg, visualPrompt, imagePath)
+				if imageErr != nil {
+					logger.ErrorF("SocialPostBundle: Image generation failed", map[string]any{
+						"task_id":  taskID,
+						"provider": "ideogram",
+						"error":    imageErr.Error(),
+					})
+				} else {
+					logger.InfoF("SocialPostBundle: Image generated successfully (Ideogram)", map[string]any{
+						"task_id":    taskID,
+						"image_path": imagePath,
+					})
+				}
 			} else {
-				logger.InfoF("SocialPostBundle: Generating image with Gemini", map[string]any{
-					"task_id":    taskID,
-					"model":      t.geminiImageModel,
-					"image_path": imagePath,
+				// No image generation method available
+				imageErr = fmt.Errorf("no image generation method configured")
+				logger.WarnF("SocialPostBundle: No image generation method available", map[string]any{
+					"task_id": taskID,
 				})
-				err = utils.GenerateImageWithGemini(bgCtx, utils.GeminiImageRequest{
-					Prompt:      visualPrompt,
-					AspectRatio: t.aspectRatio,
-					Model:       t.geminiImageModel,
-					APIKey:      t.geminiAPIKey,
-				}, imagePath)
 			}
 
-			if err != nil {
-				logger.ErrorF("SocialPostBundle: Image generation failed", map[string]any{
-					"task_id":    taskID,
-					"provider":   provider,
-					"error":      err.Error(),
-					"image_path": imagePath,
-				})
-				finalResult = ErrorResult(t.buildUserFriendlyError(err, taskID))
+			if imageErr != nil {
+				finalResult = ErrorResult(t.buildUserFriendlyError(imageErr, taskID))
 			} else {
-				logger.InfoF("SocialPostBundle: Image generated successfully", map[string]any{
-					"task_id":    taskID,
-					"image_path": imagePath,
-				})
-
+				// Check cancellation before saving
+				if t.queue != nil && t.queue.IsCancelled(taskID) {
+					logger.InfoF("SocialPostBundle: Task canceled before saving", map[string]any{"task_id": taskID})
+					return
+				}
 				// 4. Éxito - Guardar en tracker
 				logger.InfoF("SocialPostBundle: Saving record to tracker", map[string]any{
 					"task_id": taskID,
@@ -284,10 +368,10 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 						ID:          id,
 						DateTime:    time.Now().Format("2006-01-02 15:04:05"),
 						Prompt:      topic,
-						Provider:    provider,
+						Provider:    "antigravity",
 						ScriptPath:  scriptPath,
 						AspectRatio: t.aspectRatio,
-						Model:       t.geminiImageModel,
+						Model:       "gemini-3.1-flash-image",
 						Language:    scriptRes.Language,
 						Metadata:    metadata,
 					})
@@ -343,6 +427,12 @@ func (t *SocialPostBundleTool) Execute(ctx context.Context, args map[string]any)
 		t.queue.UpdateStatus(taskID, status, finalResult)
 
 		// NOTIFICACIÓN DIRECTA (Ahorro de Tokens)
+		// Skip notification if task was canceled
+		if t.queue.IsCancelled(taskID) {
+			logger.InfoF("SocialPostBundle: Task canceled, skipping notification", map[string]any{"task_id": taskID})
+			return
+		}
+
 		logger.InfoF("SocialPostBundle: Publishing notification via MessageBus", map[string]any{
 			"task_id": taskID,
 			"channel": t.channel,
@@ -437,4 +527,49 @@ ID de tarea: %s`, taskID)
 💡 Si el problema persiste, revisa los logs o consulta la documentación.
 
 ID de tarea: %s`, errStr, taskID)
+}
+
+// extractImagePathFromResult extracts the image path from the tool result text.
+func extractImagePathFromResult(text string) string {
+	// Look for pattern: "Image:    /path/to/image.jpg"
+	lines := strings.Split(text, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "Image:") || strings.Contains(line, "imagen.jpg") {
+			parts := strings.Split(line, ":")
+			if len(parts) >= 2 {
+				path := strings.TrimSpace(parts[1])
+				if strings.HasSuffix(path, ".jpg") || strings.HasSuffix(path, ".jpeg") ||
+					strings.HasSuffix(path, ".png") {
+					return path
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// copyFile copies a file from src to dst.
+func copyFile(src, dst string) error {
+	sourceFile, openErr := os.Open(src)
+	if openErr != nil {
+		return fmt.Errorf("open source: %w", openErr)
+	}
+	defer sourceFile.Close()
+
+	// Ensure destination directory exists
+	if mkdirErr := os.MkdirAll(filepath.Dir(dst), 0o755); mkdirErr != nil {
+		return fmt.Errorf("create destination dir: %w", mkdirErr)
+	}
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("create destination: %w", err)
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, sourceFile)
+	if err != nil {
+		return fmt.Errorf("copy content: %w", err)
+	}
+	return nil
 }

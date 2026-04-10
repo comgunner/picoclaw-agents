@@ -30,7 +30,7 @@ type StdioTransport struct {
 	stdout *bufio.Reader
 	stderr io.ReadCloser
 	mu     sync.Mutex
-	id     int64                // simple int64 is fine under mutex
+	id     int64 // simple int64 is fine under mutex
 	done   chan struct{}
 	cancel context.CancelFunc // signals stderr goroutine to stop
 }

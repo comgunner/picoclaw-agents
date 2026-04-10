@@ -9,9 +9,9 @@ import (
 func TestAuditMarkdown_NoBrokenLinks(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "README.md"),
-		[]byte("# Hello\nSee [docs](docs/guide.md)\n"), 0644)
-	os.MkdirAll(filepath.Join(dir, "docs"), 0755)
-	os.WriteFile(filepath.Join(dir, "docs", "guide.md"), []byte("# Guide\n"), 0644)
+		[]byte("# Hello\nSee [docs](docs/guide.md)\n"), 0o644)
+	os.MkdirAll(filepath.Join(dir, "docs"), 0o755)
+	os.WriteFile(filepath.Join(dir, "docs", "guide.md"), []byte("# Guide\n"), 0o644)
 
 	issues, err := AuditMarkdown(dir)
 	if err != nil {
@@ -25,7 +25,7 @@ func TestAuditMarkdown_NoBrokenLinks(t *testing.T) {
 func TestAuditMarkdown_BrokenLinkDetected(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "README.md"),
-		[]byte("# Hello\nSee [missing](nonexistent.md)\n"), 0644)
+		[]byte("# Hello\nSee [missing](nonexistent.md)\n"), 0o644)
 
 	issues, err := AuditMarkdown(dir)
 	if err != nil {

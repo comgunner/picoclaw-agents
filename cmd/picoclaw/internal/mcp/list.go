@@ -14,9 +14,10 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/spf13/cobra"
+
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal"
 	"github.com/comgunner/picoclaw/pkg/config"
-	"github.com/spf13/cobra"
 )
 
 func newListCommand() *cobra.Command {

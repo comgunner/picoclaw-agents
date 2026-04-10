@@ -1806,7 +1806,7 @@ picoclaw-agents util binance-mcp-server
 
 2026-03-02 🎉 **Fast-path 和全局追踪器**: 添加了即时 Slash 命令 (`/bundle_approve`, `/status` 等) 实现零延迟交互。统一了所有代理中的 `ImageGenTracker` 以实现完美的多代理状态一致性。参见 [docs/queue_batch.md](docs/queue_batch.md)。
 
-2026-03-01 🎉 **AI 图像生成和社区经理**: 添加了原生图像生成 (Gemini/Ideogram)、脚本到图像工作流、生成后交互菜单和社区经理代理用于自动生成社交媒体帖子。完整设置和使用示例参见 [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md)。
+2026-03-01 🎉 **AI 图像生成和社区经理**: 添加了通过 **Antigravity OAuth** (`gemini-3.1-flash-image`，无需 API key，300s 冷却)、**Gemini API key** 或 **Ideogram API key** 的原生图像生成、脚本到图像工作流、生成后交互菜单和社区经理代理用于自动生成社交媒体帖子。完整设置和使用示例参见 [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md)。
 
 2026-03-01 🎉 **外部集成 (Binance, Social Media, Notion)**: 添加了用于加密货币交易 (Binance 期货和现货)、社交媒体发布 (Facebook 和 X/Twitter) 和知识管理 (Notion) 的原生工具。通过 `config.json` 或环境变量配置。设置指南参见 [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) 和 [docs/NOTION_util.md](docs/NOTION_util.md)。
 

@@ -34,6 +34,10 @@ type ToolResult struct {
 	// Buttons provides interactive options for the user (Telegram/Discord).
 	Buttons []bus.Button `json:"buttons,omitempty"`
 
+	// MediaPaths contains file paths to images/media to be sent as attachments.
+	// Channels should detect this field and send media instead of plain text.
+	MediaPaths []string `json:"media_paths,omitempty"`
+
 	// Err is the underlying error (not JSON serialized).
 	// Used for internal error handling and logging.
 	Err error `json:"-"`
@@ -124,6 +128,29 @@ func UserResult(content string) *ToolResult {
 		Silent:  false,
 		IsError: false,
 		Async:   false,
+	}
+}
+
+// ImageResult creates a ToolResult with image attachments.
+// The text is shown to both LLM and user, and the image paths
+// are sent as media attachments by the channel.
+//
+// Use this when a tool generates an image that should be sent to the user:
+// - Image generation
+// - Screenshot capture
+// - Chart/graph rendering
+//
+// Example:
+//
+//	result := ImageResult("Image generated", "/path/to/image.jpg")
+func ImageResult(text string, imagePaths ...string) *ToolResult {
+	return &ToolResult{
+		ForLLM:     text,
+		ForUser:    text,
+		Silent:     false,
+		IsError:    false,
+		Async:      false,
+		MediaPaths: imagePaths,
 	}
 }
 

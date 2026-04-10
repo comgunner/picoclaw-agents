@@ -57,7 +57,7 @@ Este proyecto se desarrolla y mantiene con la ayuda de herramientas de IA. Todos
 *   🦾 **Bootstrapped por IA**: Implementación core refinada mediante flujos de trabajo autónomos de agentes.
 *   📈 **Integración con Binance**: Herramientas nativas de trading para balances spot, posiciones en futuros (LONG/SHORT), y datos públicos de ticker vía API directa o servidor MCP.
 *   📱 **Herramientas de Redes Sociales**: Publica en Facebook (imágenes + mensajes) y X/Twitter (tweets + hilos) con soporte multi-página y fallback automático de comentarios.
-*   🎨 **Generación de Imágenes con IA**: Genera imágenes desde prompts de texto usando Gemini o Ideogram. Incluye flujo script-a-imagen y publicación automática en redes sociales.
+* 🎨 **Generación de Imágenes con IA**: Genera imágenes desde prompts de texto usando **Antigravity OAuth** (`gemini-3.1-flash-image`, sin API key, cooldown 300s), **Gemini API key** o **Ideogram API key**. Incluye flujo script-a-imagen y publicación automática en redes sociales.
 *   📝 **Integración con Notion**: Crea, consulta y actualiza páginas y bases de datos para gestión de tareas y conocimiento.
 *   🤖 **Community Manager**: Genera automáticamente publicaciones atractivas para redes sociales desde contenido técnico o imágenes generadas.
 *   ⚡ **Slash Commands de "Fast-path"**: Comandos de sistema instantáneos vía `/` o `#` que saltan el LLM para aprobaciones, chequeos de estado y gestión de lotes (bundles) sin latencia. Funciona en Telegram, Discord y CLI (Terminal).

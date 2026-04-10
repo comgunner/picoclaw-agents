@@ -60,7 +60,7 @@ This project is developed and maintained with the help of AI tools. All code cha
 *   🦾 **AI-Bootstrapped**: Core implementation refined through autonomous agentic workflows.
 *   📈 **Binance Integration**: Native trading tools for spot balances, futures positions (LONG/SHORT), and public ticker data via direct API or MCP server.
 *   📱 **Social Media Tools**: Publish to Facebook (images + messages) and X/Twitter (tweets + threads) with multi-page support and automatic comment fallback.
-*   🎨 **AI Image Generation**: Generate images from text prompts using Gemini or Ideogram. Includes script-to-image workflow and auto-posting to social media.
+* 🎨 **AI Image Generation**: Generate images from text prompts using **Antigravity OAuth** (`gemini-3.1-flash-image`, no API key needed, 300s cooldown), **Gemini API key**, or **Ideogram API key**. Includes script-to-image workflow and auto-posting to social media.
 *   📝 **Notion Integration**: Create, query, update pages and databases for task tracking and data management.
 *   🤖 **Community Manager**: Auto-generate engaging social media posts from technical content or generated images.
 *   ⚡ **Fast-path Slash Commands**: Instant system commands via `/` or `#` that bypass the LLM for zero-latency approvals, status checks, and lotes (bundle) management. Works on Telegram, Discord, and CLI.

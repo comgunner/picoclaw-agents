@@ -213,19 +213,19 @@ type SessionConfig struct {
 }
 
 type AgentDefaults struct {
-	Workspace            string              `json:"workspace"                       env:"PICOCLAW_AGENTS_DEFAULTS_WORKSPACE"`
-	RestrictToWorkspace  bool                `json:"restrict_to_workspace"           env:"PICOCLAW_AGENTS_DEFAULTS_RESTRICT_TO_WORKSPACE"`
-	Provider             string              `json:"provider"                        env:"PICOCLAW_AGENTS_DEFAULTS_PROVIDER"`
-	ModelName            string              `json:"model_name,omitempty"            env:"PICOCLAW_AGENTS_DEFAULTS_MODEL_NAME"`
-	Model                string              `json:"model,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_MODEL"` // Deprecated: use model_name instead
+	Workspace            string              `json:"workspace"                        env:"PICOCLAW_AGENTS_DEFAULTS_WORKSPACE"`
+	RestrictToWorkspace  bool                `json:"restrict_to_workspace"            env:"PICOCLAW_AGENTS_DEFAULTS_RESTRICT_TO_WORKSPACE"`
+	Provider             string              `json:"provider"                         env:"PICOCLAW_AGENTS_DEFAULTS_PROVIDER"`
+	ModelName            string              `json:"model_name,omitempty"             env:"PICOCLAW_AGENTS_DEFAULTS_MODEL_NAME"`
+	Model                string              `json:"model,omitempty"                  env:"PICOCLAW_AGENTS_DEFAULTS_MODEL"` // Deprecated: use model_name instead
 	ModelFallbacks       []string            `json:"model_fallbacks,omitempty"`
-	ImageModel           string              `json:"image_model,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_IMAGE_MODEL"`
+	ImageModel           string              `json:"image_model,omitempty"            env:"PICOCLAW_AGENTS_DEFAULTS_IMAGE_MODEL"`
 	ImageModelFallbacks  []string            `json:"image_model_fallbacks,omitempty"`
-	MaxTokens            int                 `json:"max_tokens"                      env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOKENS"`
-	Temperature          *float64            `json:"temperature,omitempty"           env:"PICOCLAW_AGENTS_DEFAULTS_TEMPERATURE"`
-	TopP                 *float64            `json:"top_p,omitempty"                 env:"PICOCLAW_AGENTS_DEFAULTS_TOP_P"`
-	EnableThinking       bool                `json:"enable_thinking,omitempty"       env:"PICOCLAW_AGENTS_DEFAULTS_ENABLE_THINKING"`
-	MaxToolIterations    int                 `json:"max_tool_iterations"             env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOOL_ITERATIONS"`
+	MaxTokens            int                 `json:"max_tokens"                       env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOKENS"`
+	Temperature          *float64            `json:"temperature,omitempty"            env:"PICOCLAW_AGENTS_DEFAULTS_TEMPERATURE"`
+	TopP                 *float64            `json:"top_p,omitempty"                  env:"PICOCLAW_AGENTS_DEFAULTS_TOP_P"`
+	EnableThinking       bool                `json:"enable_thinking,omitempty"        env:"PICOCLAW_AGENTS_DEFAULTS_ENABLE_THINKING"`
+	MaxToolIterations    int                 `json:"max_tool_iterations"              env:"PICOCLAW_AGENTS_DEFAULTS_MAX_TOOL_ITERATIONS"`
 	ContextWindow        int                 `json:"context_window,omitempty"`         // Max context tokens (input + output). 0 = auto-detect
 	ContextManager       string              `json:"context_manager,omitempty"`        // Pluggable context manager: "" (default/legacy), "seahorse"
 	ContextManagerConfig map[string]any      `json:"context_manager_config,omitempty"` // JSON config passed to context manager factory
@@ -646,7 +646,7 @@ type MCPDiscoveryConfig struct {
 
 // MCPToolsConfig configures the MCP (Model Context Protocol) tool layer.
 type MCPToolsConfig struct {
-	Enabled        bool                       `json:"enabled"        env:"PICOCLAW_TOOLS_MCP_ENABLED"`
+	Enabled        bool                       `json:"enabled"                   env:"PICOCLAW_TOOLS_MCP_ENABLED"`
 	Discovery      MCPDiscoveryConfig         `json:"discovery"`
 	Servers        map[string]MCPServerConfig `json:"servers,omitempty"`
 	DefaultTimeout int                        `json:"default_timeout,omitempty"` // seconds, 30s default
@@ -654,7 +654,7 @@ type MCPToolsConfig struct {
 
 // MCPServerConfig configures a single MCP server connection.
 type MCPServerConfig struct {
-	Transport    string            `json:"transport"`              // "stdio", "sse", "http"
+	Transport    string            `json:"transport"` // "stdio", "sse", "http"
 	Command      string            `json:"command,omitempty"`
 	Args         []string          `json:"args,omitempty"`
 	Env          map[string]string `json:"env,omitempty"`
@@ -746,8 +746,12 @@ type NotionToolsConfig struct {
 }
 
 type ImageGenToolsConfig struct {
-	// Provider selection: "gemini" or "ideogram"
+	// Provider selection: "antigravity" (OAuth), "gemini" (API key), or "ideogram" (API key)
 	Provider string `json:"provider" env:"PICOCLAW_TOOLS_IMAGE_GEN_PROVIDER"`
+
+	// Antigravity (OAuth-based, default)
+	AntigravityModel string `json:"antigravity_model,omitempty"` // e.g. "gemini-3.1-flash-image"
+	CooldownSeconds  int    `json:"cooldown_seconds,omitempty"`  // Anti-ban cooldown (default: 300s)
 
 	// Gemini
 	GeminiAPIKey         string `json:"gemini_api_key"          env:"PICOCLAW_TOOLS_IMAGE_GEN_GEMINI_API_KEY"`

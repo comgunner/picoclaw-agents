@@ -354,7 +354,7 @@ func (t *SubagentTool) Execute(ctx context.Context, args map[string]any) *ToolRe
 	if agentID != "" {
 		systemPrompt = fmt.Sprintf("Eres el subagente especializado '%s' de PicoClaw.", agentID)
 	}
-	systemPrompt += ` Tu objetivo es completar tareas de forma autónoma usando herramientas. 
+	systemPrompt += ` Tu objetivo es completar tareas de forma autónoma usando herramientas.
 
 ## REGLAS DE ORO:
 1. **Coherencia**: Pasa el 'Path' de 'text_script_create' a 'image_gen_create'.

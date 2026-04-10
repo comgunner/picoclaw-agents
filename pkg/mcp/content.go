@@ -23,9 +23,9 @@ type ToolCallResult struct {
 
 // ContentBlock represents a single content item in an MCP tool response.
 type ContentBlock struct {
-	Type     string `json:"type"`             // "text" or "image"
+	Type     string `json:"type"` // "text" or "image"
 	Text     string `json:"text,omitempty"`
-	Data     string `json:"data,omitempty"`     // base64
+	Data     string `json:"data,omitempty"` // base64
 	MIMEType string `json:"mimeType,omitempty"`
 }
 

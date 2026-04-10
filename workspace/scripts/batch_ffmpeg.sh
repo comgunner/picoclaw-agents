@@ -1,7 +1,7 @@
 #!/bin/bash
 # Procesamiento por lotes de videos con FFmpeg
 # Uso: ./batch_ffmpeg.sh BATCH_ID [--input DIR] [--output DIR]
-# 
+#
 # Demuestra el contrato con QueueManager:
 # - Recibe BATCH_ID como primer argumento
 # - Escribe estado a /tmp/picoclaw_queue_{BATCH_ID}.json
@@ -38,7 +38,7 @@ report_state() {
     local status="$1"
     local progress="$2"
     local message="$3"
-    
+
     cat > "$STATE_FILE" << EOF
 {
   "status": "$status",
@@ -47,7 +47,7 @@ report_state() {
   "timestamp": $(date +%s)
 }
 EOF
-    
+
     echo "[$BATCH_ID] $message"
 }
 
@@ -68,12 +68,12 @@ report_state "processing" 0 "Encontrados $VIDEO_COUNT videos. Iniciando procesam
 PROCESSED=0
 for video in "$INPUT_DIR"/*.{mp4,mov,avi}; do
     [ -f "$video" ] || continue
-    
+
     filename=$(basename "$video")
     output_file="$OUTPUT_DIR/processed_${filename}"
-    
+
     echo "Procesando: $filename"
-    
+
     # Convertir a H.264 (FFmpeg)
     if command -v ffmpeg &> /dev/null; then
         ffmpeg -i "$video" \
@@ -85,10 +85,10 @@ for video in "$INPUT_DIR"/*.{mp4,mov,avi}; do
         echo "Simulando procesamiento de $filename (FFmpeg no disponible)"
         cp "$video" "$output_file"
     fi
-    
+
     PROCESSED=$((PROCESSED + 1))
     PROGRESS=$((PROCESSED * 100 / VIDEO_COUNT))
-    
+
     report_state "processing" "$PROGRESS" "Procesado $PROCESSED/$VIDEO_COUNT: $filename"
 done
 

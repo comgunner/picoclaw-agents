@@ -308,11 +308,11 @@ const binanceMCPExamples = `## CONCRETE EXAMPLES
 ` + bt + bt + bt + `
 1. Detect no API keys configured
 2. Response: "I can't access your account balances because API credentials are not configured.
-   
+
    To enable trading features:
    1. Add your Binance API keys to config.json
    2. Or set BINANCE_API_KEY and BINANCE_SECRET_KEY environment variables
-   
+
    I can still show you public market data like prices and order books."
 ` + bt + bt + bt + `
 

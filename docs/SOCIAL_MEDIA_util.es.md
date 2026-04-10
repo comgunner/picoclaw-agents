@@ -2,7 +2,34 @@
 
 Guia operativa rapida para herramientas de redes sociales en PicoClaw.
 
+> **PicoClaw v3.5.0**: ¡Ahora soporta generación de imágenes con **Antigravity OAuth** usando `gemini-3.1-flash-image` — no se necesita API key! `social_post_bundle` ahora genera imágenes vía OAuth por defecto. Ver [IMAGE_GEN_util.es.md](./IMAGE_GEN_util.es.md) y [ANTIGRAVITY_IMAGE_GEN.es.md](./ANTIGRAVITY_IMAGE_GEN.es.md).
+>
 > **PicoClaw v3.4.1**: Incluye **Comandos Slash Fast-path** para gestión instantánea de lotes y **Global Tracker** para consistencia multi-agente.
+
+## Ejemplos de Uso
+
+### Generar Post de Facebook con Imagen (vía social_post_bundle)
+
+**Usuario (Español):** `genera un post para facebook con imagen sobre peligro nuclear y reloj del juicio final adjunta la imagen`
+
+**Usuario (Inglés):** `Generate a Facebook post with image about nuclear danger and doomsday clock, attach the image`
+
+**Qué pasa:**
+1. El agent llama `social_post_bundle` → genera texto vía Antigravity OAuth
+2. Genera prompt visual desde el script
+3. Genera imagen vía `image_gen_antigravity` (OAuth, sin API key)
+4. Copia imagen al directorio del bundle
+5. Envía post con imagen adjunta a Telegram/Discord
+
+### Generar Imagen Simple
+
+**Usuario (Español):** `genera una imagen de un pajaro con lentes de sol estilo matrix`
+
+**Usuario (Inglés):** `Generate an image of a bird with sunglasses, Matrix style`
+
+**Qué pasa:**
+1. El agent llama `image_gen_antigravity` → genera imagen vía OAuth
+2. Envía imagen como foto adjunta a Telegram/Discord
 
 ## Configuracion Minima
 
@@ -30,6 +57,65 @@ Guia operativa rapida para herramientas de redes sociales en PicoClaw.
   }
 }
 ```
+
+## Configuracion de Generacion de Imagenes
+
+Para generar imagenes con posts (`social_post_bundle`):
+
+### Antigravity OAuth (Predeterminado — GRATIS — Sin API Key)
+
+Las imagenes via Antigravity OAuth **no requieren API key y NO cuestan un centavo**.
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "antigravity",
+      "antigravity_model": "gemini-3.1-flash-image",
+      "cooldown_seconds": 150,
+      "aspect_ratio": "1:1",
+      "output_dir": "./workspace/image_gen"
+    }
+  }
+}
+```
+
+Login: `picoclaw auth login --provider google-antigravity`
+
+### Gemini API Key (Fallback — De Pago)
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "gemini",
+      "gemini_api_key": "TU_API_KEY",
+      "gemini_text_model_name": "gemini-3-flash-agent",
+      "gemini_image_model_name": "gemini-2.5-flash-image",
+      "aspect_ratio": "1:1",
+      "output_dir": "./workspace/image_gen"
+    }
+  }
+}
+```
+
+### Ideogram API Key (Fallback — De Pago)
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "ideogram",
+      "ideogram_api_key": "TU_API_KEY",
+      "ideogram_api_url": "https://api.ideogram.ai/v1/ideogram-v3/generate",
+      "aspect_ratio": "1:1",
+      "output_dir": "./workspace/image_gen"
+    }
+  }
+}
+```
+
+**Prioridad:** Antigravity OAuth (GRATIS) → Gemini API → Ideogram API
 
 ## Comportamiento de Facebook
 

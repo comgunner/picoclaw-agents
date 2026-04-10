@@ -35,7 +35,12 @@ type MCPCaller interface {
 }
 
 // NewMCPOperatorTool creates a new MCP operator tool from a tool info struct.
-func NewMCPOperatorTool(serverName string, info mcp.ToolInfo, client MCPCaller, defaultTimeout time.Duration) *MCPOperatorTool {
+func NewMCPOperatorTool(
+	serverName string,
+	info mcp.ToolInfo,
+	client MCPCaller,
+	defaultTimeout time.Duration,
+) *MCPOperatorTool {
 	return &MCPOperatorTool{
 		serverName:  serverName,
 		toolName:    info.Name,

@@ -3,8 +3,9 @@ package util
 import (
 	"fmt"
 
-	"github.com/comgunner/picoclaw/pkg/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/comgunner/picoclaw/pkg/utils"
 )
 
 func newMdAuditCommand() *cobra.Command {

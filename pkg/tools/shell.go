@@ -122,10 +122,48 @@ func (t *ExecTool) Parameters() map[string]any {
 	}
 }
 
+// blockedToolNames son nombres de tools internas que NUNCA deben ejecutarse como shell commands.
+var blockedToolNames = map[string]bool{
+	"image_gen_antigravity":          true,
+	"imagegenantigravity":            true, // variant sin underscores
+	"image_gen_create":               true,
+	"image_gen_workflow":             true,
+	"text_script_create":             true,
+	"social_post_bundle":             true,
+	"social_manager":                 true,
+	"community_manager_create_draft": true,
+	"subagent":                       true,
+	"spawn":                          true,
+	"queue":                          true,
+	"batch_id":                       true,
+	"find_skills":                    true,
+	"install_skill":                  true,
+	"agent_list":                     true,
+	"agent_default":                  true,
+	"agent_receive":                  true,
+	"self_diagnostics":               true,
+	"system_diagnostics":             true,
+	"resource_monitor":               true,
+	"memory_store":                   true,
+	"version_control":                true,
+	"config_manager":                 true,
+}
+
 func (t *ExecTool) Execute(ctx context.Context, args map[string]any) *ToolResult {
 	command, ok := args["command"].(string)
 	if !ok {
 		return ErrorResult("command is required")
+	}
+
+	// Block internal tool names from being executed as shell commands
+	fields := strings.Fields(command)
+	if len(fields) > 0 {
+		firstWord := fields[0]
+		if blockedToolNames[firstWord] {
+			return ErrorResult(fmt.Sprintf(
+				"Command '%s' is an internal tool, not a shell command. Use the tool directly, not via exec.",
+				firstWord))
+		}
 	}
 
 	cwd := t.workingDir

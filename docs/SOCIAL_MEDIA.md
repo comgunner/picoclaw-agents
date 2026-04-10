@@ -2,6 +2,8 @@
 
 PicoClaw includes native tools for Facebook, X (Twitter), and Discord posting.
 
+> **PicoClaw v3.5.0**: Now supports **Antigravity OAuth** image generation with `gemini-3.1-flash-image` — no API key needed! `social_post_bundle` now generates images via OAuth by default. See [IMAGE_GEN_util.md](./IMAGE_GEN_util.md) and [ANTIGRAVITY_IMAGE_GEN.md](./ANTIGRAVITY_IMAGE_GEN.md).
+>
 > **PicoClaw v3.4.1**: Features **Fast-path Slash Commands** for instant bundle management and **Global Tracker** for multi-agent consistency.
 
 ## Supported Tools
@@ -57,6 +59,69 @@ Update `~/.picoclaw/config.json`:
 }
 ```
 
+## Image Generation Configuration
+
+For generating images with posts (`social_post_bundle`), configure the image provider:
+
+### Option A: Antigravity OAuth (Default — FREE — No API Key)
+
+Images generated via Antigravity OAuth **do not require an API key and do NOT cost you a cent**. They use your Google account's free quota.
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "antigravity",
+      "antigravity_model": "gemini-3.1-flash-image",
+      "cooldown_seconds": 150,
+      "aspect_ratio": "1:1",
+      "output_dir": "./workspace/image_gen"
+    }
+  }
+}
+```
+
+**Login required:**
+```bash
+picoclaw auth login --provider google-antigravity
+```
+
+### Option B: Gemini API Key (Fallback — Paid)
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "gemini",
+      "gemini_api_key": "YOUR_GEMINI_API_KEY",
+      "gemini_text_model_name": "gemini-3-flash-agent",
+      "gemini_image_model_name": "gemini-2.5-flash-image",
+      "aspect_ratio": "1:1",
+      "output_dir": "./workspace/image_gen"
+    }
+  }
+}
+```
+
+### Option C: Ideogram API Key (Fallback — Paid)
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "ideogram",
+      "ideogram_api_key": "YOUR_IDEOGRAM_API_KEY",
+      "ideogram_api_url": "https://api.ideogram.ai/v1/ideogram-v3/generate",
+      "ideogram_model_name": "V_3_TURBO",
+      "aspect_ratio": "1:1",
+      "output_dir": "./workspace/image_gen"
+    }
+  }
+}
+```
+
+**Priority order:** Antigravity OAuth (default, FREE) → Gemini API key (paid) → Ideogram API key (paid)
+
 ## Environment Variables
 
 ```bash
@@ -78,6 +143,29 @@ export DISCORD_WEBHOOK_URL="your_webhook_url"
 ```
 
 ## Usage Examples
+
+### Generate Facebook Post with Image (via social_post_bundle)
+
+**User (English):** `Generate a Facebook post with image about nuclear danger and doomsday clock, attach the image`
+
+**User (Spanish):** `genera un post para facebook con imagen sobre peligro nuclear y reloj del juicio final adjunta la imagen`
+
+**What happens:**
+1. Agent calls `social_post_bundle` → generates text script via Antigravity OAuth
+2. Generates visual prompt from script
+3. Generates image via `image_gen_antigravity` (OAuth, no API key)
+4. Copies image to bundle output directory
+5. Sends post with image attachment to Telegram/Discord
+
+### Generate Simple Image
+
+**User (English):** `Generate an image of a bird with sunglasses, Matrix style`
+
+**User (Spanish):** `genera una imagen de un pajaro con lentes de sol estilo matrix`
+
+**What happens:**
+1. Agent calls `image_gen_antigravity` → generates image via OAuth
+2. Sends image as photo attachment to Telegram/Discord
 
 ### Terminal Usage
 
