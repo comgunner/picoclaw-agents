@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/mcp"
 	"github.com/spf13/cobra"
+
+	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/mcp"
 )
 
 func NewUtilCommand() *cobra.Command {

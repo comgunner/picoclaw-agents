@@ -8,12 +8,12 @@ import (
 
 func TestCheckImports_NoViolations(t *testing.T) {
 	dir := t.TempDir()
-	os.MkdirAll(filepath.Join(dir, "pkg/agent"), 0755)
-	os.MkdirAll(filepath.Join(dir, "pkg/channels"), 0755)
+	os.MkdirAll(filepath.Join(dir, "pkg/agent"), 0o755)
+	os.MkdirAll(filepath.Join(dir, "pkg/channels"), 0o755)
 	os.WriteFile(filepath.Join(dir, "pkg/agent", "agent.go"),
-		[]byte(`package agent; import "fmt"; func Hello() { fmt.Println("hi") }`), 0644)
+		[]byte(`package agent; import "fmt"; func Hello() { fmt.Println("hi") }`), 0o644)
 	os.WriteFile(filepath.Join(dir, "pkg/channels", "ch.go"),
-		[]byte(`package channels; import "fmt"; func Start() { fmt.Println("start") }`), 0644)
+		[]byte(`package channels; import "fmt"; func Start() { fmt.Println("start") }`), 0o644)
 
 	violations, err := CheckImports(dir, nil)
 	if err != nil {
@@ -26,9 +26,9 @@ func TestCheckImports_NoViolations(t *testing.T) {
 
 func TestCheckImports_ViolationDetected(t *testing.T) {
 	dir := t.TempDir()
-	os.MkdirAll(filepath.Join(dir, "pkg/agent"), 0755)
+	os.MkdirAll(filepath.Join(dir, "pkg/agent"), 0o755)
 	os.WriteFile(filepath.Join(dir, "pkg/agent", "bad.go"),
-		[]byte(`package agent; import "github.com/comgunner/picoclaw/pkg/channels"`), 0644)
+		[]byte(`package agent; import "github.com/comgunner/picoclaw/pkg/channels"`), 0o644)
 
 	violations, err := CheckImports(dir, nil)
 	if err != nil {

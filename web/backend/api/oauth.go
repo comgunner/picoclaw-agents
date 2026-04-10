@@ -543,7 +543,11 @@ func normalizeOAuthProvider(raw string) (string, error) {
 		return oauthProviderQwen, nil
 	case "zhipu", "z.ai", "glm":
 		return oauthProviderZhipu, nil
-	case oauthProviderOpenAI, oauthProviderAnthropic, oauthProviderGoogleAntigravity, oauthProviderQwen, oauthProviderOpenRouterFree:
+	case oauthProviderOpenAI,
+		oauthProviderAnthropic,
+		oauthProviderGoogleAntigravity,
+		oauthProviderQwen,
+		oauthProviderOpenRouterFree:
 		return provider, nil
 	default:
 		return "", fmt.Errorf("unsupported provider %q", raw)

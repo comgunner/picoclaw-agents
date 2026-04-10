@@ -69,7 +69,8 @@ type Message struct {
 	SystemParts      []ContentBlock `json:"system_parts,omitempty"` // structured system blocks for cache-aware adapters
 	ToolCalls        []ToolCall     `json:"tool_calls,omitempty"`
 	ToolCallID       string         `json:"tool_call_id,omitempty"`
-	Source           string         `json:"source,omitempty"` // Source of the message: "user", "context", "tool_result", etc.
+	Source           string         `json:"source,omitempty"`      // Source of the message: "user", "context", "tool_result", etc.
+	MediaPaths       []string       `json:"media_paths,omitempty"` // File paths to images/media from tool results
 }
 
 type ToolDefinition struct {

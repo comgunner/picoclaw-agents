@@ -12,8 +12,9 @@ package mcp
 import (
 	"testing"
 
-	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/comgunner/picoclaw/pkg/config"
 )
 
 func TestAddCommand_ValidStdio(t *testing.T) {

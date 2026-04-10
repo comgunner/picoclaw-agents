@@ -364,10 +364,10 @@ func (t *ImageGenCreateTool) Execute(ctx context.Context, args map[string]any) *
 │ Script:   %s
 └─────────────────────────────────────────────────────────────────┘
 
-🎨 **Prompt visual usado:** 
+🎨 **Prompt visual usado:**
 %s
 
-📊 **Estado registrado en:** 
+📊 **Estado registrado en:**
 %s (status: generated)
 
 **¿Qué quieres hacer con esta imagen?**

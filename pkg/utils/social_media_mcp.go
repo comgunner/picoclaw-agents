@@ -115,7 +115,11 @@ func NewSocialMediaMCPServer(cfg *SocialMediaMCPConfig) *server.MCPServer {
 		mcp.NewTool(
 			"x_post_thread",
 			mcp.WithDescription("Post a thread of tweets on X/Twitter"),
-			mcp.WithString("tweets", mcp.Description("JSON array of tweet texts, e.g. [\"tweet1\",\"tweet2\"]"), mcp.Required()),
+			mcp.WithString(
+				"tweets",
+				mcp.Description("JSON array of tweet texts, e.g. [\"tweet1\",\"tweet2\"]"),
+				mcp.Required(),
+			),
 		),
 		xPostThreadHandler(cfg),
 	)
@@ -145,7 +149,16 @@ func fbPostTextHandler(cfg *SocialMediaMCPConfig) server.ToolHandlerFunc {
 		}
 
 		// appID/appSecret/userToken come from config env, not MCP args (for token refresh flow)
-		postID, err := FacebookPostTextOnly(ctx, pageID, pageToken, cfg.FacebookAppID, cfg.FacebookAppSecret, cfg.FacebookUserToken, message, comment)
+		postID, err := FacebookPostTextOnly(
+			ctx,
+			pageID,
+			pageToken,
+			cfg.FacebookAppID,
+			cfg.FacebookAppSecret,
+			cfg.FacebookUserToken,
+			message,
+			comment,
+		)
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Facebook post failed: %v", err)), nil
 		}
@@ -204,7 +217,16 @@ func fbPostHandler(cfg *SocialMediaMCPConfig) server.ToolHandlerFunc {
 		var postID string
 		var err error
 		if imagePath == "" {
-			postID, err = FacebookPostTextOnly(ctx, pageID, pageToken, cfg.FacebookAppID, cfg.FacebookAppSecret, cfg.FacebookUserToken, message, comment)
+			postID, err = FacebookPostTextOnly(
+				ctx,
+				pageID,
+				pageToken,
+				cfg.FacebookAppID,
+				cfg.FacebookAppSecret,
+				cfg.FacebookUserToken,
+				message,
+				comment,
+			)
 		} else {
 			req2 := FBPostRequest{
 				PageID:    pageID,
@@ -308,7 +330,9 @@ func xPostThreadHandler(cfg *SocialMediaMCPConfig) server.ToolHandlerFunc {
 			ids = append(ids, tweetID)
 		}
 
-		return mcp.NewToolResultText(fmt.Sprintf("✅ Thread published: %d tweets. IDs: %s", len(ids), strings.Join(ids, ", "))), nil
+		return mcp.NewToolResultText(
+			fmt.Sprintf("✅ Thread published: %d tweets. IDs: %s", len(ids), strings.Join(ids, ", ")),
+		), nil
 	}
 }
 

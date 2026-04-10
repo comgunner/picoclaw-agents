@@ -29,7 +29,7 @@ def report_state(batch_id: str, status: str, progress: int, message: str, result
     }
     if result:
         state["result"] = result
-    
+
     state_file = get_state_file(batch_id)
     state_file.write_text(json.dumps(state, indent=2))
     print(f"[{batch_id}] {message}")
@@ -47,13 +47,13 @@ def main():
     if len(sys.argv) < 2:
         print("Uso: python batch_cuda_gen.py BATCH_ID [--count N] [--model MODEL]")
         sys.exit(1)
-    
+
     batch_id = sys.argv[1]
-    
+
     # Parsear argumentos opcionales
     count = 5
     model = "sdxl"
-    
+
     i = 2
     while i < len(sys.argv):
         if sys.argv[i] == "--count":
@@ -64,18 +64,18 @@ def main():
             i += 2
         else:
             i += 1
-    
+
     try:
         # Reportar inicio
-        report_state(batch_id, "processing", 0, 
+        report_state(batch_id, "processing", 0,
                     f"Iniciando generación de {count} imágenes (modelo: {model})...")
-        
+
         # Generar imágenes
         generated_images = []
         for i in range(count):
             image_path = generate_image("landscape", i)
             generated_images.append(image_path)
-            
+
             # Reportar progreso
             progress = (i + 1) * 100 // count
             report_state(
@@ -85,7 +85,7 @@ def main():
                 f"Imagen {i + 1}/{count} completada",
                 {"images_so_far": generated_images}
             )
-        
+
         # Reportar completado
         report_state(
             batch_id,
@@ -98,10 +98,10 @@ def main():
                 "output_dir": "workspace/images/"
             }
         )
-        
+
         print(f"[{batch_id}] ✅ Completado")
         return 0
-        
+
     except Exception as e:
         # Reportar error
         report_state(

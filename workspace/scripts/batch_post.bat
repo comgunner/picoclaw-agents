@@ -62,13 +62,13 @@ set PROCESSED=0
 for %%f in ("%IMAGE_DIR%\*.jpg" "%IMAGE_DIR%\*.png") do (
     set /a PROCESSED+=1
     set /a PROGRESS=PROCESSED * 100 / COUNT
-    
+
     echo Subiendo: %%~nxf
-    
+
     REM Aquí iría la lógica real de subida
     REM Por ejemplo: python scripts/upload_to_facebook.py "%%f"
     REM timeout /t 1 /nobreak
-    
+
     (
         echo {
         echo   "status": "processing",

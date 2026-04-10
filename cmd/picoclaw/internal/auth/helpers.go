@@ -635,6 +635,7 @@ func AddAntigravityModels(appCfg *config.Config) int {
 		{ModelName: "gemini-3.1-pro-high", Model: "antigravity/gemini-3.1-pro-high", AuthMethod: "oauth"},
 		{ModelName: "gemini-3.1-pro-low", Model: "antigravity/gemini-3.1-pro-low", AuthMethod: "oauth"},
 		{ModelName: "gemini-3.1-flash-lite", Model: "antigravity/gemini-3.1-flash-lite", AuthMethod: "oauth"},
+		{ModelName: "gemini-3.1-flash-image", Model: "antigravity/gemini-3.1-flash-image", AuthMethod: "oauth"},
 		{ModelName: "gemini-3-flash-agent", Model: "antigravity/gemini-3-flash-agent", AuthMethod: "oauth"},
 		{ModelName: "gemini-3-flash-preview", Model: "antigravity/gemini-3-flash-preview", AuthMethod: "oauth"},
 		{ModelName: "gemini-2.5-flash", Model: "antigravity/gemini-2.5-flash", AuthMethod: "oauth"},
@@ -668,6 +669,18 @@ func AddAntigravityModels(appCfg *config.Config) int {
 			}
 			appCfg.Agents.List[i].Model.Primary = "gemini-3-flash"
 			appCfg.Agents.List[i].Model.Fallbacks = []string{"gemini-2.5-flash"}
+		}
+
+		// Auto-configure image_gen to use Antigravity OAuth.
+		if appCfg.Tools.ImageGen.Provider == "" || appCfg.Tools.ImageGen.Provider == "gemini" {
+			appCfg.Tools.ImageGen.Provider = "antigravity"
+			appCfg.Tools.ImageGen.AntigravityModel = "gemini-3.1-flash-image"
+			if appCfg.Tools.ImageGen.CooldownSeconds <= 0 {
+				appCfg.Tools.ImageGen.CooldownSeconds = 300
+			}
+			if appCfg.Tools.ImageGen.AspectRatio == "" || appCfg.Tools.ImageGen.AspectRatio == "4:5" {
+				appCfg.Tools.ImageGen.AspectRatio = "1:1"
+			}
 		}
 	}
 

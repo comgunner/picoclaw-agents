@@ -15,10 +15,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal"
 	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/comgunner/picoclaw/pkg/mcp"
-	"github.com/spf13/cobra"
 )
 
 func newStatusCommand() *cobra.Command {
@@ -76,7 +77,6 @@ func checkStatus(name string) error {
 		"clientInfo":      map[string]string{"name": "picoclaw-agents", "version": "dev"},
 		"capabilities":    map[string]any{},
 	})
-
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "❌ MCP server %q — connection failed: %v\n", name, err)
 		return nil

@@ -12,9 +12,10 @@ package mcp
 import (
 	"testing"
 
-	"github.com/comgunner/picoclaw/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/comgunner/picoclaw/pkg/config"
 )
 
 func TestNewRemoveCommand(t *testing.T) {

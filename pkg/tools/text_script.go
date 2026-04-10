@@ -17,19 +17,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/comgunner/picoclaw/pkg/auth"
 	"github.com/comgunner/picoclaw/pkg/utils"
 )
 
 // ============== Text Script Tools ==============
 
 type TextScriptCreateTool struct {
-	apiKey       string
-	outputDir    string
-	tracker      *utils.ImageGenTracker
-	templatePath string
-	model        string
-	aspectRatio  string
-	provider     string
+	apiKey         string
+	useAntigravity bool
+	outputDir      string
+	tracker        *utils.ImageGenTracker
+	templatePath   string
+	model          string
+	aspectRatio    string
+	provider       string
 }
 
 func NewTextScriptCreateTool() *TextScriptCreateTool {
@@ -42,7 +44,7 @@ func NewTextScriptCreateToolFromConfig(
 	apiKey := strings.TrimSpace(os.Getenv(utils.EnvGeminiAPIKey))
 	outputDir := strings.TrimSpace(os.Getenv(utils.EnvImageGenOutputDir))
 	templatePath := strings.TrimSpace(os.Getenv(utils.EnvImageScriptPath))
-	model := strings.TrimSpace(os.Getenv(utils.EnvGeminiImageModel)) // Reuse or use specific env if needed
+	model := strings.TrimSpace(os.Getenv(utils.EnvGeminiImageModel))
 	aspectRatio := strings.TrimSpace(os.Getenv(utils.EnvAspectRatio))
 	provider := strings.TrimSpace(os.Getenv(utils.EnvImageGenProvider))
 
@@ -74,18 +76,26 @@ func NewTextScriptCreateToolFromConfig(
 		provider = "gemini"
 	}
 
+	// Check if Antigravity OAuth is available (PRIMARY method).
+	useAntigravity := false
+	cred, err := auth.GetCredential("google-antigravity")
+	if err == nil && cred != nil && !cred.IsExpired() {
+		useAntigravity = true
+	}
+
 	// Initialize tracker
 	trackerPath := filepath.Join(outputDir, "tracker.json")
 	tracker, _ := utils.NewImageGenTracker(trackerPath)
 
 	return &TextScriptCreateTool{
-		apiKey:       apiKey,
-		outputDir:    outputDir,
-		tracker:      tracker,
-		templatePath: templatePath,
-		model:        model,
-		aspectRatio:  aspectRatio,
-		provider:     provider,
+		apiKey:         apiKey,
+		useAntigravity: useAntigravity,
+		outputDir:      outputDir,
+		tracker:        tracker,
+		templatePath:   templatePath,
+		model:          model,
+		aspectRatio:    aspectRatio,
+		provider:       provider,
 	}
 }
 
@@ -139,15 +149,6 @@ func (t *TextScriptCreateTool) Execute(ctx context.Context, args map[string]any)
 		return ErrorResult("topic is required")
 	}
 
-	// Validate API key
-	if t.apiKey == "" {
-		return UserResult(
-			"Gemini API Key not configured. " +
-				"Configure in config.json (tools.image_gen) or use environment variable:\n" +
-				"  PICOCLAW_TOOLS_IMAGE_GEN_GEMINI_API_KEY",
-		)
-	}
-
 	// Ensure output directory
 	if t.outputDir == "" {
 		t.outputDir = "./workspace/image_gen"
@@ -159,23 +160,48 @@ func (t *TextScriptCreateTool) Execute(ctx context.Context, args map[string]any)
 	callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
 	defer cancel()
 
-	// Generate script
-	result, err := utils.GenerateTextScript(callCtx, t.apiKey, t.model, utils.TextScriptRequest{
+	req := utils.TextScriptRequest{
 		Topic:        topic,
 		Category:     category,
 		Language:     language,
 		Duration:     duration,
 		Tone:         tone,
 		TemplatePath: t.templatePath,
-	})
+	}
+
+	var result *utils.TextScriptResult
+	var err error
+
+	// PRIMARY: Try Antigravity OAuth (no API key needed)
+	// Includes automatic retry with backoff on 429 rate limit (5s→15s→30s)
+	if t.useAntigravity {
+		result, err = GenerateTextScriptAntigravity(callCtx, t.model, req)
+		if err != nil {
+			return ErrorResult(fmt.Sprintf("text_script_create failed: %v", err)).WithError(err)
+		}
+		return t.saveAndReturn(result, topic, category)
+	}
+
+	// FALLBACK: Use Gemini API key (only if OAuth not available)
+	if t.apiKey == "" {
+		return UserResult(
+			"No text generation method available. " +
+				"Configure Antigravity OAuth (`picoclaw auth login --provider google-antigravity`) " +
+				"or Gemini API key in config.json (tools.image_gen.gemini_api_key)",
+		)
+	}
+
+	result, err = utils.GenerateTextScript(callCtx, t.apiKey, t.model, req)
 	if err != nil {
 		return ErrorResult(fmt.Sprintf("text_script_create failed: %v", err)).WithError(err)
 	}
 
-	// Generate unique ID
-	id := utils.GenerateID()
+	return t.saveAndReturn(result, topic, category)
+}
 
-	// Save script
+// saveAndReturn saves the script and returns the result.
+func (t *TextScriptCreateTool) saveAndReturn(result *utils.TextScriptResult, topic, category string) *ToolResult {
+	id := utils.GenerateID()
 	scriptDir := filepath.Join(t.outputDir, id)
 	if err := os.MkdirAll(scriptDir, 0o755); err != nil {
 		return ErrorResult(fmt.Sprintf("error creating directory: %v", err))

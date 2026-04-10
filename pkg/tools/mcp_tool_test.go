@@ -23,7 +23,11 @@ type mockMCPCaller struct {
 	err    error
 }
 
-func (m *mockMCPCaller) CallTool(ctx context.Context, serverName, toolName string, args map[string]any) (*mcp.ToolCallResult, error) {
+func (m *mockMCPCaller) CallTool(
+	ctx context.Context,
+	serverName, toolName string,
+	args map[string]any,
+) (*mcp.ToolCallResult, error) {
 	return m.result, m.err
 }
 

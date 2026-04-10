@@ -384,6 +384,12 @@ func normalizeStoredToolCall(tc ToolCall) (string, map[string]any, string) {
 		}
 	}
 
+	// Gemini requires thoughtSignature in functionCall parts.
+	// If missing, use a placeholder to satisfy the API requirement.
+	if thoughtSignature == "" {
+		thoughtSignature = fmt.Sprintf("auto_%d", time.Now().UnixNano())
+	}
+
 	return name, args, thoughtSignature
 }
 

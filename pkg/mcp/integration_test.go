@@ -114,7 +114,9 @@ func TestIntegration_ToolCall(t *testing.T) {
 		"mock": {
 			cfg: config.MCPServerConfig{Transport: "stdio", Timeout: 10},
 			transport: &mockTransport{
-				tools: []ToolInfo{{Name: "echo_tool", Description: "Echoes text", Schema: map[string]any{"type": "object"}}},
+				tools: []ToolInfo{
+					{Name: "echo_tool", Description: "Echoes text", Schema: map[string]any{"type": "object"}},
+				},
 			},
 			status: StatusConnected,
 		},
@@ -257,7 +259,9 @@ func TestE2E_AgentCallsMCPTool(t *testing.T) {
 		"e2e": {
 			cfg: config.MCPServerConfig{Transport: "stdio", Timeout: 10},
 			transport: &mockTransport{
-				tools: []ToolInfo{{Name: "greet", Description: "Greets user", Schema: map[string]any{"type": "object"}}},
+				tools: []ToolInfo{
+					{Name: "greet", Description: "Greets user", Schema: map[string]any{"type": "object"}},
+				},
 			},
 			status: StatusConnected,
 		},
@@ -290,7 +294,9 @@ func TestE2E_MCPToolReturnsError(t *testing.T) {
 		"e2e": {
 			cfg: config.MCPServerConfig{Transport: "stdio", Timeout: 10},
 			transport: &mockTransport{
-				tools: []ToolInfo{{Name: "error_tool", Description: "Returns error", Schema: map[string]any{"type": "object"}}},
+				tools: []ToolInfo{
+					{Name: "error_tool", Description: "Returns error", Schema: map[string]any{"type": "object"}},
+				},
 				callHandler: func(method string, params map[string]any) (*json.RawMessage, error) {
 					if method == "tools/call" {
 						data, _ := json.Marshal(map[string]any{

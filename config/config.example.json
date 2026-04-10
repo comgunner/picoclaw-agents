@@ -651,18 +651,21 @@
       "api_key": ""
     },
     "image_gen": {
-      "provider": "gemini",
+      "provider": "antigravity",
+      "antigravity_model": "gemini-3.1-flash-image",
+      "cooldown_seconds": 150,
       "gemini_api_key": "",
       "gemini_text_model_name": "gemini-2.5-flash",
       "gemini_image_model_name": "gemini-2.5-flash-image",
       "ideogram_api_key": "",
       "ideogram_api_url": "https://api.ideogram.ai/v1/ideogram-v3/generate",
+      "ideogram_model_name": "",
       "ideogram_aspect_ratio": "4x5",
       "ideogram_rendering_speed": "TURBO",
       "ideogram_style_type": "REALISTIC",
       "ideogram_num_images": 1,
       "ideogram_negative_prompt": "text, watermark, signature, blurry, low quality, oversaturated",
-      "aspect_ratio": "4:5",
+      "aspect_ratio": "1:1",
       "output_dir": "./workspace/image_gen",
       "image_script_path": "",
       "image_gen_script_path": ""
@@ -689,7 +692,7 @@
     },
     "mcp": {
       "enabled": true,
-      "default_timeout": "30s",
+      "default_timeout": 30,
       "servers": {
         "github": {
           "transport": "stdio",
@@ -705,7 +708,7 @@
           "command": "npx",
           "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
           "enabled_tools": ["read_file", "write_file", "list_dir"],
-          "timeout": "60s",
+          "timeout": 60,
           "description": "Filesystem access (sandboxed)"
         },
         "notion": {

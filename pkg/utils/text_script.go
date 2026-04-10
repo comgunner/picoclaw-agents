@@ -33,6 +33,12 @@ const (
 	EnvImageScriptPath    = "PICOCLAW_TOOLS_IMAGE_GEN_IMAGE_SCRIPT_PATH"
 	EnvImageGenScriptPath = "PICOCLAW_TOOLS_IMAGE_GEN_IMAGE_GEN_SCRIPT_PATH"
 	EnvAspectRatio        = "PICOCLAW_TOOLS_IMAGE_GEN_ASPECT_RATIO"
+	// EnvAntigravityImageModel is the environment variable for Antigravity OAuth image model.
+	EnvAntigravityImageModel = "PICOCLAW_TOOLS_IMAGE_GEN_ANTIGRAVITY_MODEL"
+	// EnvImageCooldownSeconds is the cooldown duration in seconds between image generations.
+	EnvImageCooldownSeconds = "PICOCLAW_IMAGE_COOLDOWN_SECONDS"
+	// EnvImageCooldownDB is the path to the cooldown database file.
+	EnvImageCooldownDB = "PICOCLAW_IMAGE_COOLDOWN_DB"
 )
 
 // System prompts embedded in English (defaults)

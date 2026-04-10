@@ -117,17 +117,17 @@ const fullstackDeveloperInstructions = `## DEVELOPMENT WORKFLOW
 function Component({ prop1, prop2 }) {
   // 1. Hooks
   const [state, setState] = useState(initialValue)
-  
+
   // 2. Effects
   useEffect(() => {
     // Side effects
   }, [dependencies])
-  
+
   // 3. Handlers
   const handleClick = () => {
     // Logic
   }
-  
+
   // 4. Render
   return <JSX />
 }
@@ -150,7 +150,7 @@ function Parent() {
       // Handle error
     }
   }
-  
+
   return <Child onSave={handleSave} />
 }
 
@@ -159,7 +159,7 @@ function Child({ onSave }) {
   const handleSubmit = () => {
     onSave(formData)
   }
-  
+
   return <button onClick={handleSubmit}>Save</button>
 }
 ` + bt + bt + bt + `
@@ -192,7 +192,7 @@ try {
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
-  
+
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET)
     next()
@@ -244,10 +244,10 @@ describe('Component', () => {
   it('should do something', () => {
     // Arrange
     const input = 'value'
-    
+
     // Act
     const result = function(input)
-    
+
     // Assert
     expect(result).toBe(expected)
   })
@@ -631,15 +631,15 @@ describe('UserProfile', () => {
   it('displays user data when loaded', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ 
-        name: 'John Doe', 
-        email: 'john@example.com', 
-        avatar: 'url' 
+      json: async () => ({
+        name: 'John Doe',
+        email: 'john@example.com',
+        avatar: 'url'
       })
     })
-    
+
     render(<UserProfile userId="123" />)
-    
+
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument()
       expect(screen.getByText('john@example.com')).toBeInTheDocument()
@@ -648,9 +648,9 @@ describe('UserProfile', () => {
 
   it('shows error state on failure', async () => {
     fetch.mockRejectedValueOnce(new Error('Not found'))
-    
+
     render(<UserProfile userId="123" />)
-    
+
     await waitFor(() => {
       expect(screen.getByText(/Error:/)).toBeInTheDocument()
     })
@@ -683,9 +683,9 @@ router.post('/',
     // Check validation errors
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
-        details: errors.array() 
+        details: errors.array()
       })
     }
 
@@ -948,7 +948,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -963,38 +963,38 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Lint
         run: npm run lint
-      
+
       - name: Test
         run: npm test
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
-      
+
       - name: Build
         run: npm run build
-  
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy to production
         run: |
           echo "Deploying to production..."

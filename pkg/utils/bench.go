@@ -35,8 +35,18 @@ func CaptureMemSnapshot() MemSnapshot {
 // PrintMemDiff prints a human-readable comparison between two snapshots.
 func PrintMemDiff(before, after MemSnapshot) {
 	fmt.Printf("Memory delta:\n")
-	fmt.Printf("  Alloc:      %d → %d MB (%+d)\n", before.AllocMB, after.AllocMB, int64(after.AllocMB)-int64(before.AllocMB))
-	fmt.Printf("  TotalAlloc: %d → %d MB (%+d)\n", before.TotalAllocMB, after.TotalAllocMB, int64(after.TotalAllocMB)-int64(before.TotalAllocMB))
+	fmt.Printf(
+		"  Alloc:      %d → %d MB (%+d)\n",
+		before.AllocMB,
+		after.AllocMB,
+		int64(after.AllocMB)-int64(before.AllocMB),
+	)
+	fmt.Printf(
+		"  TotalAlloc: %d → %d MB (%+d)\n",
+		before.TotalAllocMB,
+		after.TotalAllocMB,
+		int64(after.TotalAllocMB)-int64(before.TotalAllocMB),
+	)
 	fmt.Printf("  Sys:        %d → %d MB (%+d)\n", before.SysMB, after.SysMB, int64(after.SysMB)-int64(before.SysMB))
 	fmt.Printf("  GC cycles:  %d → %d (%+d)\n", before.NumGC, after.NumGC, int(after.NumGC)-int(before.NumGC))
 	fmt.Printf("  Goroutines: %d → %d (%+d)\n", before.Goroutines, after.Goroutines, after.Goroutines-before.Goroutines)

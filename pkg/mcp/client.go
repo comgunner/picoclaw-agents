@@ -129,7 +129,11 @@ func (m *MCPClientManager) GetServer(name string) *mcpServer {
 }
 
 // CallTool calls a tool on a specific MCP server.
-func (m *MCPClientManager) CallTool(ctx context.Context, serverName, toolName string, args map[string]any) (*ToolCallResult, error) {
+func (m *MCPClientManager) CallTool(
+	ctx context.Context,
+	serverName, toolName string,
+	args map[string]any,
+) (*ToolCallResult, error) {
 	srv := m.GetServer(serverName)
 	if srv == nil {
 		return nil, fmt.Errorf("MCP server %q not found", serverName)

@@ -130,7 +130,7 @@ const n8nWorkflowInstructions = `## ROLE & OBJECTIVE
 ### Setup & Connection
 1. **Create Webhook Node**: Use ` + bt + `n8n-nodes-base.webhook` + bt + ` as the trigger.
 2. **HTTP Method**: Usually ` + bt + `POST` + bt + ` to receive JSON payloads from PicoClaw.
-3. **Authentication**: 
+3. **Authentication**:
    - Recommended: ` + bt + `Header Auth` + bt + `.
    - Header Name: ` + bt + `X-Webhook-Secret` + bt + `.
    - This ensures only PicoClaw (or authorized users) can trigger the flow.

@@ -100,6 +100,16 @@ func (q *QueueManager) UpdateStatus(id string, status QueueStatus, res *ToolResu
 	}
 }
 
+// IsCancelled checks if a task has been canceled.
+func (q *QueueManager) IsCancelled(id string) bool {
+	q.mu.RLock()
+	defer q.mu.RUnlock()
+	if t, ok := q.tasks[id]; ok {
+		return t.Status == StatusFailed || t.Status == "canceled"
+	}
+	return false
+}
+
 // QueueTool is the user-facing tool to check or interact with the queue.
 type QueueTool struct {
 	manager *QueueManager

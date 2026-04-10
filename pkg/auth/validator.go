@@ -50,15 +50,16 @@ var APIKeyFormat = map[string]*regexp.Regexp{
 
 // ProviderEndpoints define URLs mínimas para validación de API keys
 var ProviderEndpoints = map[string]string{
-	"openai":         "https://api.openai.com/v1/models",
-	"anthropic":      "https://api.anthropic.com/v1/models",
-	"deepseek":       "https://api.deepseek.com/models",
-	"zhipu":          "https://open.bigmodel.cn/api/paas/v4/models",
-	"gemini":         "https://generativelanguage.googleapis.com/v1beta/models",
-	"groq":           "https://api.groq.com/openai/v1/models",
-	"openrouter":     "https://openrouter.ai/api/v1/models",
-	"qwen":           "https://dashscope.aliyuncs.com/api/v1/models",
-	"github-copilot": "https://api.githubcopilot.com/models",
+	"openai":             "https://api.openai.com/v1/models",
+	"anthropic":          "https://api.anthropic.com/v1/models",
+	"deepseek":           "https://api.deepseek.com/models",
+	"zhipu":              "https://open.bigmodel.cn/api/paas/v4/models",
+	"gemini":             "https://generativelanguage.googleapis.com/v1beta/models",
+	"groq":               "https://api.groq.com/openai/v1/models",
+	"openrouter":         "https://openrouter.ai/api/v1/models",
+	"qwen":               "https://dashscope.aliyuncs.com/api/v1/models",
+	"github-copilot":     "https://api.githubcopilot.com/models",
+	"google-antigravity": "https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels",
 }
 
 // ValidationResult contiene el resultado de la validación de una API key

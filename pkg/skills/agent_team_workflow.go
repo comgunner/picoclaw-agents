@@ -448,13 +448,13 @@ func spawnSubagent(parentID, targetID, task string) error {
     if !registry.CanSpawnSubagent(parentID, targetID) {
         return fmt.Errorf("agent %s cannot spawn %s", parentID, targetID)
     }
-    
+
     // 2. Check depth limit
     parentDepth := getAgentDepth(parentID)
     if parentDepth >= parent.Subagents.MaxSpawnDepth {
         return fmt.Errorf("max spawn depth reached")
     }
-    
+
     // 3. Acquire semaphore slot
     select {
     case semaphore <- struct{}{}:
@@ -462,10 +462,10 @@ func spawnSubagent(parentID, targetID, task string) error {
     case <-time.After(30 * time.Second):
         return fmt.Errorf("timeout waiting for agent slot")
     }
-    
+
     // 4. Spawn agent
     go runAgent(targetID, task)
-    
+
     return nil
 }
 ` + bt + bt + bt + `
@@ -880,10 +880,10 @@ semaphore := make(chan struct{}, 4)  // max_concurrent
 for i := 0; i < images; i += batchSize {
     // Wait for semaphore slot
     semaphore <- struct{}{}
-    
+
     go func(start int) {
         defer func() { <-semaphore }()
-        
+
         end := min(start+batchSize, images)
         task := fmt.Sprintf("Generate images %d to %d of landscapes", start, end)
         spawnSubagent("image_creator", task)
@@ -947,10 +947,10 @@ semaphore := make(chan struct{}, 4)
 
 for i := 0; i < len(companies); i += batchSize {
     semaphore <- struct{}{}
-    
+
     go func(start int) {
         defer func() { <-semaphore }()
-        
+
         end := min(start+batchSize, len(companies))
         batch := companies[start:end]
         task := fmt.Sprintf("Research companies: %v", batch)
@@ -1057,7 +1057,7 @@ func spawnWithResourceCheck(agentID, task string) error {
         queueTask(agentID, task)
         return nil  // Don't spawn now
     }
-    
+
     // 2. Check RAM
     ramUsage := getRAMUsage()
     if ramUsage > 1500 {  // MB
@@ -1071,7 +1071,7 @@ func spawnWithResourceCheck(agentID, task string) error {
             return nil
         }
     }
-    
+
     // 3. Check concurrency
     select {
     case semaphore <- struct{}{}:
@@ -1079,13 +1079,13 @@ func spawnWithResourceCheck(agentID, task string) error {
     case <-time.After(30 * time.Second):
         return fmt.Errorf("timeout waiting for agent slot")
     }
-    
+
     // 4. Spawn agent
     go func() {
         defer func() { <-semaphore }()
         runAgent(agentID, task)
     }()
-    
+
     return nil
 }
 ` + bt + bt + bt + `

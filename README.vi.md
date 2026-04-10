@@ -1756,7 +1756,7 @@ Một số nhà cung cấp (như Zhipu) có bộ lọc nội dung. Hãy thử di
 
 2026-03-02 🎉 **Fast-path & Global Tracker**: Thêm Slash Commands tức thì (`/bundle_approve`, `/status`, v.v.) cho tương tác độ trễ bằng không. Thống nhất `ImageGenTracker` trên tất cả agents cho nhất quán trạng thái multi-agent hoàn hảo. Xem [docs/queue_batch.md](docs/queue_batch.md).
 
-2026-03-01 🎉 **Tạo ảnh AI & Community Manager**: Thêm tạo ảnh native (Gemini/Ideogram), workflows script-to-image, menu tương tác sau tạo, và agent community manager để tự động tạo bài đăng mạng xã hội. Xem [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) để biết ví dụ đầy đủ.
+2026-03-01 🎉 **Tạo ảnh AI & Community Manager**: Thêm tạo ảnh native qua **Antigravity OAuth** (`gemini-3.1-flash-image`, không cần API key, cooldown 300s), **Gemini API key** hoặc **Ideogram API key**, workflows script-to-image, menu tương tác sau tạo, và agent community manager để tự động tạo bài đăng mạng xã hội. Xem [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) để biết ví dụ đầy đủ.
 
 2026-03-01 🎉 **Tích hợp Bên ngoài (Binance, Social Media, Notion)**: Thêm công cụ native cho giao dịch tiền mã hóa (Binance futures & spot), xuất bản mạng xã hội (Facebook & X/Twitter), và quản lý kiến thức (Notion). Cấu hình qua `config.json` hoặc biến môi trường. Xem [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) và [docs/NOTION_util.md](docs/NOTION_util.md) để biết hướng dẫn cấu hình.
 

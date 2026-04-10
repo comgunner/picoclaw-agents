@@ -15,9 +15,10 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal"
 	"github.com/comgunner/picoclaw/pkg/config"
-	"github.com/spf13/cobra"
 )
 
 func newAddCommand() *cobra.Command {
@@ -50,7 +51,18 @@ Examples:
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
-			return addServer(name, transport, command, cmdArgs, envVars, enabledTools, description, url, headers, timeout)
+			return addServer(
+				name,
+				transport,
+				command,
+				cmdArgs,
+				envVars,
+				enabledTools,
+				description,
+				url,
+				headers,
+				timeout,
+			)
 		},
 	}
 
@@ -67,7 +79,13 @@ Examples:
 	return cmd
 }
 
-func addServer(name, transport, cmd_str string, cmdArgs, envVars, enabledTools []string, description, url string, headers []string, timeout int) error {
+func addServer(
+	name, transport, cmd_str string,
+	cmdArgs, envVars, enabledTools []string,
+	description, url string,
+	headers []string,
+	timeout int,
+) error {
 	if name == "" {
 		return fmt.Errorf("server name is required")
 	}

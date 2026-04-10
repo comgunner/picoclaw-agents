@@ -213,7 +213,9 @@ func gmailSendEmailHandler(svc *gmail.Service) server.ToolHandlerFunc {
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Gmail send failed: %v", err)), nil
 		}
-		return mcp.NewToolResultText(fmt.Sprintf("✅ Email sent! ID: %s\nTo: %s\nSubject: %s", sent.Id, to, subject)), nil
+		return mcp.NewToolResultText(
+			fmt.Sprintf("✅ Email sent! ID: %s\nTo: %s\nSubject: %s", sent.Id, to, subject),
+		), nil
 	}
 }
 
@@ -259,7 +261,12 @@ func calendarListEventsHandler(svc *calendar.Service) server.ToolHandlerFunc {
 			maxResults = 50
 		}
 		now := time.Now().Format(time.RFC3339)
-		resp, err := svc.Events.List(calendarID).TimeMin(now).MaxResults(maxResults).SingleEvents(true).OrderBy("startTime").Do()
+		resp, err := svc.Events.List(calendarID).
+			TimeMin(now).
+			MaxResults(maxResults).
+			SingleEvents(true).
+			OrderBy("startTime").
+			Do()
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Calendar list failed: %v", err)), nil
 		}
@@ -275,7 +282,9 @@ func calendarListEventsHandler(svc *calendar.Service) server.ToolHandlerFunc {
 			} else if ev.Start.Date != "" {
 				start = ev.Start.Date
 			}
-			sb.WriteString(fmt.Sprintf("📌 %s\nStart: %s\nLocation: %s\nID: %s\n\n", ev.Summary, start, ev.Location, ev.Id))
+			sb.WriteString(
+				fmt.Sprintf("📌 %s\nStart: %s\nLocation: %s\nID: %s\n\n", ev.Summary, start, ev.Location, ev.Id),
+			)
 		}
 		return mcp.NewToolResultText(sb.String()), nil
 	}
@@ -301,7 +310,14 @@ func calendarCreateEventHandler(svc *calendar.Service) server.ToolHandlerFunc {
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Calendar create failed: %v", err)), nil
 		}
-		return mcp.NewToolResultText(fmt.Sprintf("✅ Event created!\nTitle: %s\nStart: %s\nLink: %s", created.Summary, created.Start.DateTime, created.HtmlLink)), nil
+		return mcp.NewToolResultText(
+			fmt.Sprintf(
+				"✅ Event created!\nTitle: %s\nStart: %s\nLink: %s",
+				created.Summary,
+				created.Start.DateTime,
+				created.HtmlLink,
+			),
+		), nil
 	}
 }
 

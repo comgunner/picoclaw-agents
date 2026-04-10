@@ -1805,7 +1805,7 @@ Cela se produit lorsqu'une autre instance du bot est en cours d'exécution. Assu
 
 2026-03-02 🎉 **Fast-path & Global Tracker**: Ajoutés Slash Commands instantanés (`/bundle_approve`, `/status`, etc.) pour interaction à latence zéro. Unifié `ImageGenTracker` dans tous les agents pour cohérence parfaite d'état multi-agent. Voir [docs/queue_batch.md](docs/queue_batch.md).
 
-2026-03-01 🎉 **Génération d'Images AI & Community Manager**: Ajoutée génération d'images native (Gemini/Ideogram), workflows script-to-image, menus interactifs post-génération, et agent community manager pour générer automatiquement des posts de réseaux sociaux. Voir [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) pour exemples complets.
+2026-03-01 🎉 **Génération d'Images AI & Community Manager**: Ajoutée génération d'images native via **Antigravity OAuth** (`gemini-3.1-flash-image`, sans clé API, cooldown 300s), **Gemini API key** ou **Ideogram API key**, workflows script-to-image, menus interactifs post-génération, et agent community manager pour générer automatiquement des posts de réseaux sociaux. Voir [docs/IMAGE_GEN_util.md](docs/IMAGE_GEN_util.md) pour exemples complets.
 
 2026-03-01 🎉 **Intégrations Externes (Binance, Social Media, Notion)**: Ajoutés outils natifs pour trading de cryptomonnaies (Binance futures & spot), publication sur réseaux sociaux (Facebook & X/Twitter), et gestion de connaissances (Notion). Configurer via `config.json` ou variables d'environnement. Voir [SOCIAL_MEDIA.md](SOCIAL_MEDIA.md) et [docs/NOTION_util.md](docs/NOTION_util.md) pour guides de configuration.
 

@@ -15,9 +15,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal"
 	"github.com/comgunner/picoclaw/pkg/config"
-	"github.com/spf13/cobra"
 )
 
 func newRemoveCommand() *cobra.Command {
