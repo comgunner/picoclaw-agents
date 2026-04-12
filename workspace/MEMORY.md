@@ -206,87 +206,59 @@ go test ./pkg/skills/... -v -run SkillCreator
 
 ## 🚨 Release Troubleshooting (Updated 2026-04-12)
 
-### Error: `no matching versions for query "latest"` or `no required module provides package`
+### Error: `no required module provides package github.com/comgunner/picoclaw/cmd/picoclaw/internal/service`
 
 **Symptom:** GoReleaser fails during build with:
 ```
-go: finding module for package github.com/comgunner/picoclaw/cmd/picoclaw/internal/service
-go: github.com/comgunner/picoclaw/cmd/picoclaw imports
-     github.com/comgunner/picoclaw/cmd/picoclaw/internal/service: no matching versions for query "latest"
+cmd/picoclaw/main.go:30:2: no required module provides package
+github.com/comgunner/picoclaw/cmd/picoclaw/internal/service; to add it:
+    go get github.com/comgunner/picoclaw/cmd/picoclaw/internal/service
 ```
 
-**Root cause:** `go mod tidy` in `.goreleaser.yaml` `before.hooks` tries to fetch ALL packages from the Go proxy — but newly added local packages (like `service/`) don't exist on the proxy yet, causing build failure.
+**Root cause:** The `.goreleaser.yaml` `before.hooks` uses `go mod tidy` which correctly resolves local packages from the file system. However, GoReleaser may run into module resolution issues when building for certain cross-compile targets (like `linux_loong64`) where the Go toolchain behaves differently.
 
 **Fix in `.goreleaser.yaml`:**
-
-1. **Replace `go mod tidy` with `go mod download`:**
 ```yaml
 before:
   hooks:
-    # go mod tidy can fail on new local packages not yet on proxy
-    # Use 'go mod download' instead which only fetches external deps
-    - go mod download
+    - go mod tidy
     - go generate ./cmd/picoclaw/...
     - sh -c 'cd web/frontend && pnpm install && pnpm build:backend'
-```
 
-2. **Add `GOPROXY=off` to build env** (prevents ANY proxy lookups during build):
-```yaml
 builds:
   - id: picoclaw
+    mod_timestamp: "{{ .CommitTimestamp }}"
     env:
       - CGO_ENABLED=0
       - GOMAXPROCS=2
-      - GOPROXY=off
-    tags:
-      - stdjson
 ```
 
-### How to Recover a Failed Release
+Key changes:
+- Use `go mod tidy` (NOT `go mod download`) — `go mod tidy` resolves local packages from file system
+- Add `mod_timestamp` for reproducible builds
+- Remove `GOPROXY=off` (prevents legitimate dependency downloads)
+
+### Recovery Steps
 
 If the release workflow fails:
 
 **Step 1: Check the error**
 ```bash
-# View the failed run
 gh run view <run_id> --log-failed
-
-# Or view on GitHub:
-# https://github.com/comgunner/picoclaw-agents/actions/runs/<run_id>
 ```
 
-**Step 2: Delete the broken tag** (if it was created)
+**Step 2: Delete the broken tag and release**
 ```bash
-# Delete remote tag
 git push --delete origin v1.2.6
-
-# Delete local tag (if exists)
 git tag -d v1.2.6
-
-# Also delete the GitHub Release if it was created
 gh release delete v1.2.6 --yes 2>/dev/null || true
 ```
 
-**Step 3: Fix `.goreleaser.yaml`**
-- Apply the fixes above (replace `go mod tidy`, add `GOPROXY=off`)
-- Commit and push the fix
+**Step 3: Fix `.goreleaser.yaml`**, commit and push
 
 **Step 4: Re-run the release**
 ```bash
-# Using the release script
 ./scripts/create-release.sh v1.2.6 false
-
-# Or manually via GitHub CLI
-gh workflow run release.yml -f tag=v1.2.6 -f prerelease=false
-```
-
-**Step 5: Monitor**
-```bash
-# Watch the run
-gh run view <new_run_id> --json status,conclusion --watch
-
-# Or check after waiting ~15 minutes (build time for all platforms)
-gh run view <new_run_id> --json status,conclusion
 ```
 
 ### Pre-Release Checklist
@@ -296,8 +268,9 @@ Before running `./scripts/create-release.sh`:
 - [ ] All new packages are committed and pushed to `main`
 - [ ] `go build ./...` succeeds locally
 - [ ] `make check` passes (vet + fmt + test)
-- [ ] `.goreleaser.yaml` has `go mod download` (NOT `go mod tidy`)
-- [ ] `.goreleaser.yaml` has `GOPROXY=off` in build env
+- [ ] `.goreleaser.yaml` uses `go mod tidy` in before hooks (NOT `go mod download`)
+- [ ] `.goreleaser.yaml` does NOT have `GOPROXY=off` in build env
+- [ ] `.goreleaser.yaml` has `mod_timestamp: "{{ .CommitTimestamp }}"` in builds
 - [ ] No secrets/API keys in committed files
 - [ ] CHANGELOG.md reflects all changes
 - [ ] `.secrets.baseline` is up to date (run `detect-secrets scan > .secrets.baseline`)
@@ -306,8 +279,9 @@ Before running `./scripts/create-release.sh`:
 
 | Pitfall | Solution |
 |---------|----------|
-| `go mod tidy` fails on new local package | Use `go mod download` + `GOPROXY=off` |
-| Tag already exists from failed release | Delete with `git push --delete origin <tag>` |
+| `go mod tidy` fails on new local package | Ensure the package directory has at least one `.go` file with the correct `package` declaration |
+| Tag already exists from failed release | Delete with `git push --delete origin <tag>` and `gh release delete <tag> --yes` |
 | Pre-commit hooks fail during release commit | Fix the issues (secrets, lint, tests) then amend commit |
 | GoReleaser timeout on large builds | Normal — multi-platform builds take 10-15 minutes |
 | `make lint` warnings (non-blocking) | Safe to ignore for release; fix separately |
+| `GOPROXY=off` causes build failure | Remove it — Go needs proxy access for cross-compile targets |
