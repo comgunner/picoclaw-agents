@@ -4,7 +4,9 @@ version: 2
 
 before:
   hooks:
-    - go mod tidy
+    # go mod tidy can fail on new local packages not yet on proxy
+    # Use 'go mod download' instead which only fetches external deps
+    - go mod download
     - go generate ./cmd/picoclaw/...
     - sh -c 'cd web/frontend && pnpm install && pnpm build:backend'
 
@@ -13,6 +15,7 @@ builds:
     env:
       - CGO_ENABLED=0
       - GOMAXPROCS=2
+      - GOPROXY=https://proxy.golang.org,direct
     tags:
       - stdjson
     ldflags:
