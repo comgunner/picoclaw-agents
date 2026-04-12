@@ -4,18 +4,20 @@ version: 2
 
 before:
   hooks:
-    # go mod tidy can fail on new local packages not yet on proxy
-    # Use 'go mod download' instead which only fetches external deps
-    - go mod download
+    # Ensure go.mod/go.sum are consistent with all local packages.
+    # go mod tidy correctly resolves local packages from the file system.
+    # If this fails in CI, it's usually because a new local package was added
+    # without updating go.sum — run 'go mod tidy' locally and commit.
+    - go mod tidy
     - go generate ./cmd/picoclaw/...
     - sh -c 'cd web/frontend && pnpm install && pnpm build:backend'
 
 builds:
   - id: picoclaw
+    mod_timestamp: "{{ .CommitTimestamp }}"
     env:
       - CGO_ENABLED=0
       - GOMAXPROCS=2
-      - GOPROXY=off
     tags:
       - stdjson
     ldflags:
