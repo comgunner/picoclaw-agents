@@ -41,7 +41,9 @@ func NewSessionManager(storage string) *SessionManager {
 	}
 
 	if storage != "" {
-		os.MkdirAll(storage, 0o755)
+		// GHSA-pv8c-p6jf-3fpp: Harden file permissions
+		// Use 0700 (owner-only) instead of 0755 for session directory
+		os.MkdirAll(storage, 0o700)
 		sm.loadSessions()
 	}
 
@@ -52,18 +54,23 @@ func (sm *SessionManager) GetOrCreate(key string) *Session {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
-	session, ok := sm.sessions[key]
+	// #2e3e678: Session key path traversal prevention
+	// Sanitize / and \ characters that could create invalid filesystem paths
+	safeKey := strings.ReplaceAll(key, "/", "_")
+	safeKey = strings.ReplaceAll(safeKey, "\\", "_")
+
+	session, ok := sm.sessions[safeKey]
 	if ok {
 		return session
 	}
 
 	session = &Session{
-		Key:      key,
+		Key:      safeKey,
 		Messages: []providers.Message{},
 		Created:  time.Now(),
 		Updated:  time.Now(),
 	}
-	sm.sessions[key] = session
+	sm.sessions[safeKey] = session
 
 	return session
 }
@@ -235,7 +242,9 @@ func (sm *SessionManager) Save(key string) error {
 		_ = tmpFile.Close()
 		return err
 	}
-	if err := tmpFile.Chmod(0o644); err != nil {
+	// GHSA-pv8c-p6jf-3fpp: Harden file permissions
+	// Use 0600 (owner read/write only) instead of 0644
+	if err := tmpFile.Chmod(0o600); err != nil {
 		_ = tmpFile.Close()
 		return err
 	}

@@ -35,6 +35,10 @@ type CronTool struct {
 	channel     string
 	chatID      string
 	mu          sync.RWMutex
+
+	// GHSA-pv8c-p6jf-3fpp: Channel-based access control for cron
+	// Only channels in this list can create/modify cron jobs
+	allowedChannels map[string]bool
 }
 
 // NewCronTool creates a new CronTool
@@ -117,6 +121,17 @@ func (t *CronTool) SetContext(channel, chatID string) {
 	t.chatID = chatID
 }
 
+// SetAllowedChannels sets the list of channels that can create/modify cron jobs.
+// GHSA-pv8c-p6jf-3fpp: Restricts cron tool access to trusted channels only.
+func (t *CronTool) SetAllowedChannels(channels []string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.allowedChannels = make(map[string]bool)
+	for _, ch := range channels {
+		t.allowedChannels[ch] = true
+	}
+}
+
 // Execute runs the tool with the given arguments
 func (t *CronTool) Execute(ctx context.Context, args map[string]any) *ToolResult {
 	action, ok := args["action"].(string)
@@ -144,10 +159,20 @@ func (t *CronTool) addJob(args map[string]any) *ToolResult {
 	t.mu.RLock()
 	channel := t.channel
 	chatID := t.chatID
+	allowedChannels := t.allowedChannels
 	t.mu.RUnlock()
 
 	if channel == "" || chatID == "" {
 		return ErrorResult("no session context (channel/chat_id not set). Use this tool in an active conversation.")
+	}
+
+	// GHSA-pv8c-p6jf-3fpp: Channel-based access control for cron
+	// If allowedChannels is configured, only allow listed channels
+	if len(allowedChannels) > 0 && !allowedChannels[channel] {
+		return ErrorResult(fmt.Sprintf(
+			"Cron job creation blocked: channel '%s' is not allowed to create scheduled tasks. "+
+				"This is a security restriction to prevent unauthorized task scheduling.",
+			channel))
 	}
 
 	message, ok := args["message"].(string)

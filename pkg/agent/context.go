@@ -340,6 +340,15 @@ func (cb *ContextBuilder) BuildSystemPrompt() string {
 		}
 	}
 
+	// Add native Skill Creator Skill section from Go implementation
+	// Skip for Compact level to save tokens
+	if cb.promptLevel != PromptLevelCompact {
+		skillCreatorSection := cb.skillsLoader.LoadNativeSkillCreatorSkill()
+		if skillCreatorSection != "" {
+			parts = append(parts, skillCreatorSection)
+		}
+	}
+
 	// 4. Bootstrap files (skip for Compact)
 	if cb.promptLevel != PromptLevelCompact {
 		parts = append(parts, cb.LoadBootstrapFiles())

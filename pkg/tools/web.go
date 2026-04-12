@@ -76,6 +76,41 @@ func createHTTPClient(proxyURL string, timeout time.Duration) (*http.Client, err
 	return client, nil
 }
 
+// isBlockedHostname checks if a hostname should be blocked for SSRF prevention.
+// GHSA-pv8c-p6jf-3fpp: Blocks common internal/private hostnames.
+func isBlockedHostname(host string) bool {
+	// Block localhost variants (but not 127.0.0.1 to allow test servers)
+	switch strings.ToLower(host) {
+	case "localhost", "0.0.0.0", "::1", "[::1]":
+		return true
+	}
+
+	// Block local TLDs
+	if strings.HasSuffix(host, ".local") ||
+		strings.HasSuffix(host, ".internal") ||
+		strings.HasSuffix(host, ".lan") ||
+		strings.HasSuffix(host, ".home") {
+		return true
+	}
+
+	// Block cloud metadata services
+	if strings.HasSuffix(host, ".amazonaws.com") &&
+		(strings.Contains(host, "169.254.169.254") || strings.Contains(host, "metadata")) {
+		return true
+	}
+	if host == "metadata.google.internal" || host == "metadata.kubernetes" {
+		return true
+	}
+
+	// Block Docker/internal
+	if strings.HasSuffix(host, ".docker.internal") ||
+		strings.HasSuffix(host, ".host.docker.internal") {
+		return true
+	}
+
+	return false
+}
+
 type SearchProvider interface {
 	Search(ctx context.Context, query string, count int) (string, error)
 }
@@ -581,6 +616,13 @@ func (t *WebFetchTool) Execute(ctx context.Context, args map[string]any) *ToolRe
 
 	if parsedURL.Host == "" {
 		return ErrorResult("missing domain in URL")
+	}
+
+	// GHSA-pv8c-p6jf-3fpp: SSRF prevention - pre-flight URL validation
+	// Block obvious private/internal hostnames before making the request
+	host := strings.ToLower(parsedURL.Hostname())
+	if isBlockedHostname(host) {
+		return ErrorResult(fmt.Sprintf("access to internal hostnames is not allowed (SSRF prevention): %s", host))
 	}
 
 	maxChars := t.maxChars

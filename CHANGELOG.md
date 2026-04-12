@@ -6,6 +6,103 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-04-12
+
+### 🛡️ Critical Security Hardening (GHSA-pv8c-p6jf-3fpp + Upstream Patches)
+
+Adapted **8 critical security patches** from upstream `sipeed/picoclaw` to multi-agent fork. All patches adapted (not copy-pasted) to preserve custom features (multi-agent spawning, task locks, boot rehydration, CLI flags).
+
+#### Security Fixes Applied
+
+**GHSA-pv8c-p6jf-3fpp: Channel-Based Access Control**
+- **Files:** `pkg/tools/shell.go`, `pkg/tools/cron.go`
+- **Impact:** Remote channels can no longer execute arbitrary shell commands or schedule malicious cron jobs
+- **Adaptation:** Added `allowRemote` field (default: false) + channel validation in `Execute()` and `addJob()`
+- **Upstream:** [`8c2a933`](https://github.com/sipeed/picoclaw/commit/8c2a9332c64bdbd4f1a43c42e1d4eddb1ea43e46)
+
+**GHSA-pv8c-p6jf-3fpp: SSRF Prevention**
+- **File:** `pkg/tools/web.go`
+- **Impact:** web_fetch blocks access to internal services (localhost, cloud metadata, docker.internal)
+- **Adaptation:** Added pre-flight hostname validation via `isBlockedHostname()`
+- **Upstream:** [`8c2a933`](https://github.com/sipeed/picoclaw/commit/8c2a9332c64bdbd4f1a43c42e1d4eddb1ea43e46)
+
+**Workspace Sandbox Bypass Prevention**
+- **File:** `pkg/tools/shell.go`
+- **Impact:** URL path confusion no longer bypasses workspace restrictions
+- **Adaptation:** Improved URL detection logic with 20-char context window + safe paths map
+- **Upstream:** [`6b72326`](https://github.com/sipeed/picoclaw/commit/6b72326be1e586ba1229b1b5128674e8e4687183)
+
+**File Permissions Hardening**
+- **Files:** `pkg/session/manager.go`, `pkg/state/state.go`
+- **Impact:** Session/state files restricted to owner-only access (0700/0600)
+- **Adaptation:** Changed from 0755/0644 to 0700/0600
+- **Upstream:** [`8c2a933`](https://github.com/sipeed/picoclaw/commit/8c2a9332c64bdbd4f1a43c42e1d4eddb1ea43e46)
+
+**Session Key Path Traversal Prevention**
+- **File:** `pkg/session/manager.go`
+- **Impact:** Session keys with `/` or `\` sanitized to prevent invalid paths
+- **Adaptation:** Added sanitization in `GetOrCreate()`
+- **Upstream:** [`2e3e678`](https://github.com/sipeed/picoclaw/commit/2e3e6788abf2e1af554be8538d46a9717c9ecd91)
+
+**Disk Wiring Pattern Accuracy**
+- **File:** `pkg/tools/shell.go`
+- **Impact:** Disk wiping commands (format, mkfs, diskpart) properly blocked
+- **Adaptation:** Unified regex patterns from upstream
+- **Upstream:** [`ae021ef`](https://github.com/sipeed/picoclaw/commit/ae021ef843f71ee4e3fc4a85b456912ce9c45350)
+
+#### Dependency Updates
+- `golang.org/x/sys`: 0.42.0 → **0.43.0** (PID/file permission fixes)
+- `github.com/mymmrac/telego`: 1.6.0 → **1.8.0** (Telegram security)
+- `modernc.org/sqlite`: 1.48.1 → **1.48.2** (SQLite driver patch)
+
+### 🧠 Native Skill: skill_creator
+
+New native compiled-in skill that guides the agent through creating file-based skills (SKILL.md) in `workspace/skills/`.
+
+- **Files:** `pkg/skills/skill_creator.go` (NEW), `pkg/skills/skill_creator_test.go` (NEW, 8 tests)
+- **Modified:** `pkg/skills/loader.go` (registry + getter), `pkg/agent/context.go` (BuildSystemPrompt)
+- **Note:** Creates SKILL.md files only, NOT native Go skills (those are developer-only)
+- **Tests:** ✅ ALL PASS (8/8)
+
+### 🖥️ OS Service Management
+
+New `picoclaw-agents service` subcommand to install and manage the gateway as an OS service on **Linux (systemd)**, **macOS (launchd)**, and **Windows (schtasks)**.
+
+- **Files (NEW):** `cmd/picoclaw/internal/service/` (9 files, ~1400 lines)
+- **Modified:** `cmd/picoclaw/main.go` (register service command)
+- **Docs:** `docs/SERVICE.md` (English), `docs/SERVICE.es.md` (Español)
+- **Subcommands:** install, uninstall, start, stop, restart, status, logs
+- **Features:** --dry-run, --port, --public, --config flags; pre-flight checks; atomic writes; overlap prevention (blocks install if gateway already running on same port)
+- **Platform details:**
+  - Linux: systemd user unit at `~/.config/systemd/user/picoclaw-agents.service`
+  - macOS: launchd LaunchAgent at `~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist` (with legacy `load -w` fallback)
+  - Windows: scheduled task with PID tracking via `.cmd` wrapper
+- **Security:** XML escaping for macOS plist, atomic file writes, domain overlap prevention
+
+**Important:** The `service` subcommand is in the main CLI binary (`picoclaw-agents`), NOT in the launcher (`picoclaw-agents-launcher`).
+
+```bash
+# ✅ Correct — main CLI binary
+./build/picoclaw-agents-darwin-arm64 service install --dry-run
+
+# ❌ Incorrect — launcher is WebUI only, no subcommands
+./build/picoclaw-agents-launcher-darwin-arm64 service install  # Error
+```
+
+### 🧠 Skill Creator Documentation
+
+Comprehensive tutorial for the native `skill_creator` skill, available in **English** and **Spanish**:
+
+- **`docs/SKILL_CREATOR.md`** (English, ~435 lines) — Complete guide with 6-step workflow, anti-patterns, naming conventions, full PDF rotator example, troubleshooting
+- **`docs/SKILL_CREATOR.es.md`** (Español, ~435 lines) — Full Spanish translation
+- **`docs/SERVICE.es.md`** (Español, ~200 lines) — Spanish translation of OS service management docs
+
+**Tests:** ✅ ALL PASS (pkg/tools: 13, pkg/session: 3, pkg/state: 5, pkg/skills: 8 — 29 total)
+**Binary:** `build/picoclaw-agents-darwin-arm64` (v1.2.4-20-g19419db-dirty)
+**Documentation:** `local_work/patch_execution_log_2026-04-12.md`, `docs/SERVICE.md`, `docs/SKILL_CREATOR.md`
+
+---
+
 ## 2026-04-05
 
 ### 🧠 Context Management Integration (picoclaw_original → Fork)

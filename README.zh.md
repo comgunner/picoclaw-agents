@@ -216,6 +216,94 @@ picoclaw-agents-launcher
 
 ![WebUI Launcher](assets/launcher-webui.jpg)
 
+---
+
+## 🖥️ 操作系统服务管理
+
+将 PicoClaw-Agents 作为系统服务运行，登录时自动启动。支持 **Linux (systemd)**、**macOS (launchd)** 和 **Windows (计划任务)**。
+
+> **注意：** `service` 子命令位于 **主 CLI 二进制文件**中，不在启动器中。
+
+```bash
+# ✅ 正确 — 主 CLI 二进制文件
+./build/picoclaw-agents-darwin-arm64 service install
+
+# ❌ 错误 — 启动器仅为 WebUI
+./build/picoclaw-agents-launcher-darwin-arm64 service install  # 错误
+```
+
+### 可用命令
+
+| 命令 | 描述 |
+|---------|-------------|
+| `service install` | 安装为操作系统服务（登录时自动启动） |
+| `service install --dry-run` | 预览将要执行的操作，不进行更改 |
+| `service install --port 9999` | 安装到自定义端口 |
+| `service install --public` | 监听所有接口 (0.0.0.0) |
+| `service uninstall` | 移除服务 |
+| `service start` | 启动服务 |
+| `service stop` | 停止服务 |
+| `service restart` | 重启服务 |
+| `service status` | 检查服务状态 |
+| `service logs` | 查看日志（最后 50 行） |
+| `service logs -n 100` | 查看最后 100 行 |
+| `service logs -f` | 实时跟踪日志 |
+
+### 平台详情
+
+| 平台 | 服务类型 | 配置位置 |
+|----------|-------------|-----------------|
+| **Linux** | systemd（用户级） | `~/.config/systemd/user/picoclaw-agents.service` |
+| **macOS** | launchd LaunchAgent | `~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist` |
+| **Windows** | 计划任务（ONLOGON） | `%APPDATA%\PicoClaw\gateway.cmd` |
+
+### 典型使用流程
+
+```bash
+# 1. 安装服务（登录时自动启动）
+picoclaw-agents service install
+
+# 2. 打开 WebUI 进行可视化配置
+picoclaw-agents-launcher --public
+# → http://localhost:18800
+
+# 3. 服务会自动管理 gateway
+# 无需手动启动
+```
+
+### ⚠️ 防止重复连接
+
+服务和手动启动的 gateway **不得同时运行**。如果两者都处于活动状态，您将在 Telegram/Discord 上收到重复消息，并出现端口冲突。安装程序会检查 gateway 端口是否已被使用，如果检测到正在运行的 gateway，则拒绝安装。
+
+```
+Error: gateway is already running on port 18800. Stop it first to avoid duplicate connections.
+```
+
+### Dry Run 示例
+
+```bash
+$ picoclaw-agents service install --dry-run
+
+🔍 Dry Run 模式 — 不会进行任何更改
+==================================================
+
+平台:         macOS (launchd)
+端口:         18800
+公开:         false
+配置:         ~/.picoclaw/config.json
+
+预检检查:
+  ✓ 端口 18800 可用
+  ✓ 服务尚未安装
+  ✓ 二进制文件存在
+
+将要执行的操作:
+  1. 创建目录：~/Library/Logs/picoclaw-agents
+  2. 写入 plist 文件：~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist
+  3. 运行：launchctl bootstrap gui/$(id -u)/ ...
+```
+
+📖 **完整文档：** 请参阅 [docs/SERVICE.md](docs/SERVICE.md) 获取安装指南、故障排除和各平台的详细信息。
 
 ---
 

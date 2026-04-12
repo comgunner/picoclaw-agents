@@ -182,6 +182,94 @@ picoclaw-agents-launcher
 
 ![WebUI ランチャー](assets/launcher-webui.jpg)
 
+---
+
+## 🖥️ OS サービス管理
+
+PicoClaw-Agents をログイン時に自動起動するシステムサービスとして実行します。**Linux (systemd)**、**macOS (launchd)**、**Windows (タスクスケジューラ)** に対応しています。
+
+> **注意：** `service` サブコマンドは**メイン CLI バイナリ**にあり、ランチャーにはありません。
+
+```bash
+# ✅ 正しい — メイン CLI バイナリ
+./build/picoclaw-agents-darwin-arm64 service install
+
+# ❌ 間違い — ランチャーは WebUI のみ
+./build/picoclaw-agents-launcher-darwin-arm64 service install  # エラー
+```
+
+### 利用可能なコマンド
+
+| コマンド | 説明 |
+|---------|-------------|
+| `service install` | OS サービスとしてインストール（ログイン時に自動起動） |
+| `service install --dry-run` | 変更を行わずにプレビュー |
+| `service install --port 9999` | カスタムポートにインストール |
+| `service install --public` | 全てのインターフェースでリッスン (0.0.0.0) |
+| `service uninstall` | サービスを削除 |
+| `service start` | サービスを開始 |
+| `service stop` | サービスを停止 |
+| `service restart` | サービスを再起動 |
+| `service status` | サービスの状態を確認 |
+| `service logs` | ログを表示（直近 50 行） |
+| `service logs -n 100` | 直近 100 行を表示 |
+| `service logs -f` | リアルタイムでログを追従 |
+
+### プラットフォーム詳細
+
+| プラットフォーム | サービスタイプ | 設定場所 |
+|----------|-------------|-----------------|
+| **Linux** | systemd（ユーザー） | `~/.config/systemd/user/picoclaw-agents.service` |
+| **macOS** | launchd LaunchAgent | `~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist` |
+| **Windows** | タスクスケジューラ（ONLOGON） | `%APPDATA%\PicoClaw\gateway.cmd` |
+
+### 典型的なワークフロー
+
+```bash
+# 1. サービスをインストール（ログイン時に自動起動）
+picoclaw-agents service install
+
+# 2. WebUI を開いて視覚的に設定
+picoclaw-agents-launcher --public
+# → http://localhost:18800
+
+# 3. サービスがゲートウェイを自動管理
+# 手動で起動する必要はありません
+```
+
+### ⚠️ 重複接続の防止
+
+サービスと手動で起動したゲートウェイは**同時に実行してはいけません**。両方がアクティブな場合、Telegram/Discord でメッセージが重複したり、ポートの競合が発生します。インストーラーはゲートウェイのポートが既に使用されているかを確認し、実行中のゲートウェイを検出した場合はインストールを拒否します。
+
+```
+Error: gateway is already running on port 18800. Stop it first to avoid duplicate connections.
+```
+
+### Dry Run の例
+
+```bash
+$ picoclaw-agents service install --dry-run
+
+🔍 Dry Run モード — 変更は行われません
+==================================================
+
+プラットフォーム:  macOS (launchd)
+ポート:          18800
+公開:            false
+設定:           ~/.picoclaw/config.json
+
+事前チェック:
+  ✓ ポート 18800 は利用可能です
+  ✓ サービスはまだインストールされていません
+  ✓ バイナリが存在します
+
+実行される内容:
+  1. ディレクトリを作成: ~/Library/Logs/picoclaw-agents
+  2. plist ファイルを作成: ~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist
+  3. 実行: launchctl bootstrap gui/$(id -u)/ ...
+```
+
+📖 **完全なドキュメント：** インストールガイド、トラブルシューティング、プラットフォーム固有の詳細については [docs/SERVICE.md](docs/SERVICE.md) を参照してください。
 
 ---
 

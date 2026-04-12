@@ -27,6 +27,7 @@ import (
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/migrate"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/onboard"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/sandbox"
+	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/service"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/skills"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/status"
 	"github.com/comgunner/picoclaw/cmd/picoclaw/internal/util"
@@ -54,6 +55,7 @@ func NewPicoclawCommand() *cobra.Command {
 		gateway.NewGatewayCommand(),
 		migrate.NewMigrateCommand(),
 		sandbox.NewSandboxCommand(),
+		service.NewServiceCommand(),
 		skills.NewSkillsCommand(),
 		status.NewStatusCommand(),
 		util.NewUtilCommand(),

@@ -30,6 +30,7 @@ func processExists(pid int) bool {
 
 func TestShellTool_TimeoutKillsChildProcess(t *testing.T) {
 	tool, _ := NewExecTool(t.TempDir(), false)
+	tool.SetContext("cli", "")
 	tool.SetTimeout(500 * time.Millisecond)
 
 	args := map[string]any{

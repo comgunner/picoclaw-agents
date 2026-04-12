@@ -365,6 +365,94 @@ Todos los métodos soportan entrada de token API Key o flujo OAuth y automática
 
 ![WebUI Launcher](assets/launcher-webui.jpg)
 
+---
+
+## 🖥️ Gestión de Servicio del SO
+
+Ejecuta PicoClaw-Agents como un servicio del sistema que se inicia automáticamente al hacer login. Compatible con **Linux (systemd)**, **macOS (launchd)** y **Windows (Tareas Programadas)**.
+
+> **Nota:** El subcomando `service` está en el **binario CLI principal**, no en el launcher.
+
+```bash
+# ✅ Correcto — binario CLI principal
+./build/picoclaw-agents-darwin-arm64 service install
+
+# ❌ Incorrecto — el launcher es solo WebUI
+./build/picoclaw-agents-launcher-darwin-arm64 service install  # Error
+```
+
+### Comandos Disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `service install` | Instalar como servicio del SO (inicio automático al login) |
+| `service install --dry-run` | Previsualizar sin realizar cambios |
+| `service install --port 9999` | Instalar en puerto personalizado |
+| `service install --public` | Escuchar en todas las interfaces (0.0.0.0) |
+| `service uninstall` | Eliminar el servicio |
+| `service start` | Iniciar el servicio |
+| `service stop` | Detener el servicio |
+| `service restart` | Reiniciar el servicio |
+| `service status` | Ver estado del servicio |
+| `service logs` | Ver logs (últimas 50 líneas) |
+| `service logs -n 100` | Ver últimas 100 líneas |
+| `service logs -f` | Seguir logs en tiempo real |
+
+### Detalles por Plataforma
+
+| Plataforma | Tipo de Servicio | Ubicación de Configuración |
+|----------|-------------|-----------------|
+| **Linux** | systemd (usuario) | `~/.config/systemd/user/picoclaw-agents.service` |
+| **macOS** | launchd LaunchAgent | `~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist` |
+| **Windows** | Tarea Programada (ONLOGON) | `%APPDATA%\PicoClaw\gateway.cmd` |
+
+### Flujo de Uso Típico
+
+```bash
+# 1. Instalar el servicio (inicio automático al login)
+picoclaw-agents service install
+
+# 2. Abrir la WebUI para configuración visual
+picoclaw-agents-launcher --public
+# → http://localhost:18800
+
+# 3. El servicio gestiona el gateway automáticamente
+# No es necesario lanzarlo manualmente
+```
+
+### ⚠️ Prevenir Conexiones Duplicadas
+
+El servicio y un gateway iniciado manualmente **NO deben ejecutarse simultáneamente**. Si ambos están activos, recibirás mensajes duplicados en Telegram/Discord y conflictos de puerto. El instalador verifica si el puerto del gateway ya está en uso y rechaza la instalación si detecta un gateway en ejecución.
+
+```
+Error: gateway is already running on port 18800. Stop it first to avoid duplicate connections.
+```
+
+### Ejemplo de Dry Run
+
+```bash
+$ picoclaw-agents service install --dry-run
+
+🔍 Modo Dry Run — No se realizarán cambios
+==================================================
+
+Plataforma:     macOS (launchd)
+Puerto:         18800
+Público:        false
+Config:         ~/.picoclaw/config.json
+
+Verificaciones previas:
+  ✓ Puerto 18800 disponible
+  ✓ Servicio no instalado previamente
+  ✓ Binario existe
+
+Qué se haría:
+  1. Crear directorio: ~/Library/Logs/picoclaw-agents
+  2. Escribir archivo plist: ~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist
+  3. Ejecutar: launchctl bootstrap gui/$(id -u)/ ...
+```
+
+📖 **Documentación completa:** Ver [docs/SERVICE.md](docs/SERVICE.md) para guías de instalación, solución de problemas y detalles específicos de cada plataforma.
 
 ---
 

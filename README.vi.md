@@ -182,6 +182,94 @@ Tất cả các phương thức hỗ trợ nhập token API Key hoặc luồng O
 
 ![WebUI Launcher](assets/launcher-webui.jpg)
 
+---
+
+## 🖥️ Quản Lý Dịch Vụ Hệ Điều Hành
+
+Chạy PicoClaw-Agents như một dịch vụ hệ thống tự động khởi động khi đăng nhập. Hỗ trợ **Linux (systemd)**, **macOS (launchd)** và **Windows (Tác Vụ Đã Lên Lịch)**.
+
+> **Lưu ý:** Lệnh con `service` nằm trong **binary CLI chính**, không phải trong launcher.
+
+```bash
+# ✅ Đúng — binary CLI chính
+./build/picoclaw-agents-darwin-arm64 service install
+
+# ❌ Sai — launcher chỉ là WebUI
+./build/picoclaw-agents-launcher-darwin-arm64 service install  # Lỗi
+```
+
+### Các Lệnh Có Sẵn
+
+| Lệnh | Mô tả |
+|---------|-------------|
+| `service install` | Cài đặt như dịch vụ HĐH (tự khởi động khi đăng nhập) |
+| `service install --dry-run` | Xem trước mà không áp dụng thay đổi |
+| `service install --port 9999` | Cài đặt trên cổng tùy chỉnh |
+| `service install --public` | Lắng nghe trên tất cả giao diện (0.0.0.0) |
+| `service uninstall` | Xóa dịch vụ |
+| `service start` | Khởi động dịch vụ |
+| `service stop` | Dừng dịch vụ |
+| `service restart` | Khởi động lại dịch vụ |
+| `service status` | Kiểm tra trạng thái dịch vụ |
+| `service logs` | Xem logs (50 dòng cuối) |
+| `service logs -n 100` | Xem 100 dòng cuối |
+| `service logs -f` | Theo dõi logs thời gian thực |
+
+### Chi Tiết Theo Nền Tảng
+
+| Nền Tảng | Loại Dịch Vụ | Vị Trí Cấu Hình |
+|----------|-------------|-----------------|
+| **Linux** | systemd (người dùng) | `~/.config/systemd/user/picoclaw-agents.service` |
+| **macOS** | launchd LaunchAgent | `~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist` |
+| **Windows** | Tác Vụ Đã Lên Lịch (ONLOGON) | `%APPDATA%\PicoClaw\gateway.cmd` |
+
+### Quy Trình Sử Dụng Điển Hình
+
+```bash
+# 1. Cài đặt dịch vụ (tự khởi động khi đăng nhập)
+picoclaw-agents service install
+
+# 2. Mở WebUI để cấu hình trực quan
+picoclaw-agents-launcher --public
+# → http://localhost:18800
+
+# 3. Dịch vụ tự quản lý gateway
+# Không cần khởi động thủ công
+```
+
+### ⚠️ Ngăn Ngừa Kết Nối Trùng Lặp
+
+Dịch vụ và một gateway khởi động thủ công **KHÔNG được chạy đồng thời**. Nếu cả hai đều hoạt động, bạn sẽ nhận tin nhắn trùng lặp trên Telegram/Discord và xung đột cổng. Trình cài đặt kiểm tra xem cổng gateway đã được sử dụng chưa và từ chối cài đặt nếu phát hiện gateway đang chạy.
+
+```
+Error: gateway is already running on port 18800. Stop it first to avoid duplicate connections.
+```
+
+### Ví Dụ Dry Run
+
+```bash
+$ picoclaw-agents service install --dry-run
+
+🔍 Chế Độ Dry Run — Không có thay đổi nào được thực hiện
+==================================================
+
+Nền tảng:       macOS (launchd)
+Cổng:           18800
+Công khai:      false
+Cấu hình:       ~/.picoclaw/config.json
+
+Kiểm tra trước:
+  ✓ Cổng 18800 khả dụng
+  ✓ Dịch vụ chưa được cài đặt
+  ✓ Binary tồn tại
+
+Những gì sẽ được thực hiện:
+  1. Tạo thư mục: ~/Library/Logs/picoclaw-agents
+  2. Ghi file plist: ~/Library/LaunchAgents/com.picoclaw.agents.gateway.plist
+  3. Chạy: launchctl bootstrap gui/$(id -u)/ ...
+```
+
+📖 **Tài liệu đầy đủ:** Xem [docs/SERVICE.md](docs/SERVICE.md) để có hướng dẫn cài đặt, khắc phục sự cố và chi tiết cụ thể theo từng nền tảng.
 
 ---
 

@@ -38,7 +38,8 @@ func NewManager(workspace string) *Manager {
 	oldStateFile := filepath.Join(workspace, "state.json")
 
 	// Create state directory if it doesn't exist
-	os.MkdirAll(stateDir, 0o755)
+	// GHSA-pv8c-p6jf-3fpp: Harden file permissions - use 0700 (owner-only)
+	os.MkdirAll(stateDir, 0o700)
 
 	sm := &Manager{
 		workspace: workspace,
@@ -139,7 +140,8 @@ func (sm *Manager) saveAtomic() error {
 	}
 
 	// Write to temp file
-	if err := os.WriteFile(tempFile, data, 0o644); err != nil {
+	// GHSA-pv8c-p6jf-3fpp: Harden file permissions - use 0600 (owner read/write only)
+	if err := os.WriteFile(tempFile, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write temp file: %w", err)
 	}
 

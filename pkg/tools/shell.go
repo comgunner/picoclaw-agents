@@ -31,14 +31,37 @@ type ExecTool struct {
 	denyPatterns        []*regexp.Regexp
 	allowPatterns       []*regexp.Regexp
 	restrictToWorkspace bool
+
+	// GHSA-pv8c-p6jf-3fpp: Channel-based access control
+	// When false (default), only internal channels (cli) can execute commands.
+	// Remote channels (telegram, discord, etc.) are denied by default.
+	allowRemote bool
+
+	// Channel context for access control
+	channel string
+	chatID  string
+
+	// Known internal channels that are trusted
+	allowedChannels map[string]bool
+}
+
+// isInternalChannel returns true if the channel is considered internal/trusted.
+// Internal channels (cli, gateway) are always allowed to execute commands.
+func isInternalChannel(channel string) bool {
+	switch strings.ToLower(channel) {
+	case "cli", "gateway", "interactive":
+		return true
+	default:
+		return false
+	}
 }
 
 // DefaultDenyPatterns son los patrones de comandos peligrosos bloqueados por defecto
+// Actualizado con parche ae021ef: precisión mejorada para disk wiping
 var DefaultDenyPatterns = []string{
 	`(?i)\brm\s+(-[rf]+\s+)?/`,            // rm -rf /
 	`(?i)\bdel\s+/f\s`,                    // Windows del
-	`(?i)\bformat\s`,                      // format
-	`(?i)\bmkfs`,                          // mkfs
+	`(?i)\b(format|mkfs|diskpart)\b\s`,    // Disk formatting (ae021ef: más preciso)
 	`(?i)\bdd\s+if=`,                      // dd if=
 	`(?i)\bshutdown\b`,                    // shutdown
 	`(?i)\breboot\b`,                      // reboot
@@ -153,6 +176,15 @@ func (t *ExecTool) Execute(ctx context.Context, args map[string]any) *ToolResult
 	command, ok := args["command"].(string)
 	if !ok {
 		return ErrorResult("command is required")
+	}
+
+	// GHSA-pv8c-p6jf-3fpp: Channel-based access control
+	// Reject exec commands from remote channels unless explicitly allowed
+	if !t.allowRemote && !isInternalChannel(t.channel) {
+		return ErrorResult(fmt.Sprintf(
+			"Command execution blocked: exec tool is disabled for remote channel '%s'. "+
+				"This is a security restriction to prevent unauthorized command execution.",
+			t.channel))
 	}
 
 	// Block internal tool names from being executed as shell commands
@@ -318,6 +350,7 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 			return ""
 		}
 
+		// GHSA-pv8c-p6jf-3fpp + Fix #1203: URL path confusion bypass prevention
 		// Match potential file paths: Windows paths (C:\...) and Unix paths (/...)
 		// Also match file:// URIs which need special handling
 		pathPattern := regexp.MustCompile(`(?:file://[^\s\"']+|[A-Za-z]:\\[^\\\"'\s]+|/[^\s\"']+)`)
@@ -327,22 +360,27 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 			raw := cmd[match[0]:match[1]]
 
 			// Skip URL path components (e.g., https://github.com, ftp://...)
-			// Only skip if preceded by a web URL scheme
+			// Only skip if the // is actually part of a web URL scheme, not a standalone path
 			if strings.HasPrefix(raw, "//") {
-				// Check if this is part of a web URL (http, https, ftp)
-				precedingContext := ""
-				if match[0] > 0 {
-					start := match[0] - 10
-					if start < 0 {
-						start = 0
-					}
-					precedingContext = strings.ToLower(cmd[start:match[0]])
+				// Check if this is truly part of a web URL by examining broader context
+				// Look back up to 20 characters for http:, https:, ftp:, ws:, wss: schemes
+				contextStart := match[0] - 20
+				if contextStart < 0 {
+					contextStart = 0
 				}
-				if strings.HasSuffix(precedingContext, "http:") ||
-					strings.HasSuffix(precedingContext, "https:") ||
-					strings.HasSuffix(precedingContext, "ftp:") {
+				precedingContext := strings.ToLower(cmd[contextStart:match[0]])
+
+				// Only skip if directly preceded by a web URL scheme
+				isWebURL := strings.HasSuffix(precedingContext, "http://") ||
+					strings.HasSuffix(precedingContext, "https://") ||
+					strings.HasSuffix(precedingContext, "ftp://") ||
+					strings.HasSuffix(precedingContext, "ws://") ||
+					strings.HasSuffix(precedingContext, "wss://")
+
+				if isWebURL {
 					continue
 				}
+				// If not a web URL, treat // as a potential filesystem path and validate it
 			}
 
 			// Handle file:// URIs - extract the actual path and check it
@@ -352,6 +390,20 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 
 			p, err := filepath.Abs(raw)
 			if err != nil {
+				continue
+			}
+
+			// Skip safe pseudo-devices (GHSA-pv8c-p6jf-3fpp)
+			safePaths := map[string]bool{
+				"/dev/null":    true,
+				"/dev/zero":    true,
+				"/dev/random":  true,
+				"/dev/urandom": true,
+				"/dev/stdin":   true,
+				"/dev/stdout":  true,
+				"/dev/stderr":  true,
+			}
+			if safePaths[p] {
 				continue
 			}
 
@@ -387,4 +439,26 @@ func (t *ExecTool) SetAllowPatterns(patterns []string) error {
 		t.allowPatterns = append(t.allowPatterns, re)
 	}
 	return nil
+}
+
+// SetContext sets the channel context for access control.
+// This replaces the racy SetContext pattern with explicit channel tracking.
+// GHSA-pv8c-p6jf-3fpp: Used for channel-based exec permission checks.
+func (t *ExecTool) SetContext(channel, chatID string) {
+	t.channel = channel
+	t.chatID = chatID
+}
+
+// SetAllowRemote controls whether remote channels can execute commands.
+// GHSA-pv8c-p6jf-3fpp: Default is false (deny remote exec).
+func (t *ExecTool) SetAllowRemote(allow bool) {
+	t.allowRemote = allow
+}
+
+// SetAllowedChannels sets the list of channels that are allowed to execute commands.
+func (t *ExecTool) SetAllowedChannels(channels []string) {
+	t.allowedChannels = make(map[string]bool)
+	for _, ch := range channels {
+		t.allowedChannels[ch] = true
+	}
 }

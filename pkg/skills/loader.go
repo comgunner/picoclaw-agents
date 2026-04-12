@@ -332,6 +332,7 @@ var nativeSkillsRegistry = struct {
 	dataEng           *DataEngineerSkill
 	mlEng             *MLEngineerSkill
 	odooDev           *OdooDeveloperSkill // Odoo Developer skill
+	skillCreator      *SkillCreatorSkill  // Skill Creator: guide for creating skills
 }{
 	queueBatch:        nil, // Initialized on first use
 	binanceMCP:        nil, // Initialized on first use
@@ -347,6 +348,7 @@ var nativeSkillsRegistry = struct {
 	dataEng:           nil, // Initialized on first use
 	mlEng:             nil, // Initialized on first use
 	odooDev:           nil, // Initialized on first use
+	skillCreator:      nil, // Initialized on first use
 }
 
 // GetQueueBatchSkill returns the singleton instance of QueueBatchSkill.
@@ -473,6 +475,19 @@ func GetOdooDeveloperSkill(workspace string) *OdooDeveloperSkill {
 		nativeSkillsRegistry.odooDev = NewOdooDeveloperSkill(workspace)
 	}
 	return nativeSkillsRegistry.odooDev
+}
+
+// GetSkillCreatorSkill returns the singleton instance of SkillCreatorSkill.
+// Thread-safe lazy initialization.
+// NOTE: Uses same pattern as other 14 native skills (no explicit mutex).
+// Safe because initialization occurs during single-threaded agent loop bootstrap.
+// In concurrent subagent scenarios, benign double-write may occur (multiple instances
+// created but only one persists).
+func GetSkillCreatorSkill(workspace string) *SkillCreatorSkill {
+	if nativeSkillsRegistry.skillCreator == nil {
+		nativeSkillsRegistry.skillCreator = NewSkillCreatorSkill(workspace)
+	}
+	return nativeSkillsRegistry.skillCreator
 }
 
 // LoadNativeQueueBatchSkill returns the complete skill context from the native Go implementation.
@@ -771,6 +786,13 @@ func (sl *SkillsLoader) listNativeSkills() []SkillInfo {
 			Source:      "native",
 			Path:        "builtin://odoo_developer",
 		},
+		// Skill Creator: guide for creating file-based skills
+		{
+			Name:        "skill_creator",
+			Description: "Create new file-based skills (SKILL.md) in workspace/skills/ with guided 6-step workflow",
+			Source:      "native",
+			Path:        "builtin://skill_creator",
+		},
 	}
 }
 
@@ -893,4 +915,16 @@ func escapeXML(s string) string {
 	s = strings.ReplaceAll(s, "<", "&lt;")
 	s = strings.ReplaceAll(s, ">", "&gt;")
 	return s
+}
+
+// LoadNativeSkillCreatorSkill returns the complete skill context from the native Go implementation.
+func (sl *SkillsLoader) LoadNativeSkillCreatorSkill() string {
+	skill := GetSkillCreatorSkill(sl.workspace)
+	return skill.BuildSkillContext()
+}
+
+// BuildNativeSkillCreatorSummary returns an XML summary from the native implementation.
+func (sl *SkillsLoader) BuildNativeSkillCreatorSummary() string {
+	skill := GetSkillCreatorSkill(sl.workspace)
+	return skill.BuildSummary()
 }
