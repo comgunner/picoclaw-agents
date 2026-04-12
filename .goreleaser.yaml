@@ -15,7 +15,7 @@ builds:
     env:
       - CGO_ENABLED=0
       - GOMAXPROCS=2
-      - GOPROXY=https://proxy.golang.org,direct
+      - GOPROXY=off
     tags:
       - stdjson
     ldflags:
