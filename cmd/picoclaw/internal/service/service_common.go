@@ -153,6 +153,14 @@ func runCmdSilent(name string, args ...string) (string, error) {
 	return string(out), err
 }
 
+// runCmd executes a command and returns error only.
+//
+//nolint:unused
+func runCmd(name string, args ...string) error {
+	cmd := exec.Command(name, args...)
+	return cmd.Run()
+}
+
 // homeDir returns the user's home directory.
 func homeDir() string {
 	home, _ := os.UserHomeDir()
