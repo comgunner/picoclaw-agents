@@ -1,9 +1,24 @@
 # MEMORY.md - PicoClaw-Agents Long-Term Memory
 
-**Last Updated:** 2026-04-12 (12:30)
+**Last Updated:** 2026-04-12 (13:15)
 **Project:** PicoClaw-Agents (comgunner/picoclaw-agents)
 **Maintainer:** @comgunner
-**Version:** v1.2.4-20-g19419db-dirty
+**Version:** v1.2.6-trigger (8c23aae)
+
+---
+
+## 🚀 Release v1.2.6 - Build Fix & Service improvements (2026-04-12)
+
+### Build Fix: undefined runCmd on Linux
+- **Issue:** GitHub Actions failed during `linux_loong64` build with `undefined: runCmd` in `cmd/picoclaw/internal/service/platform_linux.go`.
+- **Root Cause:** `platform_linux.go` called `runCmd`, but it was not defined in `service_common.go` (only `runCmdSilent` existed).
+- **Fix:** Added `runCmd` to `service_common.go` with `//nolint:unused` to allow cross-platform compilation without lint errors on Darwin/Windows where it might be unused.
+- **Commit:** `8c23aae` - "fix(service): define missing runCmd in service_common.go (fixes linux build error)"
+
+### Release Trigger
+- **Command:** `./scripts/create-release.sh v1.2.6 false`
+- **Status:** Triggered successfully after deleting broken `v1.2.6` tag from previous failed run.
+- **Workflow:** https://github.com/comgunner/picoclaw-agents/actions/runs/24317764470
 
 ---
 
