@@ -15,10 +15,11 @@
 - **Fix:** Added `runCmd` to `service_common.go` with `//nolint:unused` to allow cross-platform compilation without lint errors on Darwin/Windows where it might be unused.
 - **Commit:** `8c23aae` - "fix(service): define missing runCmd in service_common.go (fixes linux build error)"
 
-### Release Trigger
-- **Command:** `./scripts/create-release.sh v1.2.6 false`
-- **Status:** Triggered successfully after deleting broken `v1.2.6` tag from previous failed run.
-- **Workflow:** https://github.com/comgunner/picoclaw-agents/actions/runs/24317764470
+### Release v1.2.6 Re-trigger
+- **Command:** `./scripts/create-release.sh v1.2.6 false` (2nd attempt with fixes)
+- **Status:** Triggered successfully after verifying Windows build compatibility locally.
+- **Workflow:** https://github.com/comgunner/picoclaw-agents/actions/runs/24381684272
+- **Fixes included:** Missing `runCmd` in `service_common.go`, which was blocking Linux cross-compilation during the release process.
 
 ---
 
