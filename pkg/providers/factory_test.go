@@ -51,7 +51,7 @@ func TestResolveProviderSelection(t *testing.T) {
 				cfg.Providers.DeepSeek.Proxy = "http://127.0.0.1:7890"
 			},
 			wantType:    providerTypeHTTPCompat,
-			wantAPIBase: "https://api.deepseek.com/v1",
+			wantAPIBase: "https://api.deepseek.com",
 			wantProxy:   "http://127.0.0.1:7890",
 		},
 		{

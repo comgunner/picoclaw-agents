@@ -24,6 +24,8 @@ const (
 	oauthProviderQwen              = "qwen"
 	oauthProviderZhipu             = "zhipu"
 	oauthProviderOpenRouterFree    = "openrouter-free"
+	oauthProviderDeepSeek          = "deepseek"
+	oauthProviderKilo              = "kilo"
 
 	oauthMethodBrowser    = "browser"
 	oauthMethodDeviceCode = "device_code"
@@ -48,6 +50,8 @@ var oauthProviderOrder = []string{
 	oauthProviderQwen,
 	oauthProviderZhipu,
 	oauthProviderOpenRouterFree,
+	oauthProviderDeepSeek,
+	oauthProviderKilo,
 }
 
 var oauthProviderMethods = map[string][]string{
@@ -57,6 +61,8 @@ var oauthProviderMethods = map[string][]string{
 	oauthProviderQwen:              {oauthMethodToken}, // Qwen usa API Key, no OAuth
 	oauthProviderZhipu:             {oauthMethodToken}, // Zhipu usa API Key, no OAuth
 	oauthProviderOpenRouterFree:    {oauthMethodToken}, // OpenRouter Free tier
+	oauthProviderDeepSeek:          {oauthMethodToken},
+	oauthProviderKilo:              {oauthMethodToken},
 }
 
 var oauthProviderLabels = map[string]string{
@@ -66,6 +72,8 @@ var oauthProviderLabels = map[string]string{
 	oauthProviderQwen:              "Qwen Portal",
 	oauthProviderZhipu:             "Zhipu AI (z.ai)",
 	oauthProviderOpenRouterFree:    "OpenRouter Free",
+	oauthProviderDeepSeek:          "DeepSeek",
+	oauthProviderKilo:              "Kilo AI",
 }
 
 var (
@@ -547,7 +555,9 @@ func normalizeOAuthProvider(raw string) (string, error) {
 		oauthProviderAnthropic,
 		oauthProviderGoogleAntigravity,
 		oauthProviderQwen,
-		oauthProviderOpenRouterFree:
+		oauthProviderOpenRouterFree,
+		oauthProviderDeepSeek,
+		oauthProviderKilo:
 		return provider, nil
 	default:
 		return "", fmt.Errorf("unsupported provider %q", raw)
@@ -914,6 +924,25 @@ func addModelsForProvider(cfg *config.Config, provider, authMethod string) int {
 			cfg.Agents.Defaults.ModelName = "glm-5"
 		}
 
+	case oauthProviderDeepSeek:
+		modelsToAdd = []config.ModelConfig{
+			{ModelName: "deepseek-v4-pro", Model: "deepseek/deepseek-v4-pro", AuthMethod: authMethod},
+			{ModelName: "deepseek-v4-flash", Model: "deepseek/deepseek-v4-flash", AuthMethod: authMethod},
+			{ModelName: "deepseek-chat", Model: "deepseek/deepseek-chat", AuthMethod: authMethod},
+			{ModelName: "deepseek-reasoner", Model: "deepseek/deepseek-reasoner", AuthMethod: authMethod},
+		}
+		if !existingModels["deepseek-v4-pro"] {
+			cfg.Agents.Defaults.ModelName = "deepseek-v4-pro"
+		}
+
+	case oauthProviderKilo:
+		modelsToAdd = []config.ModelConfig{
+			{ModelName: "kilo-auto-free", Model: "kilo/kilo-auto/free", AuthMethod: authMethod},
+		}
+		if !existingModels["kilo-auto-free"] {
+			cfg.Agents.Defaults.ModelName = "kilo-auto-free"
+		}
+
 	default:
 		return 0
 	}
@@ -954,6 +983,10 @@ func modelBelongsToProvider(provider, model string) bool {
 			lower == "z.ai" ||
 			lower == "glm" ||
 			strings.HasPrefix(lower, "glm-")
+	case oauthProviderDeepSeek:
+		return lower == "deepseek" || strings.HasPrefix(lower, "deepseek/")
+	case oauthProviderKilo:
+		return lower == "kilo" || strings.HasPrefix(lower, "kilo/")
 	default:
 		return false
 	}
@@ -977,6 +1010,18 @@ func defaultModelConfigForProvider(provider, authMethod string) *config.ModelCon
 		return &config.ModelConfig{
 			ModelName:  "gemini-flash",
 			Model:      "antigravity/gemini-3-flash",
+			AuthMethod: authMethod,
+		}
+	case oauthProviderDeepSeek:
+		return &config.ModelConfig{
+			ModelName:  "deepseek-v4-pro",
+			Model:      "deepseek/deepseek-v4-pro",
+			AuthMethod: authMethod,
+		}
+	case oauthProviderKilo:
+		return &config.ModelConfig{
+			ModelName:  "kilo-auto-free",
+			Model:      "kilo/kilo-auto/free",
 			AuthMethod: authMethod,
 		}
 	default:

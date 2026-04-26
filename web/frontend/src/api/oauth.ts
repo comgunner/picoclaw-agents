@@ -4,6 +4,9 @@ export type OAuthProvider =
   | "google-antigravity"
   | "qwen"
   | "zhipu"
+  | "openrouter-free"
+  | "deepseek"
+  | "kilo"
 export type OAuthMethod = "browser" | "device_code" | "token"
 
 export interface OAuthProviderStatus {

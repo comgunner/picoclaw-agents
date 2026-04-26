@@ -696,6 +696,13 @@ func (c *TelegramChannel) handleMessage(ctx context.Context, message *telego.Mes
 		"peer_id":    peerID,
 	}
 
+	// Inject current model name so the AgentLoop uses the model selected via
+	// /model command instead of the stale in-memory default.
+	// Fixes: ghost model bug ("antigravity-gemini-3-flash" sent to DeepSeek endpoint).
+	if currentModel := c.modelHandler.GetCurrentModelName(); currentModel != "" {
+		metadata["model_name"] = currentModel
+	}
+
 	c.HandleMessage(fmt.Sprintf("%d", user.ID), fmt.Sprintf("%d", chatID), content, mediaPaths, metadata)
 	return nil
 }

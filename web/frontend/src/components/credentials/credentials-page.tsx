@@ -6,9 +6,12 @@ import { useCredentialsPage } from "@/hooks/use-credentials-page"
 
 import { AnthropicCredentialCard } from "./anthropic-credential-card"
 import { AntigravityCredentialCard } from "./antigravity-credential-card"
+import { DeepSeekCredentialCard } from "./deepseek-credential-card"
 import { DeviceCodeSheet } from "./device-code-sheet"
+import { KiloCredentialCard } from "./kilo-credential-card"
 import { LogoutConfirmDialog } from "./logout-confirm-dialog"
 import { OpenAICredentialCard } from "./openai-credential-card"
+import { OpenRouterFreeCredentialCard } from "./openrouter-free-credential-card"
 import { QwenCredentialCard } from "./qwen-credential-card"
 import { ZhipuCredentialCard } from "./zhipu-credential-card"
 
@@ -27,6 +30,9 @@ export function CredentialsPage() {
     antigravityStatus,
     qwenStatus,
     zhipuStatus,
+    openrouterFreeStatus,
+    deepseekStatus,
+    kiloStatus,
     logoutDialogOpen,
     logoutConfirmProvider,
     logoutProviderLabel,
@@ -119,6 +125,24 @@ export function CredentialsPage() {
               status={zhipuStatus}
               activeAction={activeAction}
               onAskLogout={() => askLogout("zhipu")}
+            />
+
+            <OpenRouterFreeCredentialCard
+              status={openrouterFreeStatus}
+              activeAction={activeAction}
+              onAskLogout={() => askLogout("openrouter-free")}
+            />
+
+            <DeepSeekCredentialCard
+              status={deepseekStatus}
+              activeAction={activeAction}
+              onAskLogout={() => askLogout("deepseek")}
+            />
+
+            <KiloCredentialCard
+              status={kiloStatus}
+              activeAction={activeAction}
+              onAskLogout={() => askLogout("kilo")}
             />
           </div>
         )}

@@ -32,6 +32,11 @@ func NormalizeModelName(model string) string {
 		return "openrouter/auto"
 	}
 
+	// Kilo free tier aliases → kilo-auto/free
+	if lowerModel == "kilo-free" || lowerModel == "kilo-auto/free" {
+		return "kilo-auto/free"
+	}
+
 	// Anthropic model aliases (add "anthropic/" prefix if missing)
 	if strings.HasPrefix(lowerModel, "claude-") && !strings.Contains(lowerModel, "/") {
 		return "anthropic/" + model
@@ -193,15 +198,13 @@ func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
 			return sel, nil
 		case "deepseek":
 			if cfg.Providers.DeepSeek.APIKey != "" {
-				sel.apiKey = cfg.Providers.DeepSeek.APIKey
+				sel.apiKey = cfg.Providers.DeepSeek.APIKey // pragma: allowlist secret
 				sel.apiBase = cfg.Providers.DeepSeek.APIBase
 				sel.proxy = cfg.Providers.DeepSeek.Proxy
 				if sel.apiBase == "" {
-					sel.apiBase = "https://api.deepseek.com/v1"
+					sel.apiBase = "https://api.deepseek.com"
 				}
-				if model != "deepseek-chat" && model != "deepseek-reasoner" {
-					sel.model = "deepseek-chat"
-				}
+				// Remove restrictive model mapping to allow v4-flash, v4-pro, etc.
 			}
 		case "mistral":
 			if cfg.Providers.Mistral.APIKey != "" {
@@ -210,6 +213,15 @@ func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
 				sel.proxy = cfg.Providers.Mistral.Proxy
 				if sel.apiBase == "" {
 					sel.apiBase = "https://api.mistral.ai/v1"
+				}
+			}
+		case "kilo":
+			if cfg.Providers.Kilo.APIKey != "" {
+				sel.apiKey = cfg.Providers.Kilo.APIKey // pragma: allowlist secret
+				sel.apiBase = cfg.Providers.Kilo.APIBase
+				sel.proxy = cfg.Providers.Kilo.Proxy
+				if sel.apiBase == "" {
+					sel.apiBase = "https://api.kilo.ai/api/gateway"
 				}
 			}
 		case "github_copilot", "copilot":
@@ -251,10 +263,16 @@ func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
 			if sel.apiBase == "" {
 				sel.apiBase = defaultAnthropicAPIBase
 			}
+		case (strings.HasPrefix(model, "deepseek/") || strings.Contains(lowerModel, "deepseek")) && cfg.Providers.DeepSeek.APIKey != "":
+			sel.apiKey = cfg.Providers.DeepSeek.APIKey // pragma: allowlist secret
+			sel.apiBase = cfg.Providers.DeepSeek.APIBase
+			sel.proxy = cfg.Providers.DeepSeek.Proxy
+			if sel.apiBase == "" {
+				sel.apiBase = "https://api.deepseek.com"
+			}
 		case strings.HasPrefix(model, "openrouter/") ||
 			strings.HasPrefix(model, "openai/") ||
 			strings.HasPrefix(model, "meta-llama/") ||
-			strings.HasPrefix(model, "deepseek/") ||
 			strings.HasPrefix(model, "google/"):
 			sel.apiKey = cfg.Providers.OpenRouter.APIKey
 			sel.proxy = cfg.Providers.OpenRouter.Proxy
@@ -321,6 +339,13 @@ func resolveProviderSelection(cfg *config.Config) (providerSelection, error) {
 			sel.proxy = cfg.Providers.Mistral.Proxy
 			if sel.apiBase == "" {
 				sel.apiBase = "https://api.mistral.ai/v1"
+			}
+		case (strings.Contains(lowerModel, "kilo") || strings.HasPrefix(model, "kilo/")) && cfg.Providers.Kilo.APIKey != "":
+			sel.apiKey = cfg.Providers.Kilo.APIKey // pragma: allowlist secret
+			sel.apiBase = cfg.Providers.Kilo.APIBase
+			sel.proxy = cfg.Providers.Kilo.Proxy
+			if sel.apiBase == "" {
+				sel.apiBase = "https://api.kilo.ai/api/gateway"
 			}
 		case cfg.Providers.VLLM.APIBase != "":
 			sel.apiKey = cfg.Providers.VLLM.APIKey

@@ -484,6 +484,7 @@ type ProvidersConfig struct {
 	GitHubCopilot ProviderConfig       `json:"github_copilot"`
 	Antigravity   ProviderConfig       `json:"antigravity"`
 	Qwen          ProviderConfig       `json:"qwen"`
+	Kilo          ProviderConfig       `json:"kilo"`
 	Mistral       ProviderConfig       `json:"mistral"`
 }
 
@@ -507,6 +508,7 @@ func (p ProvidersConfig) IsEmpty() bool {
 		p.GitHubCopilot.APIKey == "" && p.GitHubCopilot.APIBase == "" &&
 		p.Antigravity.APIKey == "" && p.Antigravity.APIBase == "" &&
 		p.Qwen.APIKey == "" && p.Qwen.APIBase == "" &&
+		p.Kilo.APIKey == "" && p.Kilo.APIBase == "" &&
 		p.Mistral.APIKey == "" && p.Mistral.APIBase == ""
 }
 
@@ -1065,10 +1067,25 @@ func (c *Config) GetModelConfig(modelName string) (*ModelConfig, error) {
 }
 
 // findMatches finds all ModelConfig entries with the given model_name.
+// It first tries to match by ModelName (user-facing alias), then falls back to
+// matching by the Model field (protocol/model string, e.g. "deepseek/deepseek-v4-pro").
+// This ensures that agent.Model strings set to the full provider/model format
+// (e.g. after resolveModelAlias) still resolve to the correct config entry.
 func (c *Config) findMatches(modelName string) []ModelConfig {
 	var matches []ModelConfig
 	for i := range c.ModelList {
 		if c.ModelList[i].ModelName == modelName {
+			matches = append(matches, c.ModelList[i])
+		}
+	}
+	if len(matches) > 0 {
+		return matches
+	}
+	// Secondary: match by the full model string (e.g. "deepseek/deepseek-v4-pro")
+	// This handles cases where the caller passes the resolved provider/model ID
+	// instead of the human-readable model_name alias.
+	for i := range c.ModelList {
+		if c.ModelList[i].Model == modelName {
 			matches = append(matches, c.ModelList[i])
 		}
 	}
@@ -1095,6 +1112,7 @@ func (c *Config) HasProvidersConfig() bool {
 		v.GitHubCopilot.APIKey != "" || v.GitHubCopilot.APIBase != "" ||
 		v.Antigravity.APIKey != "" || v.Antigravity.APIBase != "" ||
 		v.Qwen.APIKey != "" || v.Qwen.APIBase != "" ||
+		v.Kilo.APIKey != "" || v.Kilo.APIBase != "" ||
 		v.Mistral.APIKey != "" || v.Mistral.APIBase != ""
 }
 
@@ -1138,6 +1156,7 @@ func (c *Config) GetSensitiveValues() []string {
 	add(c.Providers.GitHubCopilot.APIKey)
 	add(c.Providers.Antigravity.APIKey)
 	add(c.Providers.Qwen.APIKey)
+	add(c.Providers.Kilo.APIKey)
 	add(c.Providers.Mistral.APIKey)
 
 	// Model List

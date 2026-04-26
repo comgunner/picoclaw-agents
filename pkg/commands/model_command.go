@@ -112,6 +112,7 @@ func (h *ModelCommandHandler) selectModel(modelName string, channelID string) st
 	// Actualizar modelo por defecto
 	oldModel := cfg.Agents.Defaults.ModelName
 	cfg.Agents.Defaults.ModelName = selectedModel.ModelName
+	cfg.Agents.Defaults.Model = selectedModel.Model
 
 	// Limpiar overrides de agentes para forzar el nuevo modelo global
 	for i := range cfg.Agents.List {
@@ -258,4 +259,16 @@ func (h *ModelCommandHandler) getProviderName(model string) string {
 		return parts[0]
 	}
 	return "Unknown"
+}
+
+// GetCurrentModelName returns the currently active model name from config.
+// Used by channel handlers to inject model_name into message metadata so the
+// AgentLoop uses the model selected via /model instead of its in-memory default.
+// Returns an empty string if config cannot be loaded.
+func (h *ModelCommandHandler) GetCurrentModelName() string {
+	cfg, err := config.LoadConfig(h.configPath)
+	if err != nil {
+		return ""
+	}
+	return cfg.Agents.Defaults.GetModelName()
 }

@@ -233,6 +233,7 @@ func GetProviderFromModelName(modelName string) string {
 		"qwen":           "qwen",
 		"groq":           "groq",
 		"openrouter":     "openrouter",
+		"kilo":           "kilo",
 		"github-copilot": "github-copilot",
 	}
 

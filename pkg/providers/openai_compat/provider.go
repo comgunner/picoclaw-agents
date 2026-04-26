@@ -173,6 +173,14 @@ func (p *Provider) Chat(
 		requestBody["tool_choice"] = "auto"
 	}
 
+	// DeepSeek v4 reasoning fields
+	if thinking, ok := options["thinking"]; ok {
+		requestBody["thinking"] = thinking
+	}
+	if reasoningEffort, ok := options["reasoning_effort"]; ok {
+		requestBody["reasoning_effort"] = reasoningEffort
+	}
+
 	if maxTokens, ok := asInt(options["max_tokens"]); ok {
 		// Use configured maxTokensField if specified, otherwise fallback to model-based detection
 		fieldName := p.maxTokensField
@@ -180,7 +188,8 @@ func (p *Provider) Chat(
 			// Fallback: detect from model name for backward compatibility
 			lowerModel := strings.ToLower(model)
 			if strings.Contains(lowerModel, "glm") || strings.Contains(lowerModel, "o1") ||
-				strings.Contains(lowerModel, "o3") || strings.Contains(lowerModel, "gpt-5") {
+				strings.Contains(lowerModel, "o3") || strings.Contains(lowerModel, "gpt-5") ||
+				strings.Contains(lowerModel, "deepseek-v4") {
 				fieldName = "max_completion_tokens"
 			} else {
 				fieldName = "max_tokens"
@@ -193,16 +202,20 @@ func (p *Provider) Chat(
 			maxTokens = 8192
 		}
 
-		// OpenRouter free tier: cap at 1000 to avoid 402 "not enough credits" errors.
+		// OpenRouter/Kilo free tier: cap at 1000 to avoid 402 "not enough credits" errors.
 		// Free models have ~4096 token context window total. After system prompt (~2000)
 		// + tool defs (~800) + user msg (~200), only ~1100 remain for output.
 		// NOTE: This is the LAST line of defense — the agent instance already caps at 1000,
 		// but if a client overrides (e.g., WebUI sends its own max_tokens), this catches it.
 		lowerModel := strings.ToLower(model)
-		if (strings.HasPrefix(lowerModel, "openrouter/free") ||
+		isFreeTier := strings.HasPrefix(lowerModel, "openrouter/free") ||
 			strings.HasPrefix(lowerModel, "openrouter-free") ||
 			strings.HasPrefix(lowerModel, "openrouter/auto") ||
-			lowerModel == "openrouter-free" || lowerModel == "openrouter/auto") && maxTokens > 1000 {
+			strings.HasPrefix(lowerModel, "kilo-auto/free") ||
+			lowerModel == "openrouter-free" || lowerModel == "openrouter/auto" ||
+			lowerModel == "kilo-free" || lowerModel == "kilo-auto/free"
+
+		if isFreeTier && maxTokens > 1000 {
 			maxTokens = 1000
 		}
 
@@ -241,7 +254,8 @@ func (p *Provider) Chat(
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", p.apiBase+"/chat/completions", bytes.NewReader(jsonData))
+	apiEndpoint := strings.TrimSuffix(p.apiBase, "/") + "/chat/completions"
+	req, err := http.NewRequestWithContext(ctx, "POST", apiEndpoint, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -384,6 +398,22 @@ func stripSystemParts(messages []Message) []openaiMessage {
 }
 
 func normalizeModel(model, apiBase string) string {
+	// DeepSeek model normalization: strip prefix and map aliases.
+	// Only deepseek-v4-pro is confirmed working on all accounts.
+	// deepseek-chat / deepseek-v4-flash return 404 — map them to deepseek-v4-pro.
+	if strings.Contains(strings.ToLower(apiBase), "api.deepseek.com") {
+		rawModel := model
+		if slashIdx := strings.Index(model, "/"); slashIdx != -1 {
+			rawModel = model[slashIdx+1:]
+		}
+		switch rawModel {
+		case "deepseek-chat", "deepseek-v4-flash":
+			return "deepseek-v4-pro"
+		default:
+			return rawModel
+		}
+	}
+
 	idx := strings.Index(model, "/")
 	if idx == -1 {
 		return model
@@ -398,6 +428,16 @@ func normalizeModel(model, apiBase string) string {
 	// If apiBase is for OpenRouter, keep the full model name (e.g., "openrouter/auto")
 	if strings.Contains(strings.ToLower(apiBase), "openrouter.ai") {
 		return model
+	}
+
+	// If apiBase is for Kilo, strip the "kilo/" provider prefix if present.
+	// The Kilo gateway expects "kilo-auto/free", NOT "kilo/kilo-auto/free".
+	// strings.Cut splits only on the FIRST "/" so the inner slash in "kilo-auto/free" is preserved.
+	if strings.Contains(strings.ToLower(apiBase), "api.kilo.ai/api/gateway") {
+		if prefix, rest, found := strings.Cut(model, "/"); found && strings.ToLower(prefix) == "kilo" {
+			return rest // "kilo/kilo-auto/free" → "kilo-auto/free"
+		}
+		return model // "kilo-auto/free" stays as-is (no "kilo/" prefix to strip)
 	}
 
 	// If apiBase is for OpenAI, keep the full model name (e.g., "gpt-4o")

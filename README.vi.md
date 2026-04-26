@@ -172,6 +172,12 @@ Bạn có thể xác thực với các nhà cung cấp OAuth trực tiếp từ 
 
 # Zhipu AI (z.ai) - 100% MIỄN PHÍ với glm-4.5-flash
 ./picoclaw-agents auth login --provider zhipu
+
+# DeepSeek AI
+./picoclaw-agents auth login --provider deepseek
+
+# Kilo AI
+./picoclaw-agents auth login --provider kilo
 ```
 
 Tất cả các phương thức hỗ trợ nhập token API Key hoặc luồng OAuth và tự động cấu hình các mô hình sau khi xác thực thành công.

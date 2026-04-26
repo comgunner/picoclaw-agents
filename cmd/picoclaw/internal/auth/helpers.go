@@ -25,7 +25,7 @@ import (
 	"github.com/comgunner/picoclaw/pkg/providers"
 )
 
-const supportedProvidersMsg = "supported providers: openai, anthropic, google-antigravity, qwen, zhipu"
+const supportedProvidersMsg = "supported providers: openai, anthropic, google-antigravity, qwen, zhipu, deepseek, kilo"
 
 func authLoginCmd(provider string, useDeviceCode bool) error {
 	switch provider {
@@ -62,6 +62,28 @@ func authLoginCmd(provider string, useDeviceCode bool) error {
 		fmt.Println()
 		fmt.Println("Free tier: 100% free with generous limits")
 		fmt.Println("Models: glm-4.5-flash (default), glm-4-flash, glm-4-air, glm-4-airx, glm-4-long, glm-4v-flash")
+		fmt.Println()
+		return authLoginPasteToken(provider)
+	case "deepseek":
+		// DeepSeek - API Key only (no OAuth public flow)
+		fmt.Println("DeepSeek requires an API key")
+		fmt.Println()
+		fmt.Println("Get your API key at: https://platform.deepseek.com/api_keys")
+		fmt.Println()
+		fmt.Println("Models available:")
+		fmt.Println("  - deepseek-v4-pro   (thinking mode, recommended)")
+		fmt.Println("  - deepseek-v4-flash (fast, replaces deepseek-chat)")
+		fmt.Println("  - deepseek-chat     (deprecated alias for deepseek-v4-flash)")
+		fmt.Println("  - deepseek-reasoner (deprecated alias for deepseek-v4-flash thinking)")
+		fmt.Println()
+		return authLoginPasteToken(provider)
+	case "kilo":
+		// Kilo AI - API Key only
+		fmt.Println("Kilo AI requires an API key")
+		fmt.Println()
+		fmt.Println("Get your API key at: https://kilo.ai/settings/api-keys")
+		fmt.Println()
+		fmt.Println("Free tier model: kilo-auto/free")
 		fmt.Println()
 		return authLoginPasteToken(provider)
 	default:
@@ -345,6 +367,12 @@ func authLoginPasteToken(provider string) error {
 		case "zhipu", "z.ai", "glm":
 			// Update ModelList and set default to glm-4.5-flash
 			AddZhipuModels(appCfg)
+		case "deepseek":
+			// Update ModelList and set default to deepseek-v4-pro
+			AddDeepSeekModels(appCfg)
+		case "kilo":
+			// Update ModelList and set default to kilo-auto-free
+			AddKiloModels(appCfg)
 		}
 		if err := config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
 			return fmt.Errorf("could not update config: %w", err)
@@ -793,6 +821,79 @@ func AddZhipuModels(appCfg *config.Config) int {
 	if addedCount > 0 {
 		appCfg.Agents.Defaults.ModelName = "glm-5"
 		appCfg.Agents.Defaults.Model = "glm-5"
+	}
+
+	return addedCount
+}
+
+// AddDeepSeekModels adds DeepSeek models to config with deduplication.
+// model_name is the user-facing display name; model is the actual DeepSeek API model ID.
+// deepseek-v4-flash and deepseek-v4-pro are display aliases — the live API accepts
+// deepseek-chat (non-thinking) and deepseek-reasoner (thinking/R1) respectively.
+func AddDeepSeekModels(appCfg *config.Config) int {
+	deepseekModels := []config.ModelConfig{
+		// deepseek-v4-pro is a valid API model ID (confirmed working via curl).
+		// deepseek-v4-flash gives 404 (not yet released); map to deepseek-chat instead.
+		{ModelName: "deepseek-v4-pro", Model: "deepseek/deepseek-v4-pro", AuthMethod: "token"},
+		{ModelName: "deepseek-v4-flash", Model: "deepseek/deepseek-chat", AuthMethod: "token"},
+		{ModelName: "deepseek-chat", Model: "deepseek/deepseek-chat", AuthMethod: "token"},
+		{ModelName: "deepseek-reasoner", Model: "deepseek/deepseek-reasoner", AuthMethod: "token"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range deepseekModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		} else {
+			// Update existing entry to use correct API model ID
+			for i := range appCfg.ModelList {
+				if appCfg.ModelList[i].ModelName == modelCfg.ModelName {
+					appCfg.ModelList[i].Model = modelCfg.Model
+					appCfg.ModelList[i].AuthMethod = modelCfg.AuthMethod
+					break
+				}
+			}
+		}
+	}
+
+	// Set deepseek-v4-flash as default (faster, non-thinking)
+	appCfg.Agents.Defaults.ModelName = "deepseek-v4-flash"
+	appCfg.Agents.Defaults.Model = "deepseek/deepseek-chat"
+
+	return addedCount
+}
+
+// AddKiloModels adds Kilo AI models to config with deduplication
+func AddKiloModels(appCfg *config.Config) int {
+	kiloModels := []config.ModelConfig{
+		{ModelName: "kilo-auto-free", Model: "kilo/kilo-auto/free", AuthMethod: "token"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range kiloModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	// Set kilo-auto-free as default
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "kilo-auto-free"
+		appCfg.Agents.Defaults.Model = "kilo-auto-free"
 	}
 
 	return addedCount

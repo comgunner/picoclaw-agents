@@ -124,6 +124,7 @@ node_modules/
 QWEN.md
 GEMINI.md
 CLAUDE.md
+AGENTS.md
 .qwen/
 .claude/
 IA_WORK_BKP/

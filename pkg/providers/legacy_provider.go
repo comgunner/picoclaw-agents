@@ -11,6 +11,7 @@ package providers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/comgunner/picoclaw/pkg/config"
 )
@@ -53,14 +54,26 @@ func CreateProviderForModel(cfg *config.Config, model string) (LLMProvider, stri
 		// if it looks like a protocol/model format or we can infer it.
 		protocol, modelID := ExtractProtocol(model)
 
-		// Try to find a base config for this protocol to get API keys/base URLs
-		// We look for any model in the list that uses the same protocol
+		// Try to find a base config for this protocol to get API keys/base URLs.
+		// We scan all models with the same protocol, preferring entries that do NOT
+		// have a local api_base (localhost / 127.0.0.1) so that cloud DeepSeek calls
+		// are not accidentally routed to a local Ollama instance.
 		var baseCfg *config.ModelConfig
-		for _, m := range cfg.ModelList {
+		for i := range cfg.ModelList {
+			m := cfg.ModelList[i]
 			p, _ := ExtractProtocol(m.Model)
-			if p == protocol {
-				baseCfg = &m
-				break
+			if p != protocol {
+				continue
+			}
+			isLocal := strings.Contains(m.APIBase, "localhost") ||
+				strings.Contains(m.APIBase, "127.0.0.1")
+			if baseCfg == nil || isLocal {
+				// Accept this entry if we don't have one yet,
+				// OR replace it only if the current one is local and this is not.
+				if baseCfg == nil || (!isLocal && strings.Contains(baseCfg.APIBase, "localhost")) ||
+					(!isLocal && strings.Contains(baseCfg.APIBase, "127.0.0.1")) {
+					baseCfg = &cfg.ModelList[i]
+				}
 			}
 		}
 

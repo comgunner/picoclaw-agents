@@ -172,6 +172,12 @@ Você pode autenticar com provedores OAuth diretamente da Web UI em `http://loca
 
 # Zhipu AI (z.ai) - 100% GRÁTIS com glm-4.5-flash
 ./picoclaw-agents auth login --provider zhipu
+
+# DeepSeek AI
+./picoclaw-agents auth login --provider deepseek
+
+# Kilo AI
+./picoclaw-agents auth login --provider kilo
 ```
 
 Todos os métodos suportam entrada de token API Key ou fluxo OAuth e configuram automaticamente os modelos após autenticação bem-sucedida.

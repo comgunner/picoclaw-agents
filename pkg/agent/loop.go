@@ -781,6 +781,24 @@ func (al *AgentLoop) ProcessHeartbeat(ctx context.Context, content, channel, cha
 }
 
 func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage) (string, error) {
+	// Hot-reload config from disk to pick up changes from Launcher/WebUI.
+	// NOTE: We only reload al.cfg (for runtime settings like system prompts,
+	// token limits, etc.). We intentionally do NOT replace al.registry here —
+	// doing so would create fresh AgentInstances without any tools registered
+	// (registerSharedTools is only called once in NewAgentLoop), causing the
+	// agent to hang at HardMaxIterations trying to call missing tools.
+	// Model changes picked up via metadata["model_name"] injected by channels.
+	if al.cfg != nil && al.cfg.ConfigPath() != "" {
+		if newCfg, err := config.LoadConfig(al.cfg.ConfigPath()); err == nil {
+			al.configMutex.Lock()
+			al.cfg = newCfg
+			al.configMutex.Unlock()
+			logger.DebugCF("agent", "Config hot-reloaded from disk", map[string]any{
+				"path": al.cfg.ConfigPath(),
+			})
+		}
+	}
+
 	// Add message preview to log (show full content for error messages)
 	var logContent string
 	if strings.Contains(msg.Content, "Error:") || strings.Contains(msg.Content, "error") {

@@ -6,6 +6,28 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-04-26
+
+### 🚀 DeepSeek V4 & Kilo AI Integration + Critical Routing Fixes
+
+Full integration of DeepSeek V4 (Flash/Pro) and Kilo AI models, including critical bugfixes for cloud routing, authentication, and multi-channel consistency.
+
+#### Feature Additions
+
+- **DeepSeek V4 Support:** Added native support for `deepseek-v4-pro` (thinking mode) and `deepseek-v4-flash`.
+- **Kilo AI Support:** Integrated Kilo AI gateway (`kilo-auto/free`) for free-tier high-performance models.
+- **CLI Auth:** Added `deepseek` and `kilo` providers to `picoclaw auth login`.
+- **macOS Launcher:** Successfully ported and compiled the WebUI Launcher for macOS ARM64 with CGO enabled for system tray support.
+
+#### Bug Fixes
+
+- **DeepSeek Routing:** Fixed 404 errors where cloud requests were incorrectly routed to local Ollama instances. Improved model lookup logic in `pkg/config`.
+- **Kilo WebUI:** Fixed 400 "Model Not Exist" errors in WebUI by improving model name normalization (stripping `kilo/` prefix correctly).
+- **Telegram Ghost Model:** Fixed issue where the agent ignored `/model` changes in Telegram. Metadata now correctly injects the active model name into the AgentLoop.
+- **Test Stability:** Updated and fixed desynchronized unit tests in `pkg/providers` following API base URL changes.
+
+---
+
 ## 2026-04-12
 
 ### 🛡️ Critical Security Hardening (GHSA-pv8c-p6jf-3fpp + Upstream Patches)

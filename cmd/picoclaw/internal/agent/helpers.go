@@ -45,6 +45,18 @@ func agentCmd(message, sessionKey, model string, debug bool) error {
 
 	if model != "" {
 		cfg.Agents.Defaults.ModelName = model
+		// Also sync cfg.Agents.Defaults.Model so CreateProvider resolves the correct
+		// protocol/provider. Without this, a stale Model field causes the factory to
+		// use the wrong provider (e.g. sending deepseek model to antigravity endpoint).
+		// Priority: 1) match by model_name in list, 2) match by model field, 3) use flag as-is.
+		resolvedModel := model
+		for _, m := range cfg.ModelList {
+			if m.ModelName == model || m.Model == model {
+				resolvedModel = m.Model
+				break
+			}
+		}
+		cfg.Agents.Defaults.Model = resolvedModel
 		// Force all agents in the list to use the same global model/provider
 		// This ensures consistency when specifying --model on the CLI.
 		for i := range cfg.Agents.List {

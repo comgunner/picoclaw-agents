@@ -66,10 +66,13 @@ func ExtractProtocol(model string) (protocol, modelID string) {
 		return "anthropic", model
 	}
 	if strings.HasPrefix(lowered, "gemini") || strings.HasPrefix(lowered, "google") {
-		return "gemini", model
+		return "google", model
 	}
 	if strings.HasPrefix(lowered, "deepseek") {
 		return "deepseek", model
+	}
+	if strings.HasPrefix(lowered, "kilo") {
+		return "kilo", model
 	}
 	if strings.HasPrefix(lowered, "llama") || strings.HasPrefix(lowered, "meta-llama") ||
 		strings.HasPrefix(lowered, "ollama") {
@@ -80,6 +83,9 @@ func ExtractProtocol(model string) (protocol, modelID string) {
 	}
 	if strings.HasPrefix(lowered, "glm") || strings.HasPrefix(lowered, "zhipu") {
 		return "zhipu", model
+	}
+	if strings.HasPrefix(lowered, "kilo") {
+		return "kilo", model
 	}
 
 	// Default to openai
@@ -129,14 +135,13 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 
 	case "openrouter", "groq", "zhipu", "gemini", "nvidia",
 		"ollama", "moonshot", "shengsuanyun", "deepseek", "cerebras",
-		"volcengine", "vllm", "qwen", "mistral":
+		"volcengine", "vllm", "qwen", "mistral", "kilo":
 		// All other OpenAI-compatible HTTP providers
 		apiKey := cfg.APIKey
 		apiBase := cfg.APIBase
 
-		// If API key is missing and auth_method is oauth/token, or just empty,
-		// try to load from auth store
-		if apiKey == "" && (cfg.AuthMethod == "oauth" || cfg.AuthMethod == "token" || cfg.AuthMethod == "") {
+		// If API key is missing, try to get it from the auth store
+		if apiKey == "" {
 			if cred, err := auth.GetCredential(protocol); err == nil && cred != nil {
 				apiKey = cred.AccessToken
 			}
@@ -253,7 +258,9 @@ func getDefaultAPIBase(protocol string) string {
 	case "shengsuanyun":
 		return "https://router.shengsuanyun.com/api/v1"
 	case "deepseek":
-		return "https://api.deepseek.com/v1"
+		return "https://api.deepseek.com"
+	case "kilo":
+		return "https://api.kilo.ai/api/gateway"
 	case "cerebras":
 		return "https://api.cerebras.ai/v1"
 	case "volcengine":

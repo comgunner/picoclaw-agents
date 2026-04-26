@@ -206,6 +206,12 @@ picoclaw-agents-launcher
 
 # Zhipu AI (z.ai) - 100% 免费 使用 glm-4.5-flash
 ./picoclaw-agents auth login --provider zhipu
+
+# DeepSeek AI
+./picoclaw-agents auth login --provider deepseek
+
+# Kilo AI
+./picoclaw-agents auth login --provider kilo
 ```
 
 所有方法都支持 API Key token 输入或 OAuth 流程，并在成功认证后自动配置模型。
