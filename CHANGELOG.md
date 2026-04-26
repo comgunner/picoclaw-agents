@@ -24,6 +24,7 @@ Full integration of DeepSeek V4 (Flash/Pro) and Kilo AI models, including critic
 - **DeepSeek Routing:** Fixed 404 errors where cloud requests were incorrectly routed to local Ollama instances. Improved model lookup logic in `pkg/config`.
 - **Kilo WebUI:** Fixed 400 "Model Not Exist" errors in WebUI by improving model name normalization (stripping `kilo/` prefix correctly).
 - **Telegram Ghost Model:** Fixed issue where the agent ignored `/model` changes in Telegram. Metadata now correctly injects the active model name into the AgentLoop.
+- **Antigravity (Google OAuth):** Fixed Error 400 (Invalid Model ID) by implementing automatic prefix stripping. Added clear user messaging for quota exhaustion, showing exact reset time (e.g., "51h25m") on Telegram, Discord, and WebUI. Added protection against "Corrupted thought signature" errors.
 - **Test Stability:** Updated and fixed desynchronized unit tests in `pkg/providers` following API base URL changes.
 
 ---

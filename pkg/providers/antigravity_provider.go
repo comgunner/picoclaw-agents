@@ -872,18 +872,20 @@ func (p *AntigravityProvider) parseAntigravityError(statusCode int, body []byte)
 	}
 
 	msg := errResp.Error.Message
+	if strings.Contains(msg, "Corrupted thought signature") {
+		return fmt.Errorf("antigravity: corrupted thought signature detected (context may be expired or invalid). try clearing chat history")
+	}
+
 	if statusCode == 429 {
 		// Try to extract quota reset info
 		for _, detail := range errResp.Error.Details {
-			if typeVal, ok := detail["@type"].(string); ok && strings.HasSuffix(typeVal, "ErrorInfo") {
-				if metadata, ok := detail["metadata"].(map[string]any); ok {
-					if delay, ok := metadata["quotaResetDelay"].(string); ok {
-						return fmt.Errorf("antigravity rate limit exceeded: %s (reset in %s)", msg, delay)
-					}
+			if metadata, ok := detail["metadata"].(map[string]any); ok {
+				if delay, ok := metadata["quotaResetDelay"].(string); ok {
+					return fmt.Errorf("⏳ **Cuota Agotada**: Has agotado tu capacidad en este modelo. Tu cuota se reiniciará en **%s**", delay)
 				}
 			}
 		}
-		return fmt.Errorf("antigravity rate limit exceeded: %s", msg)
+		return fmt.Errorf("antigravity: límite de velocidad excedido (429). Intenta de nuevo más tarde")
 	}
 
 	return fmt.Errorf("antigravity API error (%s): %s", errResp.Error.Status, msg)
