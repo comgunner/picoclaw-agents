@@ -140,6 +140,7 @@ func (c *TelegramChannel) Start(ctx context.Context) error {
 		Commands: []telego.BotCommand{
 			{Command: "start", Description: "Iniciar el bot"},
 			{Command: "help", Description: "Ver lista de commandos"},
+			{Command: "clear", Description: "Limpiar historial de chat (soluciona errores)"},
 			{Command: "bundle_approve", Description: "Aprobar un lote de post+imagen (ej: /bundle_approve id=...)"},
 			{Command: "bundle_regen", Description: "Regenerar un lote"},
 			{Command: "bundle_edit", Description: "Editar el texto de un lote"},
@@ -165,6 +166,14 @@ func (c *TelegramChannel) Start(ctx context.Context) error {
 		c.commands.Help(ctx, message)
 		return nil
 	}, th.CommandEqual("help"))
+
+	bh.HandleMessage(func(ctx *th.Context, message telego.Message) error {
+		if !c.isMessageAllowed(&message) {
+			return nil
+		}
+		return c.handleMessage(ctx, &message)
+	}, th.CommandEqual("clear"))
+
 	bh.HandleMessage(func(ctx *th.Context, message telego.Message) error {
 		if !c.isMessageAllowed(&message) {
 			return nil

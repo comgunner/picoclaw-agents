@@ -14,6 +14,10 @@ var DiscordCommands = []*discordgo.ApplicationCommand{
 		Description: "Mostrar mensaje de ayuda con commandos disponibles",
 	},
 	{
+		Name:        "clear",
+		Description: "Limpiar historial de chat para esta sesión",
+	},
+	{
 		Name:        "model",
 		Description: "Cambiar o listar modelos de IA",
 		Options: []*discordgo.ApplicationCommandOption{

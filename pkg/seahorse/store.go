@@ -671,6 +671,57 @@ func (s *Store) ClearContextItems(ctx context.Context, convID int64) error {
 	return err
 }
 
+// DeleteConversationHistory deletes all messages, parts, summaries, and context items for a conversation.
+func (s *Store) DeleteConversationHistory(ctx context.Context, convID int64) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// 1. Delete context items
+	if _, err := tx.ExecContext(ctx, "DELETE FROM context_items WHERE conversation_id = ?", convID); err != nil {
+		return err
+	}
+
+	// 2. Delete summary links and parents
+	if _, err := tx.ExecContext(
+		ctx,
+		"DELETE FROM summary_messages WHERE summary_id IN (SELECT summary_id FROM summaries WHERE conversation_id = ?)",
+		convID,
+	); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(
+		ctx,
+		"DELETE FROM summary_parents WHERE summary_id IN (SELECT summary_id FROM summaries WHERE conversation_id = ?)",
+		convID,
+	); err != nil {
+		return err
+	}
+
+	// 3. Delete summaries (triggers handle FTS5)
+	if _, err := tx.ExecContext(ctx, "DELETE FROM summaries WHERE conversation_id = ?", convID); err != nil {
+		return err
+	}
+
+	// 4. Delete message parts
+	if _, err := tx.ExecContext(
+		ctx,
+		"DELETE FROM message_parts WHERE message_id IN (SELECT message_id FROM messages WHERE conversation_id = ?)",
+		convID,
+	); err != nil {
+		return err
+	}
+
+	// 5. Delete messages (triggers handle FTS5)
+	if _, err := tx.ExecContext(ctx, "DELETE FROM messages WHERE conversation_id = ?", convID); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 // DeleteMessagesAfterID deletes all messages with ID > afterID for a conversation.
 // Also clears related context_items, message_parts, summary_messages, and FTS entries.
 // Uses transaction to ensure atomicity of the delete cascade.

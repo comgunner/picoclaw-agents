@@ -70,6 +70,15 @@ func (m *legacyContextManager) Ingest(_ context.Context, _ *IngestRequest) error
 	return nil
 }
 
+func (m *legacyContextManager) Clear(_ context.Context, sessionKey string) error {
+	agent := m.al.registry.GetDefaultAgent()
+	if agent == nil {
+		return fmt.Errorf("no default agent")
+	}
+	agent.Sessions.Clear(sessionKey)
+	return agent.Sessions.Save(sessionKey)
+}
+
 // maybeSummarize triggers summarization if the session history exceeds thresholds.
 // It runs asynchronously in a goroutine.
 func (m *legacyContextManager) maybeSummarize(sessionKey string) {

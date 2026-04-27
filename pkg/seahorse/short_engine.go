@@ -377,6 +377,23 @@ func (e *Engine) IngestMessages(ctx context.Context, sessionKey string, messages
 	return e.Ingest(ctx, sessionKey, messages)
 }
 
+// DeleteConversation removes all history and summaries for a sessionKey.
+func (e *Engine) DeleteConversation(ctx context.Context, sessionKey string) error {
+	mu := e.getSessionMutex(sessionKey)
+	mu.Lock()
+	defer mu.Unlock()
+
+	conv, err := e.store.GetConversationBySessionKey(ctx, sessionKey)
+	if err != nil {
+		return fmt.Errorf("get conversation: %w", err)
+	}
+	if conv == nil {
+		return nil
+	}
+
+	return e.store.DeleteConversationHistory(ctx, conv.ConversationID)
+}
+
 // Bootstrap reconciles a session's messages with the database.
 // Called once at startup for each known session.
 // Bootstrap reconciles JSONL history with SQLite by ingesting only the delta.

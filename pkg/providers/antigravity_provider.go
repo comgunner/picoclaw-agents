@@ -873,7 +873,9 @@ func (p *AntigravityProvider) parseAntigravityError(statusCode int, body []byte)
 
 	msg := errResp.Error.Message
 	if strings.Contains(msg, "Corrupted thought signature") {
-		return fmt.Errorf("antigravity: corrupted thought signature detected (context may be expired or invalid). try clearing chat history")
+		return fmt.Errorf(
+			"antigravity: corrupted thought signature detected (context may be expired or invalid). try clearing chat history",
+		)
 	}
 
 	if statusCode == 429 {
@@ -881,7 +883,10 @@ func (p *AntigravityProvider) parseAntigravityError(statusCode int, body []byte)
 		for _, detail := range errResp.Error.Details {
 			if metadata, ok := detail["metadata"].(map[string]any); ok {
 				if delay, ok := metadata["quotaResetDelay"].(string); ok {
-					return fmt.Errorf("⏳ **Cuota Agotada**: Has agotado tu capacidad en este modelo. Tu cuota se reiniciará en **%s**", delay)
+					return fmt.Errorf(
+						"⏳ **Cuota Agotada**: Has agotado tu capacidad en este modelo. Tu cuota se reiniciará en **%s**",
+						delay,
+					)
 				}
 			}
 		}

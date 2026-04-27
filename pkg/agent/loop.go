@@ -819,11 +819,6 @@ func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage)
 		return al.processSystemMessage(ctx, msg)
 	}
 
-	// Check for commands
-	if response, handled := al.handleCommand(ctx, msg); handled {
-		return response, nil
-	}
-
 	// Route to determine agent and session key
 	route := al.registry.ResolveRoute(routing.RouteInput{
 		Channel:    msg.Channel,
@@ -834,15 +829,23 @@ func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage)
 		TeamID:     msg.Metadata["team_id"],
 	})
 
-	agent, ok := al.registry.GetAgent(route.AgentID)
-	if !ok {
-		agent = al.registry.GetDefaultAgent()
-	}
-
 	// Use routed session key, but honor pre-set agent-scoped keys (for ProcessDirect/cron)
 	sessionKey := route.SessionKey
 	if msg.SessionKey != "" && strings.HasPrefix(msg.SessionKey, "agent:") {
 		sessionKey = msg.SessionKey
+	}
+
+	// Update msg.SessionKey so handleCommand uses the routed key
+	msg.SessionKey = sessionKey
+
+	// Check for commands (Fast-path)
+	if response, handled := al.handleCommand(ctx, msg); handled {
+		return response, nil
+	}
+
+	agent, ok := al.registry.GetAgent(route.AgentID)
+	if !ok {
+		agent = al.registry.GetDefaultAgent()
 	}
 
 	logger.InfoCF("agent", "Routed message",
@@ -2339,6 +2342,22 @@ func (al *AgentLoop) handleCommand(ctx context.Context, msg bus.InboundMessage) 
 			pct = float64(tokens) / float64(agent.ContextWindow) * 100
 		}
 		return fmt.Sprintf("Tokens used: %d / %d (%.1f%%)", tokens, agent.ContextWindow, pct), true
+
+	case "/clear":
+		// Clear context via ContextManager (handles both legacy and seahorse)
+		if al.contextManager != nil {
+			if err := al.contextManager.Clear(ctx, msg.SessionKey); err != nil {
+				return fmt.Sprintf("❌ Error clearing history: %v", err), true
+			}
+		} else {
+			// Fallback if no context manager (shouldn't happen as legacy is default)
+			agent := al.registry.GetDefaultAgent()
+			if agent != nil {
+				agent.Sessions.Clear(msg.SessionKey)
+				agent.Sessions.Save(msg.SessionKey)
+			}
+		}
+		return "🧹 Historial de chat limpiado para esta sesión.", true
 
 	case "/list":
 		if len(args) < 1 {
