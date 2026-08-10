@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/comgunner/picoclaw/pkg/config"
 )
@@ -331,9 +332,13 @@ func TestHandleWebSocketProxyReloadsGatewayTargetFromConfig(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.Gateway.Host = "127.0.0.1"
 	cfg.Gateway.Port = mustGatewayTestPort(t, server1.URL)
+	cfg.Channels.Pico.WSToken = "test-token-for-proxy"
 	if err := config.SaveConfig(configPath, cfg); err != nil {
 		t.Fatalf("SaveConfig() error = %v", err)
 	}
+
+	// Allow config file to be fully flushed to disk before proxy reads it
+	time.Sleep(50 * time.Millisecond)
 
 	req1 := httptest.NewRequest(http.MethodGet, "/pico/ws", nil)
 	rec1 := httptest.NewRecorder()
