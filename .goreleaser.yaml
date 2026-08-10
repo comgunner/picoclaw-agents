@@ -124,7 +124,11 @@ dockers_v2:
     platforms:
       - linux/amd64
       - linux/arm64
-      - linux/riscv64
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64,linux/arm64"
+      - "--build-arg=GOVERSION={{ .Env.GOVERSION }}"
 
 archives:
   - formats: [tar.gz]
