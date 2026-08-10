@@ -61,3 +61,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOVERSION: go1.25
           GORELEASER_CURRENT_TAG: ${{ inputs.tag }}
+          DOCKERHUB_IMAGE_NAME: ${{ github.repository }}
