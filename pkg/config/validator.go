@@ -228,7 +228,9 @@ func (v *Validator) modelExists(modelName string, modelList []ModelConfig) bool 
 func isFreeModel(model string) bool {
 	freeModels := []string{
 		"openrouter/auto",
+		"openrouter/auto-beta",
 		"openrouter/free",
+		"openrouter/pareto-code",
 		"openrouter-free",
 		"free",
 		"or-free",

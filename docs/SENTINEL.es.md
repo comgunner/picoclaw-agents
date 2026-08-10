@@ -1,6 +1,11 @@
 # PicoClaw: Skills Sentinel (Centinela de Habilidades)
 
+> PicoClaw: Skills Sentinel (Centinela de Habilidades) documentation for PicoClaw-Agents.
+
+
 El **Sentinel** (`SkillsSentinelTool`) es un mecanismo de seguridad interno integrado en PicoClaw diseñado para defender al agente ante la inyección de prompts, extracción del sistema (system prompt extraction) y evitar la ejecución de rutinas maliciosas de código.
+
+---
 
 ## ¿Cómo Funciona?
 

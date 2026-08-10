@@ -1,5 +1,8 @@
 # Telegram Connection Fix - Cloudflare WARP Proxy
 
+> Telegram Connection Fix - Cloudflare WARP Proxy documentation for PicoClaw-Agents.
+
+
 **Last Updated:** March 31, 2026  
 **Status:** ✅ Production Ready  
 **Severity:** CRITICAL - Complete Telegram bot unresponsiveness  
@@ -80,7 +83,7 @@ ERROR Error on get me:
 
 ---
 
-## Installation Guide
+## 📦 Installation Guide
 
 ### Platform-Specific Instructions
 
@@ -375,7 +378,7 @@ Register-ScheduledTask -TaskName "WARP Proxy Bridge" -Action $action -Trigger $t
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### PicoClaw-Agents Configuration
 
@@ -503,7 +506,7 @@ tail -100 ~/.picoclaw/logs/launcher.log | grep -i telegram
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Problem: WARP Won't Connect
 
@@ -564,7 +567,7 @@ warp-cli connect
 
 ---
 
-## Security Considerations
+## 🔒 Security Considerations
 
 ### What This Does
 

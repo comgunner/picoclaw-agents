@@ -1,5 +1,8 @@
 # Antigravity Models Reference
 
+> Antigravity Models Reference documentation for PicoClaw-Agents.
+
+
 **Last Updated:** March 30, 2026  
 **Version:** v1.3.0-alpha  
 **Total Models:** 15
@@ -181,7 +184,7 @@
 
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Command Line
 
@@ -257,7 +260,7 @@
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Model Not Found
 

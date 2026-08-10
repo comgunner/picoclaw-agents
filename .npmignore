@@ -1,0 +1,12 @@
+# Local files - should never be published
+MEMORY.md
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+QWEN.md
+local_work/
+*.session
+*.db
+.env
+.env.*
+config/config.json

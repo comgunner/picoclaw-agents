@@ -39,6 +39,12 @@ const (
 	EnvImageCooldownSeconds = "PICOCLAW_IMAGE_COOLDOWN_SECONDS"
 	// EnvImageCooldownDB is the path to the cooldown database file.
 	EnvImageCooldownDB = "PICOCLAW_IMAGE_COOLDOWN_DB"
+	// EnvOpenRouterAPIKey is the environment variable for OpenRouter API key (image gen).
+	EnvOpenRouterAPIKey = "PICOCLAW_TOOLS_IMAGE_GEN_OPENROUTER_API_KEY" // pragma: allowlist secret
+	// EnvOpenRouterImageModel is the environment variable for OpenRouter image model.
+	EnvOpenRouterImageModel = "PICOCLAW_TOOLS_IMAGE_GEN_OPENROUTER_IMAGE_MODEL"
+	// EnvOpenRouterTextModel is the environment variable for OpenRouter text model.
+	EnvOpenRouterTextModel = "PICOCLAW_TOOLS_IMAGE_GEN_OPENROUTER_TEXT_MODEL"
 )
 
 // System prompts embedded in English (defaults)

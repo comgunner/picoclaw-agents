@@ -43,6 +43,7 @@ type AgentInstance struct {
 	Sessions       *session.SessionManager
 	ContextBuilder *ContextBuilder
 	Tools          *tools.ToolRegistry
+	ToolsManager   *tools.ToolsManager
 	Subagents      *config.SubagentsConfig
 	Runtime        *config.AgentRuntimeConfig
 	SkillsFilter   []string
@@ -86,10 +87,19 @@ func NewAgentInstance(
 
 	// Detect OpenRouter free early for context builder config
 	lowerModel := strings.ToLower(model)
+	// NOTE: openrouter/auto is NOT a free model - it auto-selects best available
+	// Only actual free models should be flagged for token capping
+	// openrouter/auto-beta and openrouter/pareto-code ARE free (confirmed by OpenRouter pricing page)
 	isOpenRouterFree := strings.HasPrefix(lowerModel, "openrouter/free") ||
 		strings.HasPrefix(lowerModel, "openrouter-free") ||
-		strings.HasPrefix(lowerModel, "openrouter/auto") ||
-		lowerModel == "openrouter-free" || lowerModel == "openrouter/auto"
+		strings.HasPrefix(lowerModel, "openrouter/auto-beta") ||
+		strings.HasPrefix(lowerModel, "openrouter/pareto-code") ||
+		lowerModel == "openrouter-free" || lowerModel == "openrouter/auto-beta" || lowerModel == "openrouter/pareto-code"
+
+	// Detect OpenCode Zen free models
+	isOpenCodeFree := strings.HasPrefix(lowerModel, "opencode/") && strings.HasSuffix(lowerModel, ":free") ||
+		strings.Contains(lowerModel, "opencode/") &&
+			(strings.Contains(lowerModel, "free") || strings.Contains(lowerModel, "mimo") || strings.Contains(lowerModel, "deepseek") || strings.Contains(lowerModel, "nemotron") || strings.Contains(lowerModel, "ling") || strings.Contains(lowerModel, "north") || strings.Contains(lowerModel, "laguna") || strings.Contains(lowerModel, "longcat") || strings.Contains(lowerModel, "big-pickle"))
 
 	// Resolve the provider for this specific agent's model
 	provider, resolvedModel, err := factory(model)
@@ -258,7 +268,7 @@ func NewAgentInstance(
 
 	// Determine context window (actual model capacity, not output limit).
 	// This affects when context compaction triggers.
-	// Priority: 1) explicit context_window in config, 2) OpenRouter free heuristic, 3) maxTokens, 4) 8192 default.
+	// Priority: 1) explicit context_window in config, 2) model-specific heuristic, 3) maxTokens, 4) 8192 default.
 	contextWindow := 8192
 
 	// Check if the model has an explicit context_window in config
@@ -269,23 +279,36 @@ func NewAgentInstance(
 		contextWindow = maxTokens
 	}
 
-	// OpenRouter free models have ~4096 token context window.
-	// If we leave it at 8192, compaction triggers too late (at 6553) and
-	// the model fails with "Context window exceeded" before compaction.
+	// Model-specific context window heuristics
+	// Different free models have different context windows
 	if isOpenRouterFree && contextWindow > 4096 {
+		// OpenRouter free models: most have ~4096 context
 		contextWindow = 4096
+	} else if isOpenCodeFree && contextWindow > 8192 {
+		// OpenCode Zen free models have larger contexts
+		// mimo-v2.5-free: ~8K, deepseek-v4-flash-free: ~16K, nemotron-3-ultra-free: ~32K
+		contextWindow = 8192
 	}
 
 	// Set prompt level based on context window size
 	// < 8K: Minimal (~100 tokens system prompt)
 	// 8K-32K: Compact (~500 tokens)
 	// > 32K: Full (~3000 tokens)
-	if isOpenRouterFree || contextWindow < 8192 {
+	if (isOpenRouterFree || isOpenCodeFree) || contextWindow < 8192 {
 		contextBuilder.SetPromptLevel(PromptLevelMinimal)
 	} else if contextWindow < 32768 {
 		contextBuilder.SetPromptLevel(PromptLevelCompact)
 	}
+
+	// Always enable lazy loading for free models to save tokens
+	if isOpenRouterFree || isOpenCodeFree || contextWindow <= 32768 {
+		contextBuilder.SetLazyLoadSkills(true)
+	}
 	// else: PromptLevelFull (default)
+
+	// Initialize ToolsManager for tiered tool selection
+	toolsManager := tools.NewToolsManager(toolsRegistry)
+	toolsManager.RegisterAll()
 
 	return &AgentInstance{
 		ID:                agentID,
@@ -301,6 +324,7 @@ func NewAgentInstance(
 		Sessions:          sessionsManager,
 		ContextBuilder:    contextBuilder,
 		Tools:             toolsRegistry,
+		ToolsManager:      toolsManager,
 		Subagents:         subagents,
 		Runtime:           runtimeCfg,
 		SkillsFilter:      skillsFilter,

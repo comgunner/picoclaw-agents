@@ -449,11 +449,11 @@ func TestSetupEasyFree(t *testing.T) {
 		if err := w.setupEasyFree(); err != nil {
 			t.Fatalf("setupEasyFree failed: %v", err)
 		}
-		if w.model != "openrouter/auto" {
-			t.Errorf("model = %q, want 'openrouter/auto'", w.model)
+		if w.model != "openrouter/free" {
+			t.Errorf("model = %q, want 'openrouter/free'", w.model)
 		}
-		if w.modelName != "or-auto" {
-			t.Errorf("modelName = %q, want 'or-auto'", w.modelName)
+		if w.modelName != "or-free" {
+			t.Errorf("modelName = %q, want 'or-free'", w.modelName)
 		}
 		if w.apiKey != "sk-or-v1-validkey1234567890abcdefghij" {
 			t.Errorf("apiKey = %q, not stored correctly", w.apiKey)
@@ -466,8 +466,8 @@ func TestSetupEasyFree(t *testing.T) {
 		if err := w.setupEasyFree(); err != nil {
 			t.Fatalf("setupEasyFree failed: %v", err)
 		}
-		if w.model != "openrouter/auto" {
-			t.Errorf("model = %q, want 'openrouter/auto' even after warning", w.model)
+		if w.model != "openrouter/free" {
+			t.Errorf("model = %q, want 'openrouter/free' even after warning", w.model)
 		}
 	})
 

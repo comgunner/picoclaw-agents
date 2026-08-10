@@ -1,5 +1,8 @@
 # WebUI & TUI Launchers - Implementation Status
 
+> WebUI & TUI Launchers - Implementation Status documentation for PicoClaw-Agents.
+
+
 **Date:** 2026-03-27 (updated after QA)
 **Version:** v1.1.0
 **Status:** TUI ✅ COMPLETE | WebUI ✅ COMPLETE
@@ -202,7 +205,7 @@ github.com/mdp/qrterminal/v3 v3.2.1     # QR terminal output
 
 ---
 
-## Security Notes
+## 🔒 Security Notes
 
 - Launcher binaries excluded from git via `.gitignore` (`build/` directory)
 - TUI launcher stores config in `~/.picoclaw/config.json` — no credentials in code

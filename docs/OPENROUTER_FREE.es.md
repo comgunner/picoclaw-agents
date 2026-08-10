@@ -1,5 +1,8 @@
 # OpenRouter Free Tier con PicoClaw-Agents
 
+> OpenRouter Free Tier con PicoClaw-Agents documentation for PicoClaw-Agents.
+
+
 **Última actualización:** 5 de abril de 2026
 **Versión:** v1.3.0 (2026.4.5)
 **Estado:** ✅ Token overflow fix aplicado — error 402 resuelto
@@ -89,15 +92,59 @@ OpenRouter ofrece varios modelos gratuitos. PicoClaw los configura automáticame
 
 | Prioridad | Modelo | Contexto | Uso Recomendado |
 |-----------|--------|----------|-----------------|
-| **1** | `openrouter/auto` | Variable | Auto-selecciona el mejor free |
-| **2** | `stepfun/step-3.5-flash` | 256K | Contexto largo, razonamiento |
-| **3** | `deepseek/deepseek-v3.2-20251201` | 64K | Inferencia rápida |
+| **1** | `openrouter/free` | Variable | Auto-selecciona el mejor free |
+| **2** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 128K | 550B parámetros, razonamiento complejo |
+| **3** | `openai/gpt-oss-20b:free` | 32K | GPT Open Source 20B |
+| **4** | `inclusionai/ling-3.0-tiny:free` | 8K | Ligero, respuesta rápida |
+| **5** | `meta-llama/llama-3.1-8b-instruct:free` | 8K | Llama 3.1 8B |
 
-### ¿Qué es `openrouter/auto`?
+### Modelos de Pago (Disponibles como Fallback)
+
+| Modelo | Precio | Caso de Uso |
+|--------|--------|-------------|
+| `deepseek/deepseek-v4-flash-0731` | $0.27/M input, $1.10/M output | DeepSeek V4 Flash, excelente para código |
+| `xiaomi/mimo-v2.5` | $0.15/M input, $0.60/M output | Xiaomi MiMo V2.5, rendimiento equilibrado |
+
+### ¿Qué es `openrouter/free`?
 
 - **Auto-selección:** OpenRouter elige automáticamente el mejor modelo free disponible
 - **Fallback automático:** Si un modelo falla, usa el siguiente
 - **Sin configuración:** No necesitas especificar modelos individuales
+
+---
+
+## 🖼️ Generación de Imágenes
+
+PicoClaw soporta generación de imágenes vía OpenRouter:
+
+| Modelo | Descripción | Costo |
+|--------|-------------|-------|
+| `krea/krea-2-medium-turbo` | Generación de imágenes alta calidad | Free tier disponible |
+| `bytedance-seed/seedream-4.5` | Modelo de imagen alternativo | Free tier disponible |
+
+### Configuración
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "openrouter",
+      "openrouter_api_key": "sk-or-v1-TU_KEY", // pragma: allowlist secret
+      "openrouter_image_model": "krea/krea-2-medium-turbo",
+      "cascade": {
+        "enabled": true,
+        "text_models": [
+          "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openai/gpt-oss-20b:free",
+          "inclusionai/ling-3.0-tiny:free",
+          "meta-llama/llama-3.1-8b-instruct:free"
+        ],
+        "image_models": ["krea/krea-2-medium-turbo", "bytedance-seed/seedream-4.5"]
+      }
+    }
+  }
+}
+```
 
 ---
 

@@ -1,6 +1,11 @@
 # Tools Configuration
 
+> Tools Configuration documentation for PicoClaw-Agents.
+
+
 PicoClaw's tools configuration is located in the `tools` field of `config.json`.
+
+---
 
 ## Directory Structure
 
@@ -73,7 +78,7 @@ By default, PicoClaw blocks the following dangerous commands:
 - Git: `git push`, `git force`
 - Other: `eval`, `source *.sh`
 
-### Configuration Example
+### ⚙️ Configuration Example
 
 ```json
 {
@@ -111,7 +116,7 @@ The skills tool configures skill discovery and installation via registries like 
 | `registries.clawhub.skills_path` | string | `/api/v1/skills` | Skills API path |
 | `registries.clawhub.download_path` | string | `/api/v1/download` | Download API path |
 
-### Configuration Example
+### ⚙️ Configuration Example
 
 ```json
 {

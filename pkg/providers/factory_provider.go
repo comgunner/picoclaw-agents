@@ -135,7 +135,7 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 
 	case "openrouter", "groq", "zhipu", "gemini", "nvidia",
 		"ollama", "moonshot", "shengsuanyun", "deepseek", "cerebras",
-		"volcengine", "vllm", "qwen", "mistral", "kilo":
+		"volcengine", "vllm", "qwen", "mistral", "kilo", "opencode":
 		// All other OpenAI-compatible HTTP providers
 		apiKey := cfg.APIKey
 		apiBase := cfg.APIBase
@@ -164,11 +164,14 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 		if len(cfg.ExtraBody) > 0 {
 			opts = append(opts, openai_compat.WithExtraBody(cfg.ExtraBody))
 		}
-		// For OpenRouter, pass the full model name (e.g., "openrouter/free") instead of just the model ID
+		// For OpenRouter, pass the full model name (e.g., "openrouter/free")
 		// because normalizeModel() in openai_compat/provider.go preserves the full name when apiBase contains "openrouter.ai"
+		// For OpenCode, strip the "opencode/" prefix (API expects "mimo-v2.5-free", not "opencode/mimo-v2.5-free")
 		modelForProvider := modelID
 		if protocol == "openrouter" {
 			modelForProvider = cfg.Model
+		} else if protocol == "opencode" {
+			modelForProvider = strings.TrimPrefix(cfg.Model, "opencode/")
 		}
 		return &HTTPProvider{
 			delegate: openai_compat.NewProvider(apiKey, apiBase, cfg.Proxy, opts...),
@@ -243,6 +246,8 @@ func getDefaultAPIBase(protocol string) string {
 		return "https://api.openai.com/v1"
 	case "openrouter":
 		return "https://openrouter.ai/api/v1"
+	case "opencode":
+		return "https://opencode.ai/zen/v1"
 	case "groq":
 		return "https://api.groq.com/openai/v1"
 	case "zhipu":

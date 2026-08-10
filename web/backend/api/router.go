@@ -51,6 +51,9 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	// Pico Channel (WebSocket chat)
 	h.registerPicoRoutes(mux)
 
+	// Authentication (password-based)
+	h.registerAuthRoutes(mux)
+
 	// Gateway process lifecycle
 	h.registerGatewayRoutes(mux)
 

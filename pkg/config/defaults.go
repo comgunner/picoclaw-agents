@@ -198,6 +198,41 @@ func DefaultConfig() *Config {
 				ModelName: "default",
 				Model:     "openai/gpt-4o",
 			},
+			{
+				ModelName: "openrouter-free-1",
+				Model:     "nvidia/nemotron-3-ultra-550b-a55b:free",
+				APIBase:   "https://openrouter.ai/api/v1",
+			},
+			{
+				ModelName: "openrouter-free-2",
+				Model:     "openai/gpt-oss-20b:free",
+				APIBase:   "https://openrouter.ai/api/v1",
+			},
+			{
+				ModelName: "openrouter-free-3",
+				Model:     "meta-llama/llama-3.1-8b-instruct",
+				APIBase:   "https://openrouter.ai/api/v1",
+			},
+			{
+				ModelName: "opencode-mimo-free",
+				Model:     "opencode/mimo-v2.5-free",
+				APIBase:   "https://opencode.ai/zen/v1",
+			},
+			{
+				ModelName: "opencode-deepseek-free",
+				Model:     "opencode/deepseek-v4-flash-free",
+				APIBase:   "https://opencode.ai/zen/v1",
+			},
+			{
+				ModelName: "opencode-nemotron-free",
+				Model:     "opencode/nemotron-3-ultra-free",
+				APIBase:   "https://opencode.ai/zen/v1",
+			},
+			{
+				ModelName: "opencode-ling-free",
+				Model:     "opencode/ling-3.0-tiny-free",
+				APIBase:   "https://opencode.ai/zen/v1",
+			},
 		},
 		Gateway: GatewayConfig{
 			Host: "127.0.0.1",
@@ -228,6 +263,24 @@ func DefaultConfig() *Config {
 				Enabled:            true,
 				AllowRemote:        true,
 				EnableDenyPatterns: true,
+			},
+			ImageGen: ImageGenToolsConfig{
+				Provider:             "openrouter",
+				OpenRouterImageModel: "krea/krea-2-medium-turbo",
+				OpenRouterTextModel:  "openrouter/free",
+				AspectRatio:          "1:1",
+				Cascade: CascadeConfig{
+					Enabled: true,
+					TextModels: []string{
+						"opencode/mimo-v2.5-free",
+						"opencode/deepseek-v4-flash-free",
+						"opencode/nemotron-3-ultra-free",
+						"nvidia/nemotron-3-ultra-550b-a55b:free",
+						"openai/gpt-oss-20b:free",
+						"meta-llama/llama-3.1-8b-instruct",
+					},
+					ImageModels: []string{"krea/krea-2-medium-turbo"},
+				},
 			},
 			Skills: SkillsToolsConfig{
 				Registries: SkillsRegistriesConfig{
@@ -498,8 +551,8 @@ func TemplateDefaultConfig() *Config {
 				APIKey:    "",
 			},
 			{
-				ModelName: "openrouter-auto",
-				Model:     "openrouter/auto",
+				ModelName: "openrouter-auto-beta",
+				Model:     "openrouter/auto-beta",
 				APIBase:   "https://openrouter.ai/api/v1",
 				APIKey:    "",
 			},

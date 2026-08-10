@@ -4,6 +4,8 @@ PicoClaw's queue and batch processing system allows performing heavy background 
 
 > **PicoClaw v3.4.2**: Features **Native Queue/Batch Skill** compiled directly into the binary for maximum performance and zero external dependencies.
 
+---
+
 ## Included Tools
 
 ### 1. `batch_id`
@@ -119,7 +121,7 @@ To integrate new native tools:
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Error: "ID not found in tracker"
 

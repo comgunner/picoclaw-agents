@@ -4,7 +4,7 @@
   <h1>PicoClaw-Agents</h1>
   <h3>🤖 Architecture Multi-Agent 🚀 Sous-agents Parallèles</h3>
 
-[English](README.md) | [中文](README.zh.md) | [Español](README.es.md) | [日本語](README.ja.md) | **Français**
+[English](README.md) | [中文](README.zh.md) | [Español](README.es.md) | [日本語](README.ja.md) | [Português](README.pt-br.md) | [Tiếng Việt](README.vi.md)
 
 > **Note :** Ce projet est un fork indépendant et amateur du [PicoClaw](https://github.com/sipeed/picoclaw) original créé par **Sipeed**. Il est maintenu à des fins expérimentales et éducatives. Tout le mérite de l'architecture de base originale revient à l'équipe Sipeed.
 
@@ -15,36 +15,106 @@
 | Démarrage (cœur 0,8 GHz) | >500s         | >30s                          | <1s                                          | <1s             |
 | Coût                     | Mac Mini 599$ | La plupart des SBC Linux ~$50 | N'importe quelle carte Linux À partir de 10$ | Tout Linux      |
 
+---
+
+## 📑 Table des Matières
+
+- [🤝 Soutenir Ce Projet](#-soutenir-ce-projet)
+- [✨ Fonctionnalités](#-fonctionnalités)
+- [🦾 Démonstration](#-démonstration)
+- [📦 Démarrage Rapide (2 Minutes)](#-démarrage-rapide-2-minutes)
+- [🖥️ Déployer sur VPS](#️-déployer-sur-vps)
+- [🔄 Migration](#-migration-depuis-openclaw-ou-nanoclaw)
+- [🧠 Skills Natives](#-skills-natives-optionnel)
+- [📁 Skills Workspace](#-skills-workspace-personnalisés)
+- [🔀 Cascade de Modèles Gratuits](#-cascade-de-modèles-gratuits-mécanisme-de-survie)
+- [⚙️ Configuration](#️-configuration)
+- [📡 Canaux](#-canaux)
+- [🛠️ Outils](#️-outils)
+- [📚 Documentation](#-documentation)
+- [📝 Changelog](#-changelog)
+- [📄 Licence](#-licence)
+
+---
+
 ## 🤝 Soutenir Ce Projet
 
-Ce projet est développé et maintenu à l'aide d'outils d'IA. Tous les changements de code dans ce dépôt ont été implémentés avec **Qwen Code**, qui offre également un plan gratuit généreux.
+Ce projet est développé et maintenu à l'aide d'outils d'IA.
 
-**🌟 Qwen Code (Alibaba Cloud)** — Assistant de codification IA avec plan gratuit.
+**🌟 OpenRouter (Gói Miễn Phí)** — Accès à plus de 200 modèles avec cascade fallback. Recommandé.
 
 ```bash
-./picoclaw-agents auth login --provider qwen
-# Voir les modèles : http://localhost:18800/models
+./picoclaw-agents onboard --openrouter
+# Voir les modèles: http://localhost:18800/models
 ```
 
-👉 [Commencer](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+🆓 **Modèles gratuits** (priorité de cascade):
+- `openrouter/free` — Sélection automatique du meilleur modèle gratuit
+- `nvidia/nemotron-3-ultra-550b-a55b:free` — 550B paramètres
+- `openai/gpt-oss-20b:free` — GPT Open Source
+- `inclusionai/ling-3.0-tiny:free` — Léger et rapide
+- `meta-llama/llama-3.1-8b-instruct:free` — Llama 3.1 8B
+
+**Fallbacks payants:**
+- `deepseek/deepseek-v4-flash-0731` — DeepSeek V4 Flash
+- `xiaomi/mimo-v2.5` — Xiaomi MiMo V2.5
+
+**Génération d'images**: `krea/krea-2-medium-turbo`
+
+👉 [Rejoindre maintenant](https://openrouter.ai/)
+
+**🌟 OpenCode Zen (8 Modèles Gratuits)** — Sans carte de crédit.
+
+```bash
+./picoclaw-agents onboard --opencode
+```
+
+🆓 **Modèles gratuits**:
+- `opencode/mimo-v2.5-free` — Xiaomi MiMo V2.5
+- `opencode/deepseek-v4-flash-free` — DeepSeek V4 Flash
+- `opencode/nemotron-3-ultra-free` — NVIDIA 550B
+- `opencode/ling-3.0-tiny-free` — Léger et rapide
+- `opencode/north-mini-code-free` — Orienté code
+- `opencode/laguna-s-2.1-free` — Nouveau
+- `opencode/longcat-2.0-free` — Nouveau
+- `opencode/big-pickle` — Essai gratuit
+
+👉 [Obtenir clé API](https://opencode.ai/auth)
 
 **🌟 Zhipu AI (z.ai)** — 100% GRATUIT avec `glm-4.5-flash`
 
 ```bash
-./picoclaw-agents auth login --provider zhipu
+./picoclaw-agents onboard --zhipu
 ```
 
-🚀 Vous avez été invité à rejoindre le GLM Coding Plan. Support complet pour Claude Code, Cline et plus de 20 outils de codification — à partir de seulement 10$/mois.
+🚀 Vous êtes invité à rejoindre le GLM Coding Plan. Support complet pour Claude Code, Cline et plus de 20 outils de codage — seulement 10$/mois.
 👉 [Rejoindre maintenant](https://z.ai/subscribe?ic=RF2YMCHBHL)
 
-
-**🌟 OpenRouter (Niveau Gratuit)** — Accédez à plus de 200 modèles avec un niveau gratuit généreux.
+**🌟 Qwen Code (Alibaba Cloud)** — Assistant de codification IA (plans payants disponibles).
 
 ```bash
-./picoclaw-agents auth login --provider openrouter-free
+./picoclaw-agents onboard --qwen
+# Voir les modèles: http://localhost:18800/models
 ```
 
-👉 [Rejoindre maintenant](https://openrouter.ai/)
+👉 [Commencer](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+
+> ℹ️ **Note:** Utilisez `onboard` pour la première configuration (configure tout automatiquement). Utilisez `auth` uniquement si vous devez ajouter une autre clé API à une configuration existante.
+>
+> **Exemple:** Vous avez déjà exécuté `onboard --openrouter` et voulez ajouter OpenCode Zen :
+> ```bash
+> # Première fois (configure OpenRouter par défaut)
+> ./picoclaw-agents onboard --openrouter
+>
+> # Ensuite, ajoutez OpenCode Zen
+> ./picoclaw-agents auth login --provider opencode
+>
+> # Maintenant vous pouvez alterner entre les deux
+> /model opencode/mimo-v2.5-free    # Utiliser le modèle OpenCode
+> /model openrouter/free            # Retour à OpenRouter
+> ```
+>
+> 💡 Utiliser ces liens aide à soutenir le développement continu de PicoClaw-Agents. Merci!
 
 > 💡 Utiliser ces liens aide à soutenir le développement continu de PicoClaw-Agents. Merci !
 
@@ -627,6 +697,60 @@ Les skills natifs injectent des personas IA spécialisées directement dans le s
 
 > **Skills vs Outils :** Les skills injectent du contexte dans le system prompt (l'agent *devient* le rôle). Les outils sont des actions appelables (fonctions que le LLM peut invoquer). Configurez-les séparément : `"skills"` pour les rôles, `"tools_override"` pour les outils appelables. Voir [`docs/SKILLS.md`](docs/SKILLS.md) pour plus de détails.
 
+### 📁 Skills Workspace (Personnalisés)
+
+Les skills workspace sont des skills basés sur des fichiers stockés dans `~/.picoclaw/workspace/skills/`. Ils sont automatiquement découverts par le gateway.
+
+**Skills workspace disponibles :**
+
+| Skill | Description |
+|-------|-------------|
+| `ui-ux-pro-max` | Intelligence de design UI/UX : 84 styles, 192 palettes de couleurs, 74 combinaisons de polices, 22 stacks |
+
+**Installer des skills personnalisés :**
+
+```bash
+# Créer le répertoire du skill
+mkdir -p ~/.picoclaw/workspace/skills/mon-skill
+
+# Créer SKILL.md avec frontmatter
+cat > ~/.picoclaw/workspace/skills/mon-skill/SKILL.md << 'EOF'
+---
+name: mon-skill
+description: "Description de mon skill personnalisé"
+---
+# Contenu du skill ici
+EOF`
+
+# Redémarrer le gateway pour découvrir le skill
+sudo systemctl restart picoclaw.service
+```
+
+Voir [`local_work/HOW_TO_ADD_CUSTOM_SKILLS.md`](local_work/HOW_TO_ADD_CUSTOM_SKILLS.md) pour des instructions détaillées.
+
+### 🔀 Cascade de Modèles Gratuits (Mécanisme de Survie)
+
+PicoClaw utilise un **système de fallback en cascade** pour garder votre bot en ligne 24/7. Lorsque le modèle gratuit principal échoue, il essaie automatiquement le modèle suivant.
+
+**Modèles gratuits (sans carte de crédit) :**
+
+| Priorité | Modèle | Fournisseur |
+|----------|--------|-------------|
+| 1 | `openrouter/free` | OpenRouter (sélectionne automatiquement le meilleur disponible) |
+| 2 | `nvidia/nemotron-3-ultra-550b-a55b:free` | NVIDIA |
+| 3 | `openai/gpt-oss-20b:free` | OpenAI |
+| 4 | `inclusionai/ling-3.0-tiny:free` | InclusionAI |
+| 5 | `meta-llama/llama-3.1-8b-instruct:free` | Meta |
+
+**Fallbacks payants (optionnel) :**
+
+| Modèle | Fournisseur | Coût |
+|--------|-------------|------|
+| `deepseek/deepseek-v4-flash-0731` | DeepSeek | $0.27/M tokens |
+| `xiaomi/mimo-v2.5` | Xiaomi | $0.10/M tokens |
+
+Voir [`docs/FREE_MODELS_CASCADE_GUIDE.md`](docs/FREE_MODELS_CASCADE_GUIDE.md) pour la configuration et le dépannage.
+
 **4. Chatter**
 
 ```bash
@@ -634,6 +758,33 @@ picoclaw-agents agent -m "Combien font 2+2 ?"
 ```
 
 C'est tout ! Vous avez un assistant IA opérationnel en 2 minutes.
+
+---
+
+## 🖥️ Déployer sur VPS
+
+Exécutez PicoClaw-Agents sur un VPS cloud pour une disponibilité 24/7. Spécifications recommandées:
+
+| Spécification | Valeur |
+|---------------|--------|
+| **Fournisseur** | [Vultr](https://www.vultr.com/?ref=9916942) |
+| **Instance** | vc2-1c-2gb |
+| **CPU** | 1 vCPU |
+| **RAM** | 2 Go |
+| **Stockage** | 55 Go |
+| **Prix** | À partir de $10/mois |
+
+> 💡 [**Déployer sur Vultr**](https://www.vultr.com/?ref=9916942) — Suffisant pour PicoClaw-Agents avec les modèles gratuits OpenRouter.
+
+```bash
+# Installer sur Ubuntu/Debian
+curl -fsSL https://raw.githubusercontent.com/comgunner/picoclaw-agents/main/scripts/install.sh | bash
+
+# Ou manuellement
+wget https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents-linux-amd64
+chmod +x picoclaw-agents-linux-amd64
+sudo mv picoclaw-agents-linux-amd64 /usr/local/bin/picoclaw-agents
+```
 
 ---
 
@@ -1745,6 +1896,9 @@ picoclaw-agents agent -m "Bonjour"
 | `picoclaw-agents agent`          | Mode chat interactif          |
 | `picoclaw-agents gateway`        | Démarrer la passerelle        |
 | `picoclaw-agents status`         | Afficher le statut            |
+| `picoclaw-agents auth login --provider <nom>` | Se connecter au fournisseur |
+| `picoclaw-agents auth models`    | Lister les modèles disponibles |
+| `picoclaw-agents auth logout --provider <nom>` | Se déconnecter |
 | `picoclaw-agents cron list`      | Lister les tâches planifiées  |
 | `picoclaw-agents cron add ...`   | Ajouter une tâche planifiée   |
 
@@ -1868,6 +2022,8 @@ Cela se produit lorsqu'une autre instance du bot est en cours d'exécution. Assu
 
 
 ## 📢 Actualités
+
+2026-08-09 🎉 **Intégration OpenRouter + OpenCode Zen**: Système complet de cascade fallback (gratuit→payant) avec 15 modèles configurés. OpenRouter recommandé avec 5+ modèles gratuits. OpenCode Zen ajouté avec 8 modèles gratuits (MiMo V2.5, DeepSeek V4 Flash, Nemotron 3 Ultra, etc.). Génération d'images fonctionnelle avec `krea/krea-2-medium-turbo`. Fix erreur 401 (strip préfixe `opencode/`), fix affichage modèles WebUI, `auth models` affiche tous les fournisseurs. Section VPS ajoutée (referral Vultr). 7 READMEs mis à jour, 53 docs stylisés. Voir [CHANGELOG.md](CHANGELOG.md).
 
 2026-04-05 🎉 **Intégration de la Gestion de Contexte + Fix Token Overflow**: Interface ContextManager intégrée (legacy + seahorse), moteur SQLite Seahorse (~6 800 lignes), vérification de budget pre-build et system prompt à 3 niveaux (Minimal/Compact/Full). Erreur 402 WebUI + openrouter-free corrigée (21K → ~300 tokens). Tous les templates onboard et auth logins incluent maintenant `context_manager: "seahorse"`. Patchs upstream adaptés. Guide des fournisseurs free publié. Voir [CHANGELOG.md](CHANGELOG.md).
 

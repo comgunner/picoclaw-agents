@@ -1,6 +1,11 @@
 # PicoClaw: Skills Sentinel
 
+> PicoClaw: Skills Sentinel documentation for PicoClaw-Agents.
+
+
 The **Sentinel** (`SkillsSentinelTool`) is an internal security mechanism integrated into PicoClaw, designed to defend the agent against prompt injection, system prompt extraction, and the execution of malicious code routines.
+
+---
 
 ## How Does It Work?
 

@@ -23,26 +23,30 @@ import (
 // ============== Image Generation Tools ==============
 
 type ImageGenCreateTool struct {
-	provider           string
-	geminiAPIKey       string
-	geminiImageModel   string
-	geminiTextModel    string
-	ideogramAPIKey     string
-	ideogramAPIURL     string
-	aspectRatio        string
-	outputDir          string
-	tracker            *utils.ImageGenTracker
-	imageScriptPath    string
-	imageGenScriptPath string
+	provider             string
+	geminiAPIKey         string
+	geminiImageModel     string
+	geminiTextModel      string
+	ideogramAPIKey       string
+	ideogramAPIURL       string
+	openRouterAPIKey     string
+	openRouterImageModel string
+	openRouterTextModel  string
+	aspectRatio          string
+	outputDir            string
+	tracker              *utils.ImageGenTracker
+	imageScriptPath      string
+	imageGenScriptPath   string
 }
 
 func NewImageGenCreateTool() *ImageGenCreateTool {
-	return NewImageGenCreateToolFromConfig("", "", "", "", "", "", "", "", "", "", "")
+	return NewImageGenCreateToolFromConfig("", "", "", "", "", "", "", "", "", "", "", "", "", "")
 }
 
 func NewImageGenCreateToolFromConfig(
 	configProvider, configGeminiKey, configGeminiImageModel, configGeminiTextModel, configIdeogramKey, configIdeogramURL,
 	configAspectRatio, configOutputDir, configImageScriptPath, configImageGenScriptPath, workspace string,
+	configOpenRouterKey, configOpenRouterImageModel, configOpenRouterTextModel string,
 ) *ImageGenCreateTool {
 	provider := strings.TrimSpace(os.Getenv(utils.EnvImageGenProvider))
 	geminiKey := strings.TrimSpace(os.Getenv(utils.EnvGeminiAPIKey))
@@ -102,22 +106,45 @@ func NewImageGenCreateToolFromConfig(
 	imageScriptPath = resolvePathInWorkspace(imageScriptPath, workspace)
 	imageGenScriptPath = resolvePathInWorkspace(imageGenScriptPath, workspace)
 
+	// OpenRouter
+	openRouterKey := strings.TrimSpace(os.Getenv(utils.EnvOpenRouterAPIKey))
+	openRouterImageModel := strings.TrimSpace(os.Getenv(utils.EnvOpenRouterImageModel))
+	openRouterTextModel := strings.TrimSpace(os.Getenv(utils.EnvOpenRouterTextModel))
+	if openRouterKey == "" {
+		openRouterKey = strings.TrimSpace(configOpenRouterKey)
+	}
+	if openRouterImageModel == "" {
+		openRouterImageModel = strings.TrimSpace(configOpenRouterImageModel)
+	}
+	if openRouterImageModel == "" {
+		openRouterImageModel = "krea/krea-2-medium-turbo"
+	}
+	if openRouterTextModel == "" {
+		openRouterTextModel = strings.TrimSpace(configOpenRouterTextModel)
+	}
+	if openRouterTextModel == "" {
+		openRouterTextModel = "openrouter/free"
+	}
+
 	// Initialize tracker
 	trackerPath := filepath.Join(outputDir, "tracker.json")
 	tracker, _ := utils.NewImageGenTracker(trackerPath)
 
 	return &ImageGenCreateTool{
-		provider:           provider,
-		geminiAPIKey:       geminiKey,
-		geminiImageModel:   geminiImageModel,
-		geminiTextModel:    geminiTextModel,
-		ideogramAPIKey:     ideogramKey,
-		ideogramAPIURL:     ideogramURL,
-		aspectRatio:        aspectRatio,
-		outputDir:          outputDir,
-		tracker:            tracker,
-		imageScriptPath:    imageScriptPath,
-		imageGenScriptPath: imageGenScriptPath,
+		provider:             provider,
+		geminiAPIKey:         geminiKey,
+		geminiImageModel:     geminiImageModel,
+		geminiTextModel:      geminiTextModel,
+		ideogramAPIKey:       ideogramKey,
+		ideogramAPIURL:       ideogramURL,
+		openRouterAPIKey:     openRouterKey,
+		openRouterImageModel: openRouterImageModel,
+		openRouterTextModel:  openRouterTextModel,
+		aspectRatio:          aspectRatio,
+		outputDir:            outputDir,
+		tracker:              tracker,
+		imageScriptPath:      imageScriptPath,
+		imageGenScriptPath:   imageGenScriptPath,
 	}
 }
 
@@ -143,8 +170,8 @@ func (t *ImageGenCreateTool) Parameters() map[string]any {
 			},
 			"provider": map[string]any{
 				"type":        "string",
-				"description": "Proveedor: 'gemini' o 'ideogram' (default: config)",
-				"enum":        []string{"gemini", "ideogram"},
+				"description": "Proveedor: 'gemini', 'ideogram', o 'openrouter' (default: config)",
+				"enum":        []string{"gemini", "ideogram", "openrouter"},
 			},
 			"aspect_ratio": map[string]any{
 				"type":        "string",
@@ -215,6 +242,13 @@ func (t *ImageGenCreateTool) Execute(ctx context.Context, args map[string]any) *
 			t.tracker.UpdateMetadata(id, "error", "Ideogram API Key no configurada")
 		}
 		return UserResult("Ideogram API Key no configurada. Configure en config.json.")
+	}
+	if provider == "openrouter" && t.openRouterAPIKey == "" {
+		if t.tracker != nil {
+			t.tracker.UpdateMetadata(id, "status", "failed")
+			t.tracker.UpdateMetadata(id, "error", "OpenRouter API Key no configurada")
+		}
+		return UserResult("OpenRouter API Key no configurada. Run: picoclaw auth login --provider openrouter")
 	}
 
 	// Asegurar output directory
@@ -300,6 +334,24 @@ func (t *ImageGenCreateTool) Execute(ctx context.Context, args map[string]any) *
 				if t.tracker != nil {
 					t.tracker.UpdateMetadata(id, "provider", "ideogram")
 				}
+			}
+		}
+	} else if provider == "openrouter" {
+		orReq := utils.OpenRouterImageRequest{
+			Prompt:      finalPrompt,
+			Model:       t.openRouterImageModel,
+			AspectRatio: aspectRatio,
+			APIKey:      t.openRouterAPIKey,
+			OutputDir:   filepath.Dir(imagePath),
+		}
+		result, genErr := utils.GenerateImageWithOpenRouter(callCtx, orReq)
+		if genErr != nil {
+			err = genErr
+		} else {
+			// Use the path returned by the OpenRouter helper
+			imagePath = result.Path
+			if t.tracker != nil {
+				t.tracker.UpdateMetadata(id, "model", result.Model)
 			}
 		}
 	} else {

@@ -1,5 +1,8 @@
 # Solución de Conexión a Telegram - Proxy Cloudflare WARP
 
+> Solución de Conexión a Telegram - Proxy Cloudflare WARP documentation for PicoClaw-Agents.
+
+
 **Última Actualización:** 31 de marzo de 2026  
 **Estado:** ✅ Listo para Producción  
 **Severidad:** CRÍTICA - Bot de Telegram completamente inoperable
@@ -503,7 +506,7 @@ tail -100 ~/.picoclaw/logs/launcher.log | grep -i telegram
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Problema: WARP No Conecta
 

@@ -15,6 +15,8 @@ Guía rápida para usar las herramientas de generación de imágenes en PicoClaw
 
 ---
 
+---
+
 ## 💸 Generación de Imágenes GRATIS con Antigravity OAuth
 
 **Las imágenes generadas vía Antigravity OAuth NO requieren API key y NO te cuestan un centavo.** Usan la cuota gratuita de tu cuenta de Google a través del servicio Cloud Code Assist. Sin configuración de facturación, sin tarjeta de crédito, sin cargos.

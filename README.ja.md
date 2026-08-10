@@ -4,7 +4,7 @@
   <h1>PicoClaw-Agents</h1>
   <h3>🤖 マルチエージェントアーキテクチャ 🚀 並列サブエージェント</h3>
 
-[English](README.md) | [中文](README.zh.md) | [Español](README.es.md) | [Français](README.fr.md) | **日本語**
+[English](README.md) | [中文](README.zh.md) | [Español](README.es.md) | [Français](README.fr.md) | [Português](README.pt-br.md) | [Tiếng Việt](README.vi.md)
 
 > **注意:** このプロジェクトは、**Sipeed** によるオリジナルの [PicoClaw](https://github.com/sipeed/picoclaw) の独立したホビー向けフォークです。実験および教育目的で維持されています。オリジナルのコアアーキテクチャに関するすべての功績は Sipeed チームに帰属します。
 
@@ -15,36 +15,106 @@
 | 起動時間 (0.8GHz core) | >500s         | >30s                | <1s                           | <1s             |
 | コスト                 | Mac Mini 599$ | Most Linux SBC ~50$ | Any Linux Board As low as 10$ | Any Linux       |
 
+---
+
+## 📑 目次
+
+- [🤝 プロジェクトを支援](#-プロジェクトを支援)
+- [✨ 特徴](#-特徴)
+- [🦾 デモ](#-デモ)
+- [📦 クイックスタート (2分)](#-クイックスタート-2分)
+- [🖥️ VPS でデプロイ](#-vps-でデプロイ)
+- [🔄 移行](#-openclaw-または-nanoclaw-からの移行)
+- [🧠 ネイティブスキル](#-ネイティブスキルオプション)
+- [📁 ワークスペーススキル](#-ワークスペーススキルカスタム)
+- [🔀 無料モデルカスケード](#-無料モデルカスケード生存メカニズム)
+- [⚙️ 設定](#️-設定)
+- [📡 チャンネル](#-チャンネル)
+- [🛠️ ツール](#️-ツール)
+- [📚 ドキュメント](#-ドキュメント)
+- [📝 変更履歴](#-変更履歴)
+- [📄 ライセンス](#-ライセンス)
+
+---
+
 ## 🤝 プロジェクトを支援
 
-このプロジェクトは AI ツールの助けを得て開発・維持されています。このリポジトリのすべてのコード変更は **Qwen Code** を使用して実装されており、無料プランも提供しています。
+このプロジェクトは AI ツールの助けを得て開発・維持されています。
 
-**🌟 Qwen Code (Alibaba Cloud)** — 無料プラン付き AI コーディングアシスタント。
+**🌟 OpenRouter（無料层级）** — 200+ モデル、カスケードフォールバック。推奨。
 
 ```bash
-./picoclaw-agents auth login --provider qwen
+./picoclaw-agents onboard --openrouter
+# モデルを表示: http://localhost:18800/models
+```
+
+🆓 **無料モデル**（カスケード優先度）:
+- `openrouter/free` — 最適な無料モデルを自動選択
+- `nvidia/nemotron-3-ultra-550b-a55b:free` — 550B パラメータ
+- `openai/gpt-oss-20b:free` — オープンソース GPT
+- `inclusionai/ling-3.0-tiny:free` — 軽量で高速
+- `meta-llama/llama-3.1-8b-instruct:free` — Llama 3.1 8B
+
+**有料フォールバック:**
+- `deepseek/deepseek-v4-flash-0731` — DeepSeek V4 Flash
+- `xiaomi/mimo-v2.5` — Xiaomi MiMo V2.5
+
+**画像生成**: `krea/krea-2-medium-turbo`
+
+👉 [今すぐ参加](https://openrouter.ai/)
+
+**🌟 OpenCode Zen（8 無料モデル）** — クレジットカード不要。
+
+```bash
+./picoclaw-agents onboard --opencode
+```
+
+🆓 **無料モデル**:
+- `opencode/mimo-v2.5-free` — Xiaomi MiMo V2.5
+- `opencode/deepseek-v4-flash-free` — DeepSeek V4 Flash
+- `opencode/nemotron-3-ultra-free` — NVIDIA 550B
+- `opencode/ling-3.0-tiny-free` — 軽量で高速
+- `opencode/north-mini-code-free` — コード特化
+- `opencode/laguna-s-2.1-free` — 新しい
+- `opencode/longcat-2.0-free` — 新しい
+- `opencode/big-pickle` — 無料トライアル
+
+👉 [APIキー取得](https://opencode.ai/auth)
+
+**🌟 Zhipu AI (z.ai)** — `glm-4.5-flash` で 100% 無料
+
+```bash
+./picoclaw-agents onboard --zhipu
+```
+
+🚀 GLM Coding Plan に招待されました。Claude Code、Cline、20以上のトップコーディングツールを完全サポート — 月額$10から。
+👉 [今すぐ参加](https://z.ai/subscribe?ic=RF2YMCHBHL)
+
+**🌟 Qwen Code (Alibaba Cloud)** — AI コーディングアシスタント（有料プランあり）。
+
+```bash
+./picoclaw-agents onboard --qwen
 # モデルを表示: http://localhost:18800/models
 ```
 
 👉 [始める](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
 
-**🌟 Zhipu AI (z.ai)** — `glm-4.5-flash` で 100% 無料
-
-```bash
-./picoclaw-agents auth login --provider zhipu
-```
-
-🚀 GLM Coding Plan への招待があります。Claude Code、Cline、その他20以上のトップコーディングツールをフルサポート — 月額$10から。
-👉 [今すぐ参加](https://z.ai/subscribe?ic=RF2YMCHBHL)
-
-
-**🌟 OpenRouter (無料ティア)** — 寛大な無料ティアで200以上のモデルにアクセス。
-
-```bash
-./picoclaw-agents auth login --provider openrouter-free
-```
-
-👉 [今すぐ参加](https://openrouter.ai/)
+> ℹ️ **注意:** 初回セットアップには `onboard` を使用します（すべて自動的に設定）。既存の設定に別の API キーを追加する場合のみ `auth` を使用してください。
+>
+> **例:** 既に `onboard --openrouter` を実行し、OpenCode Zen を追加したい場合：
+> ```bash>
+> # 初回（OpenRouter をデフォルトとして設定）
+> ./picoclaw-agents onboard --openrouter
+>
+> # その後、OpenCode Zen を追加
+> ./picoclaw-agents auth login --provider opencode
+>
+> # これで両方を切り替えられます
+> /model opencode/mimo-v2.5-free    # OpenCode モデルを使用
+> /model openrouter/free            # OpenRouter に戻る
+> ```
+>
+> 💡 これらのリンクを使用すると、PicoClaw-Agents の継続的な開発を支援できます。ありがとうございます！
 
 > 💡 これらのリンクを使用することで、PicoClaw-Agents の継続的な開発を支援できます。ありがとうございます！
 
@@ -577,6 +647,60 @@ picoclaw-agents onboard --gemini      # Gemini テンプレートを使用 (gemi
 
 > **スキル vs ツール：** スキルはシステムプロンプトにコンテキストを注入します（エージェントがそのロールに「なる」）。ツールは呼び出し可能なアクション（LLM が呼び出せる関数）です。別々に設定します：ロールには `"skills"`、呼び出し可能ツールには `"tools_override"`。詳細は [`docs/SKILLS.md`](docs/SKILLS.md) をご覧ください。
 
+### 📁 ワークスペーススキル（カスタム）
+
+ワークスペーススキルは `~/.picoclaw/workspace/skills/` に保存されるファイルベースのスキルです。ゲートウェイによって自動的に検出されます。
+
+**利用可能なワークスペーススキル：**
+
+| スキル | 説明 |
+|--------|------|
+| `ui-ux-pro-max` | UI/UXデザインインテリジェンス：84スタイル、192カラーパレット、74フォントペアリング、22スタック |
+
+**カスタムスキルのインストール：**
+
+```bash
+# スキルディレクトリを作成
+mkdir -p ~/.picoclaw/workspace/skills/my-skill
+
+# フロントマター付きSKILL.mdを作成
+cat > ~/.picoclaw/workspace/skills/my-skill/SKILL.md << 'EOF'
+---
+name: my-skill
+description: "カスタムスキルの説明"
+---
+# スキルの内容
+EOF
+
+# ゲートウェイを再起動してスキルを検出
+sudo systemctl restart picoclaw.service
+```
+
+詳細は [`local_work/HOW_TO_ADD_CUSTOM_SKILLS.md`](local_work/HOW_TO_ADD_CUSTOM_SKILLS.md) をご覧ください。
+
+### 🔀 無料モデルカスケード（生存メカニズム）
+
+PicoClawはボットを24時間365日オンラインに保つための **カスケードフォールバックシステム** を使用しています。プライマリ無料モデルが失敗すると、自動的に次のモデルを試します。
+
+**無料モデル（クレジットカード不要）：**
+
+| 優先度 | モデル | プロバイダー |
+|--------|--------|-------------|
+| 1 | `openrouter/free` | OpenRouter（利用可能な最良のモデルを自動選択） |
+| 2 | `nvidia/nemotron-3-ultra-550b-a55b:free` | NVIDIA |
+| 3 | `openai/gpt-oss-20b:free` | OpenAI |
+| 4 | `inclusionai/ling-3.0-tiny:free` | InclusionAI |
+| 5 | `meta-llama/llama-3.1-8b-instruct:free` | Meta |
+
+**有料フォールバック（オプション）：**
+
+| モデル | プロバイダー | コスト |
+|--------|-------------|--------|
+| `deepseek/deepseek-v4-flash-0731` | DeepSeek | $0.27/Mトークン |
+| `xiaomi/mimo-v2.5` | Xiaomi | $0.10/Mトークン |
+
+設定とトラブルシューティングについては [`docs/FREE_MODELS_CASCADE_GUIDE.md`](docs/FREE_MODELS_CASCADE_GUIDE.md) をご覧ください。
+
 **4. チャット**
 
 ```bash
@@ -584,6 +708,33 @@ picoclaw-agents agent -m "2+2は？"
 ```
 
 以上です！2分で AI アシスタントが稼働します。
+
+---
+
+## 🖥️ VPS でデプロイ
+
+クラウド VPS で PicoClaw-Agents を 24時間365日利用可能にします。推奨仕様:
+
+| 仕様 | 値 |
+|------|-----|
+| **プロバイダー** | [Vultr](https://www.vultr.com/?ref=9916942) |
+| **インスタンス** | vc2-1c-2gb |
+| **CPU** | 1 vCPU |
+| **RAM** | 2 GB |
+| **ストレージ** | 55 GB |
+| **価格** | 月額$10から |
+
+> 💡 [**Vultr でデプロイ**](https://www.vultr.com/?ref=9916942) — OpenRouter 無料モデルで PicoClaw-Agents を実行するのに十分です。
+
+```bash
+# Ubuntu/Debian にインストール
+curl -fsSL https://raw.githubusercontent.com/comgunner/picoclaw-agents/main/scripts/install.sh | bash
+
+# または手動で
+wget https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents-linux-amd64
+chmod +x picoclaw-agents-linux-amd64
+sudo mv picoclaw-agents-linux-amd64 /usr/local/bin/picoclaw-agents
+```
 
 ---
 
@@ -1695,6 +1846,9 @@ picoclaw-agents agent -m "Hello"
 | `picoclaw-agents agent`          | 対話型チャットモード                       |
 | `picoclaw-agents gateway`        | ゲートウェイを起動する                     |
 | `picoclaw-agents status`         | ステータスを表示する                       |
+| `picoclaw-agents auth login --provider <名前>` | プロバイダーにログイン       |
+| `picoclaw-agents auth models`    | 利用可能なモデルを一覧表示                 |
+| `picoclaw-agents auth logout --provider <名前>` | ログアウト               |
 | `picoclaw-agents cron list`      | スケジュールされたすべてのジョブを一覧表示 |
 | `picoclaw-agents cron add ...`   | スケジュールされたジョブを追加する         |
 
@@ -1819,6 +1973,8 @@ Brave を使用する場合は、キーを `~/.picoclaw/config.json` に追加�
 
 
 ## 📢 ニュース
+
+2026-08-09 🎉 **OpenRouter + OpenCode Zen 統合**: 15のモデルを設定した完全なカスケードフォールバックシステム（無料→有料）。OpenRouter推奨（5以上の無料モデル）。OpenCode Zen追加（8の無料モデル：MiMo V2.5、DeepSeek V4 Flash、Nemotron 3 Ultraなど）。`krea/krea-2-medium-turbo`による画像生成が動作。401エラー修正（`opencode/`プレフィックスの削除）、WebUIモデル表示修正、`auth models`ですべてのプロバイダーを表示。VPSセクション追加（Vultrリファラル）。7のREADME更新、53のドキュメントスタイル適用。[CHANGELOG.md](CHANGELOG.md) を参照。
 
 2026-04-05 🎉 **コンテキスト管理の統合 + トークンオーバーフロー修正**: ContextManager インターフェース（legacy + seahorse）、SQLite Seahorse エンジン（〜6,800 行）、プリビルドの予算チェック、3 レベルのシステムプロンプト（Minimal/Compact/Full）を統合。WebUI + openrouter-free のエラー 402 を修正（21K → 〜300 トークン）。すべての onboard テンプレートと auth ログインに `context_manager: "seahorse"` を含むようになりました。アップストリームパッチ適応済み。フリーティアプロバイダーガイド公開済み。[CHANGELOG.md](CHANGELOG.md) を参照。
 

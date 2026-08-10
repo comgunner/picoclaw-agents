@@ -6,8 +6,9 @@
     "defaults": {
       "workspace": "~/.picoclaw/workspace",
       "restrict_to_workspace": true,
-      "provider": "",
-      "model": "gemini-2.0-flash",
+      "provider": "openrouter",
+      "model_name": "openrouter-free",
+      "model": "openrouter/free",
       "max_tokens": 8192,
       "max_tool_iterations": 20,
       "context_manager": "seahorse",
@@ -17,6 +18,23 @@
         "leaf_target_tokens": 1200,
         "condensed_target_tokens": 2000,
         "max_compact_iterations": 20
+      },
+      "cascade": {
+        "enabled": true,
+        "text_models": [
+          "opencode/mimo-v2.5-free",
+          "opencode/deepseek-v4-flash-free",
+          "opencode/nemotron-3-ultra-free",
+          "openrouter/free",
+          "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openai/gpt-oss-20b:free",
+          "inclusionai/ling-3.0-tiny:free",
+          "meta-llama/llama-3.1-8b-instruct:free"
+        ],
+        "paid_fallbacks": [
+          "deepseek/deepseek-v4-flash-0731",
+          "xiaomi/mimo-v2.5"
+        ]
       }
     },
     "list": [
@@ -25,7 +43,10 @@
         "default": true,
         "name": "Engineering Manager (Team Lead)",
         "model": "gemini-2.0-flash",
-        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "skills": [
+          "fullstack_developer",
+          "agent_team_workflow"
+        ],
         "subagents": {
           "allow_agents": [
             "backend_dev",
@@ -45,71 +66,125 @@
         "id": "backend_dev",
         "name": "Backend Developer",
         "model": "gemini-2.0-flash",
-        "skills": ["backend_developer"],
-        "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+        "skills": [
+          "backend_developer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "edit_file",
+          "exec",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "frontend_dev",
         "name": "Frontend Developer",
         "model": "gemini-2.0-flash",
-        "skills": ["frontend_developer"],
-        "tools_override": ["read_file", "write_file", "edit_file"],
+        "skills": [
+          "frontend_developer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "edit_file"
+        ],
         "subagents": {}
       },
       {
         "id": "devops_eng",
         "name": "DevOps Engineer",
         "model": "gemini-2.0-flash",
-        "skills": ["devops_engineer"],
-        "tools_override": ["read_file", "write_file", "exec"],
+        "skills": [
+          "devops_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec"
+        ],
         "subagents": {}
       },
       {
         "id": "qa_eng",
         "name": "QA Engineer",
         "model": "gemini-2.0-flash",
-        "skills": ["qa_engineer"],
-        "tools_override": ["read_file", "write_file", "exec"],
+        "skills": [
+          "qa_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec"
+        ],
         "subagents": {}
       },
       {
         "id": "security_eng",
         "name": "Security Engineer",
         "model": "gemini-2.0-flash",
-        "skills": ["security_engineer"],
-        "tools_override": ["read_file", "web_search"],
+        "skills": [
+          "security_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "data_eng",
         "name": "Data Engineer",
         "model": "gemini-2.0-flash",
-        "skills": ["data_engineer"],
-        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "skills": [
+          "data_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "ml_eng",
         "name": "ML Engineer",
         "model": "gemini-2.0-flash",
-        "skills": ["ml_engineer"],
-        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "skills": [
+          "ml_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "researcher",
         "name": "Researcher",
         "model": "gemini-2.0-flash",
-        "skills": ["researcher"],
-        "tools_override": ["read_file", "write_file", "web_search"],
+        "skills": [
+          "researcher"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "project_manager",
         "name": "Project Manager",
         "model": "gemini-2.0-flash",
-        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "skills": [
+          "fullstack_developer",
+          "agent_team_workflow"
+        ],
         "subagents": {
           "allow_agents": [
             "*",
@@ -126,7 +201,10 @@
         "id": "senior_dev",
         "name": "Senior Full-Stack Developer",
         "model": "gemini-2.0-flash",
-        "skills": ["backend_developer", "fullstack_developer"],
+        "skills": [
+          "backend_developer",
+          "fullstack_developer"
+        ],
         "subagents": {
           "allow_agents": [
             "qa_eng",
@@ -139,42 +217,54 @@
         "id": "qa_specialist",
         "name": "QA Specialist",
         "model": "gemini-2.0-flash",
-        "skills": ["qa_engineer"],
+        "skills": [
+          "qa_engineer"
+        ],
         "subagents": {}
       },
       {
         "id": "junior_fixer",
         "name": "Junior Code Fixer",
         "model": "gemini-2.0-flash",
-        "skills": ["fullstack_developer"],
+        "skills": [
+          "fullstack_developer"
+        ],
         "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
         "model": "gemini-2.0-flash",
-        "skills": ["fullstack_developer"],
+        "skills": [
+          "fullstack_developer"
+        ],
         "subagents": {}
       },
       {
         "id": "odoo_specialist",
         "name": "Odoo Specialist",
         "model": "gemini-2.0-flash",
-        "skills": ["odoo_developer"],
+        "skills": [
+          "odoo_developer"
+        ],
         "subagents": {}
       },
       {
         "id": "n8n_automation",
         "name": "n8n Workflow Automation",
         "model": "gemini-2.0-flash",
-        "skills": ["n8n_workflow"],
+        "skills": [
+          "n8n_workflow"
+        ],
         "subagents": {}
       },
       {
         "id": "binance_trader",
         "name": "Binance Trading Specialist",
         "model": "gemini-2.0-flash",
-        "skills": ["binance_mcp"],
+        "skills": [
+          "binance_mcp"
+        ],
         "subagents": {}
       }
     ]
@@ -188,8 +278,16 @@
       "id": "backend_dev",
       "name": "Backend Developer",
       "model": "gemini-2.0-flash",
-      "skills": ["backend_developer"],
-      "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+      "skills": [
+        "backend_developer"
+      ],
+      "tools_override": [
+        "read_file",
+        "write_file",
+        "edit_file",
+        "exec",
+        "web_search"
+      ],
       "subagents": {}
     },
     "orchestrator_with_specialized_subagents": {
@@ -198,9 +296,21 @@
         "id": "tech_lead",
         "name": "Technical Lead",
         "model": "gemini-2.0-flash",
-        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "skills": [
+          "fullstack_developer",
+          "agent_team_workflow"
+        ],
         "subagents": {
-          "allow_agents": ["backend_dev", "frontend_dev", "devops_eng", "qa_eng", "security_eng", "data_eng", "ml_eng", "researcher"],
+          "allow_agents": [
+            "backend_dev",
+            "frontend_dev",
+            "devops_eng",
+            "qa_eng",
+            "security_eng",
+            "data_eng",
+            "ml_eng",
+            "researcher"
+          ],
           "max_spawn_depth": 2,
           "max_children_per_agent": 3
         }
@@ -210,57 +320,105 @@
           "id": "backend_dev",
           "name": "Backend Developer",
           "model": "gemini-2.0-flash",
-          "skills": ["backend_developer"],
-          "tools_override": ["read_file", "write_file", "edit_file", "exec"]
+          "skills": [
+            "backend_developer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "edit_file",
+            "exec"
+          ]
         },
         {
           "id": "frontend_dev",
           "name": "Frontend Developer",
           "model": "gemini-2.0-flash",
-          "skills": ["frontend_developer"],
-          "tools_override": ["read_file", "write_file", "edit_file"]
+          "skills": [
+            "frontend_developer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "edit_file"
+          ]
         },
         {
           "id": "devops_eng",
           "name": "DevOps Engineer",
           "model": "gemini-2.0-flash",
-          "skills": ["devops_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "devops_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "qa_eng",
           "name": "QA Engineer",
           "model": "gemini-2.0-flash",
-          "skills": ["qa_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "qa_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "security_eng",
           "name": "Security Engineer",
           "model": "gemini-2.0-flash",
-          "skills": ["security_engineer"],
-          "tools_override": ["read_file", "web_search"]
+          "skills": [
+            "security_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "web_search"
+          ]
         },
         {
           "id": "data_eng",
           "name": "Data Engineer",
           "model": "gemini-2.0-flash",
-          "skills": ["data_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "data_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "ml_eng",
           "name": "ML Engineer",
           "model": "gemini-2.0-flash",
-          "skills": ["ml_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "ml_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "researcher",
           "name": "Researcher",
           "model": "gemini-2.0-flash",
-          "skills": ["researcher"],
-          "tools_override": ["read_file", "write_file", "web_search"]
+          "skills": [
+            "researcher"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "web_search"
+          ]
         }
       ]
     },
@@ -271,22 +429,40 @@
           "id": "binance_trader",
           "name": "Binance Trading Specialist",
           "model": "gemini-2.0-flash",
-          "skills": ["binance_mcp"],
-          "tools_override": ["read_file", "write_file", "web_search"]
+          "skills": [
+            "binance_mcp"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "web_search"
+          ]
         },
         {
           "id": "n8n_automation",
           "name": "n8n Workflow Automation",
           "model": "gemini-2.0-flash",
-          "skills": ["n8n_workflow"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "n8n_workflow"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "odoo_specialist",
           "name": "Odoo Specialist",
           "model": "gemini-2.0-flash",
-          "skills": ["odoo_developer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "odoo_developer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         }
       ]
     }

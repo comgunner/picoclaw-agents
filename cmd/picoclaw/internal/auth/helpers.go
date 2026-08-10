@@ -25,7 +25,7 @@ import (
 	"github.com/comgunner/picoclaw/pkg/providers"
 )
 
-const supportedProvidersMsg = "supported providers: openai, anthropic, google-antigravity, qwen, zhipu, deepseek, kilo"
+const supportedProvidersMsg = "supported providers: openai, anthropic, google-antigravity, qwen, zhipu, deepseek, openrouter, opencode, kilo"
 
 func authLoginCmd(provider string, useDeviceCode bool) error {
 	switch provider {
@@ -84,6 +84,39 @@ func authLoginCmd(provider string, useDeviceCode bool) error {
 		fmt.Println("Get your API key at: https://kilo.ai/settings/api-keys")
 		fmt.Println()
 		fmt.Println("Free tier model: kilo-auto/free")
+		fmt.Println()
+		return authLoginPasteToken(provider)
+	case "openrouter":
+		fmt.Println("OpenRouter requires an API key")
+		fmt.Println()
+		fmt.Println("Get your API key at: https://openrouter.ai/settings/keys")
+		fmt.Println()
+		fmt.Println("Free tier available (no credit card needed)")
+		fmt.Println()
+		fmt.Println("Free models:")
+		fmt.Println("  - nvidia/nemotron-3-ultra-550b-a55b:free (large, good quality)")
+		fmt.Println("  - openai/gpt-oss-20b:free (open source GPT)")
+		fmt.Println("  - meta-llama/llama-3.1-8b-instruct:free (fast, reliable)")
+		fmt.Println()
+		fmt.Println("Image generation: krea/krea-2-medium-turbo")
+		fmt.Println()
+		return authLoginPasteToken(provider)
+	case "opencode":
+		fmt.Println("OpenCode Zen requires an API key")
+		fmt.Println()
+		fmt.Println("Get your API key at: https://opencode.ai/auth")
+		fmt.Println()
+		fmt.Println("Free models available (no credit card needed):")
+		fmt.Println("  - opencode/mimo-v2.5-free (Xiaomi MiMo V2.5)")
+		fmt.Println("  - opencode/deepseek-v4-flash-free (DeepSeek V4 Flash)")
+		fmt.Println("  - opencode/nemotron-3-ultra-free (NVIDIA 550B)")
+		fmt.Println("  - opencode/ling-3.0-tiny-free (lightweight, fast)")
+		fmt.Println("  - opencode/north-mini-code-free (code-focused)")
+		fmt.Println("  - opencode/laguna-s-2.1-free")
+		fmt.Println("  - opencode/longcat-2.0-free")
+		fmt.Println("  - opencode/big-pickle (stealth model)")
+		fmt.Println()
+		fmt.Println("API endpoint: https://opencode.ai/zen/v1")
 		fmt.Println()
 		return authLoginPasteToken(provider)
 	default:
@@ -373,6 +406,12 @@ func authLoginPasteToken(provider string) error {
 		case "kilo":
 			// Update ModelList and set default to kilo-auto-free
 			AddKiloModels(appCfg)
+		case "openrouter":
+			// Update ModelList and set default to openrouter-free
+			AddOpenRouterModels(appCfg)
+		case "opencode":
+			// Update ModelList and set default to opencode free models
+			AddOpenCodeModels(appCfg)
 		}
 		if err := config.SaveConfig(internal.GetConfigPath(), appCfg); err != nil {
 			return fmt.Errorf("could not update config: %w", err)
@@ -419,6 +458,14 @@ func authLogoutCmd(provider string) error {
 					if isZhipuModel(appCfg.ModelList[i].Model) {
 						appCfg.ModelList[i].AuthMethod = ""
 					}
+				case "openrouter":
+					if isOpenRouterModel(appCfg.ModelList[i].Model) {
+						appCfg.ModelList[i].AuthMethod = ""
+					}
+				case "opencode":
+					if isOpenCodeModel(appCfg.ModelList[i].Model) {
+						appCfg.ModelList[i].AuthMethod = ""
+					}
 				}
 			}
 			// Clear AuthMethod in Providers (legacy)
@@ -433,6 +480,10 @@ func authLogoutCmd(provider string) error {
 				// Qwen no usa Providers legacy block, solo ModelList
 			case "zhipu", "z.ai", "glm":
 				// Zhipu no usa Providers legacy block, solo ModelList
+			case "openrouter":
+				// OpenRouter uses ModelList only
+			case "opencode":
+				// OpenCode Zen uses ModelList only
 			}
 			config.SaveConfig(internal.GetConfigPath(), appCfg)
 		}
@@ -536,53 +587,99 @@ func oauthConfigForProvider(provider string) auth.OAuthProviderConfig {
 }
 
 func authModelsCmd() error {
+	// Try Antigravity first
 	cred, err := auth.GetCredential("google-antigravity")
-	if err != nil || cred == nil {
+	if err == nil && cred != nil {
+		// Refresh token if it's about to expire OR already expired
+		if (cred.NeedsRefresh() || cred.IsExpired()) && cred.RefreshToken != "" {
+			oauthCfg := auth.GoogleAntigravityOAuthConfig()
+			refreshed, refreshErr := auth.RefreshAccessToken(cred, oauthCfg)
+			if refreshErr == nil {
+				cred = refreshed
+				_ = auth.SetCredential("google-antigravity", cred)
+			}
+		}
+
+		projectID := cred.ProjectID
+		if projectID != "" {
+			fmt.Printf("Fetching Antigravity models for project: %s\n\n", projectID)
+			models, modelErr := providers.FetchAntigravityModels(cred.AccessToken, projectID)
+			if modelErr == nil && len(models) > 0 {
+				fmt.Println("Available Antigravity Models:")
+				fmt.Println("-----------------------------")
+				for _, m := range models {
+					status := "✓"
+					if m.IsExhausted {
+						status = "✗ (quota exhausted)"
+					}
+					name := m.ID
+					if m.DisplayName != "" {
+						name = fmt.Sprintf("%s (%s)", m.ID, m.DisplayName)
+					}
+					fmt.Printf("  %s %s\n", status, name)
+				}
+				fmt.Println()
+			}
+		}
+	}
+
+	// List OpenRouter models if configured
+	orCred, orErr := auth.GetCredential("openrouter")
+	if orErr == nil && orCred != nil && orCred.AccessToken != "" {
+		fmt.Println("OpenRouter Free Models:")
+		fmt.Println("-----------------------")
+		fmt.Println("  nvidia/nemotron-3-ultra-550b-a55b:free  (large, good quality)")
+		fmt.Println("  openai/gpt-oss-20b:free                (open source GPT)")
+		fmt.Println("  meta-llama/llama-3.1-8b-instruct:free  (fast, reliable)")
+		fmt.Println("  openrouter/free                        (auto-select best)")
+		fmt.Println("  openrouter/auto-beta                   (task-aware routing, free)")
+		fmt.Println("  openrouter/pareto-code                 (fastest for coding, paid)")
+		fmt.Println("  inclusionai/ling-3.0-tiny:free         (lightweight)")
+		fmt.Println()
+		fmt.Println("Image generation: krea/krea-2-medium-turbo")
+		fmt.Println()
+		fmt.Println("Cascade fallback: enabled (free → free1 → free2)")
+		fmt.Println()
+	}
+
+	// List OpenCode Zen models if configured
+	ocCred, ocErr := auth.GetCredential("opencode")
+	if ocErr == nil && ocCred != nil && ocCred.AccessToken != "" {
+		fmt.Println("OpenCode Zen Free Models:")
+		fmt.Println("-------------------------")
+		fmt.Println("  opencode/mimo-v2.5-free          (Xiaomi MiMo V2.5)")
+		fmt.Println("  opencode/deepseek-v4-flash-free  (DeepSeek V4 Flash)")
+		fmt.Println("  opencode/nemotron-3-ultra-free    (NVIDIA 550B)")
+		fmt.Println("  opencode/ling-3.0-tiny-free      (lightweight, fast)")
+		fmt.Println("  opencode/north-mini-code-free    (code-focused)")
+		fmt.Println("  opencode/laguna-s-2.1-free       (new)")
+		fmt.Println("  opencode/longcat-2.0-free        (new)")
+		fmt.Println("  opencode/big-pickle              (stealth model)")
+		fmt.Println()
+		fmt.Println("API: https://opencode.ai/zen/v1")
+		fmt.Println()
+	}
+
+	// List models from config ModelList
+	appCfg, cfgErr := internal.LoadConfig()
+	if cfgErr == nil && appCfg != nil && len(appCfg.ModelList) > 0 {
+		fmt.Println("Configured Models (from config):")
+		fmt.Println("-------------------------------")
+		for _, m := range appCfg.ModelList {
+			apiBase := m.APIBase
+			if apiBase == "" {
+				apiBase = "(default)"
+			}
+			fmt.Printf("  %-30s %s  [%s]\n", m.ModelName, m.Model, apiBase)
+		}
+		fmt.Println()
+	}
+
+	if cred == nil && orErr != nil && ocErr != nil {
 		return fmt.Errorf(
-			"not logged in to Google Antigravity.\nrun: picoclaw auth login --provider google-antigravity",
+			"not logged in to any provider.\nrun: picoclaw auth login --provider <name>\n" +
+				"supported providers: openai, anthropic, google-antigravity, qwen, zhipu, deepseek, openrouter, opencode, kilo",
 		)
-	}
-
-	// Refresh token if it's about to expire OR already expired (consistent with provider behavior).
-	// Previously only NeedsRefresh() was checked — if token expired during inactivity
-	// (>1h idle), `auth models` would fail with a 401 instead of auto-refreshing.
-	if (cred.NeedsRefresh() || cred.IsExpired()) && cred.RefreshToken != "" {
-		oauthCfg := auth.GoogleAntigravityOAuthConfig()
-		refreshed, refreshErr := auth.RefreshAccessToken(cred, oauthCfg)
-		if refreshErr == nil {
-			cred = refreshed
-			_ = auth.SetCredential("google-antigravity", cred)
-		}
-	}
-
-	projectID := cred.ProjectID
-	if projectID == "" {
-		return fmt.Errorf("no project id stored. Try logging in again")
-	}
-
-	fmt.Printf("Fetching models for project: %s\n\n", projectID)
-
-	models, err := providers.FetchAntigravityModels(cred.AccessToken, projectID)
-	if err != nil {
-		return fmt.Errorf("error fetching models: %w", err)
-	}
-
-	if len(models) == 0 {
-		return fmt.Errorf("no models available")
-	}
-
-	fmt.Println("Available Antigravity Models:")
-	fmt.Println("-----------------------------")
-	for _, m := range models {
-		status := "✓"
-		if m.IsExhausted {
-			status = "✗ (quota exhausted)"
-		}
-		name := m.ID
-		if m.DisplayName != "" {
-			name = fmt.Sprintf("%s (%s)", m.ID, m.DisplayName)
-		}
-		fmt.Printf("  %s %s\n", status, name)
 	}
 
 	return nil
@@ -894,6 +991,108 @@ func AddKiloModels(appCfg *config.Config) int {
 	if addedCount > 0 {
 		appCfg.Agents.Defaults.ModelName = "kilo-auto-free"
 		appCfg.Agents.Defaults.Model = "kilo-auto-free"
+	}
+
+	return addedCount
+}
+
+// isOpenRouterModel checks if a model string belongs to OpenRouter provider
+func isOpenRouterModel(model string) bool {
+	return strings.HasPrefix(model, "openrouter/") || strings.HasPrefix(model, "nvidia/") ||
+		strings.HasPrefix(model, "openai/") && strings.HasSuffix(model, ":free") ||
+		strings.HasPrefix(model, "meta-llama/")
+}
+
+// AddOpenRouterModels adds OpenRouter free models to config with deduplication
+func AddOpenRouterModels(appCfg *config.Config) int {
+	openRouterModels := []config.ModelConfig{
+		{
+			ModelName: "openrouter-free-1",
+			Model:     "nvidia/nemotron-3-ultra-550b-a55b:free",
+			APIBase:   "https://openrouter.ai/api/v1",
+		},
+		{ModelName: "openrouter-free-2", Model: "openai/gpt-oss-20b:free", APIBase: "https://openrouter.ai/api/v1"},
+		{
+			ModelName: "openrouter-free-3",
+			Model:     "meta-llama/llama-3.1-8b-instruct",
+			APIBase:   "https://openrouter.ai/api/v1",
+		},
+		{ModelName: "openrouter-auto", Model: "openrouter/auto", APIBase: "https://openrouter.ai/api/v1"},
+		{ModelName: "openrouter-auto-beta", Model: "openrouter/auto-beta", APIBase: "https://openrouter.ai/api/v1"},
+		{ModelName: "openrouter-pareto-code", Model: "openrouter/pareto-code", APIBase: "https://openrouter.ai/api/v1"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range openRouterModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	// Set openrouter/free as default when this function is called
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "openrouter-free"
+		appCfg.Agents.Defaults.Model = "openrouter/free"
+	}
+
+	return addedCount
+}
+
+// isOpenCodeModel checks if a model string belongs to OpenCode Zen provider
+func isOpenCodeModel(model string) bool {
+	return strings.HasPrefix(model, "opencode/")
+}
+
+// AddOpenCodeModels adds OpenCode Zen free models to config with deduplication
+func AddOpenCodeModels(appCfg *config.Config) int {
+	openCodeModels := []config.ModelConfig{
+		{ModelName: "opencode-mimo-free", Model: "opencode/mimo-v2.5-free", APIBase: "https://opencode.ai/zen/v1"},
+		{
+			ModelName: "opencode-deepseek-free",
+			Model:     "opencode/deepseek-v4-flash-free",
+			APIBase:   "https://opencode.ai/zen/v1",
+		},
+		{
+			ModelName: "opencode-nemotron-free",
+			Model:     "opencode/nemotron-3-ultra-free",
+			APIBase:   "https://opencode.ai/zen/v1",
+		},
+		{ModelName: "opencode-ling-free", Model: "opencode/ling-3.0-tiny-free", APIBase: "https://opencode.ai/zen/v1"},
+		{
+			ModelName: "opencode-north-free",
+			Model:     "opencode/north-mini-code-free",
+			APIBase:   "https://opencode.ai/zen/v1",
+		},
+		{ModelName: "opencode-laguna-free", Model: "opencode/laguna-s-2.1-free", APIBase: "https://opencode.ai/zen/v1"},
+		{ModelName: "opencode-longcat-free", Model: "opencode/longcat-2.0-free", APIBase: "https://opencode.ai/zen/v1"},
+		{ModelName: "opencode-big-pickle", Model: "opencode/big-pickle", APIBase: "https://opencode.ai/zen/v1"},
+	}
+
+	existingModels := make(map[string]bool)
+	for _, m := range appCfg.ModelList {
+		existingModels[m.ModelName] = true
+	}
+
+	addedCount := 0
+	for _, modelCfg := range openCodeModels {
+		if !existingModels[modelCfg.ModelName] {
+			appCfg.ModelList = append(appCfg.ModelList, modelCfg)
+			existingModels[modelCfg.ModelName] = true
+			addedCount++
+		}
+	}
+
+	// Set opencode-mimo-free as default when this function is called
+	if addedCount > 0 {
+		appCfg.Agents.Defaults.ModelName = "opencode-mimo-free"
+		appCfg.Agents.Defaults.Model = "opencode/mimo-v2.5-free"
 	}
 
 	return addedCount

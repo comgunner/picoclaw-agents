@@ -4,7 +4,7 @@
   <h1>PicoClaw-Agents</h1>
   <h3>🤖 Kiến trúc Đa tác vụ 🚀 Subagent Song song</h3>
 
-[English](README.md) | [中文](README.zh.md) | [Español](README.es.md) | [Français](README.fr.md) | [日本語](README.ja.md) | **Tiếng Việt**
+[English](README.md) | [中文](README.zh.md) | [Español](README.es.md) | [Français](README.fr.md) | [日本語](README.ja.md) | [Português](README.pt-br.md)
 
 > **Lưu ý:** Dự án này là một fork độc lập và không chuyên từ [PicoClaw](https://github.com/sipeed/picoclaw) gốc do **Sipeed** tạo ra. Nó được duy trì cho mục đích thử nghiệm và giáo dục. Mọi ghi công cho kiến trúc cốt lõi ban đầu thuộc về đội ngũ Sipeed.
 
@@ -15,36 +15,115 @@
 | Khởi động (lõi 0.8GHz) | >500s         | >30s                   | <1s                            | <1s             |
 | Chi phí                | Mac Mini $599 | Hầu hết Linux SBC ~$50 | Bất kỳ bo mạch Linux rả từ $10 | Bất kỳ Linux    |
 
+---
+
+## 📑 Mục lục
+
+- [🤝 Hỗ trợ Dự án này](#-hỗ-trợ-dự-án-này)
+- [✨ Đặc điểm](#-đặc-điểm)
+- [🦾 Trình diễn](#-trình-diễn)
+- [📦 Bắt đầu nhanh (2 Phút)](#-bắt-đầu-nhanh-2-phút)
+- [🖥️ Triển khai trên VPS](#-triển-khai-trên-vps)
+- [🔄 Di trú](#-di-trú-từ-openclaw-hoặc-nanoclaw)
+- [🧠 Kỹ năng Bản địa](#-kỹ-năng-bản-địa-tùy-chọn)
+- [📁 Kỹ năng Workspace](#-kỹ-năng-workspace-tùy-chỉnh)
+- [🔀 Cascade Model Miễn phí](#-cascade-model-miễn-phí-cơ-chế-sinh-tồn)
+- [⚙️ Cấu hình](#️-cấu-hình)
+- [📡 Kênh](#-kênh)
+- [🛠️ Công cụ](#️-công-cụ)
+- [📚 Tài liệu](#-tài-liệu)
+- [📝 Nhật ký thay đổi](#-nhật-ký-thay-đổi)
+- [📄 Giấy phép](#-giấy-phép)
+
+---
+
 ## 🤝 Hỗ trợ Dự án này
 
-Dự án này được phát triển và duy trì với sự hỗ trợ của các công cụ AI. Tất cả các thay đổi mã trong kho lưu trữ này được thực hiện bằng **Qwen Code**, cũng cung cấp gói miễn phí hào phóng.
+Dự án này được phát triển và duy trì với sự hỗ trợ của các công cụ AI.
 
-**🌟 Qwen Code (Alibaba Cloud)** — Trợ lý lập trình AI với gói miễn phí.
+**🌟 OpenRouter (Gói Miễn Phí)** — Truy cập hơn 200 mô hình với cascade fallback. Khuyến nghị.
 
 ```bash
-./picoclaw-agents auth login --provider qwen
-# Xem các mô hình: http://localhost:18800/models
+./picoclaw-agents onboard --openrouter
+# Xem mô hình: http://localhost:18800/models
 ```
 
-👉 [Bắt đầu](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+🆓 **Mô hình miễn phí** (cascade priority):
+- `openrouter/free` — Tự động chọn mô hình miễn phí tốt nhất
+- `nvidia/nemotron-3-ultra-550b-a55b:free` — 550B tham số
+- `openai/gpt-oss-20b:free` — GPT Open Source 20B
+- `inclusionai/ling-3.0-tiny:free` — Nhẹ và nhanh
+- `meta-llama/llama-3.1-8b-instruct:free` — Llama 3.1 8B
+
+**Fallback trả phí:**
+- `deepseek/deepseek-v4-flash-0731` — DeepSeek V4 Flash
+- `xiaomi/mimo-v2.5` — Xiaomi MiMo V2.5
+
+**Tạo hình ảnh**: `krea/krea-2-medium-turbo`
+
+<p align="center">
+  <img src="assets/robot_arm_cyberpunk.png" alt="Robot Arm Cyberpunk" width="400">
+  <img src="assets/japanese_garden.png" alt="Japanese Garden" width="400">
+</p>
+
+> Được tạo bằng OpenRouter `krea/krea-2-medium-turbo` qua PicoClaw-Agents
+
+👉 [Tham gia ngay](https://openrouter.ai/)
+
+**🌟 OpenCode Zen (8 Model Miễn Phí)** — Không cần thẻ tín dụng.
+
+```bash
+./picoclaw-agents onboard --opencode
+```
+
+🆓 **Mô hình miễn phí**:
+- `opencode/mimo-v2.5-free` — Xiaomi MiMo V2.5
+- `opencode/deepseek-v4-flash-free` — DeepSeek V4 Flash
+- `opencode/nemotron-3-ultra-free` — NVIDIA 550B
+- `opencode/ling-3.0-tiny-free` — Nhẹ và nhanh
+- `opencode/north-mini-code-free` — Tập trung code
+- `opencode/laguna-s-2.1-free` — Mới
+- `opencode/longcat-2.0-free` — Mới
+- `opencode/big-pickle` — Dùng thử miễn phí
+
+👉 [Lấy API Key](https://opencode.ai/auth)
 
 **🌟 Zhipu AI (z.ai)** — 100% MIỄN PHÍ với `glm-4.5-flash`
 
 ```bash
-./picoclaw-agents auth login --provider zhipu
+./picoclaw-agents onboard --zhipu
 ```
 
 🚀 Bạn được mời tham gia GLM Coding Plan. Hỗ trợ đầy đủ cho Claude Code, Cline và hơn 20 công cụ lập trình hàng đầu — chỉ từ $10/tháng.
 👉 [Tham gia ngay](https://z.ai/subscribe?ic=RF2YMCHBHL)
 
-
-**🌟 OpenRouter (Gói Miễn Phí)** — Truy cập hơn 200 mô hình với gói miễn phí hào phóng.
+**🌟 Qwen Code (Alibaba Cloud)** — Trợ lý lập trình AI (có gói trả phí).
 
 ```bash
-./picoclaw-agents auth login --provider openrouter-free
+./picoclaw-agents onboard --qwen
+# Xem mô hình: http://localhost:18800/models
 ```
 
-👉 [Tham gia ngay](https://openrouter.ai/)
+👉 [Bắt đầu](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+
+> ℹ️ **Lưu ý:** Dùng `onboard` cho lần thiết lập đầu tiên (tự động cấu hình tất cả). Dùng `auth` chỉ khi bạn cần thêm API key khác vào cấu hình hiện có.
+>
+> **Ví dụ:** Bạn đã chạy `onboard --openrouter` và muốn thêm OpenCode Zen:
+> ```bash
+> # Lần đầu (thiết lập OpenRouter làm mặc định)
+> ./picoclaw-agents onboard --openrouter
+>
+> # Sau đó, thêm OpenCode Zen
+> ./picoclaw-agents auth login --provider opencode
+>
+> # Bây giờ bạn có thể chuyển đổi giữa chúng
+> /model opencode/mimo-v2.5-free    # Dùng model OpenCode
+> /model openrouter/free            # Quay lại OpenRouter
+> ```
+>
+> 💡 Sử dụng các liên kết này giúp hỗ trợ phát triển liên tục của PicoClaw-Agents. Cảm ơn!
+
+</details>
 
 > 💡 Sử dụng các liên kết này giúp hỗ trợ phát triển liên tục của PicoClaw-Agents. Cảm ơn!
 
@@ -442,6 +521,7 @@ picoclaw-agents onboard
 # Các bản mẫu cấu hình sẵn:
 picoclaw-agents onboard --openai      # Sử dụng bản mẫu OpenAI (o3-mini)
 picoclaw-agents onboard --openrouter  # Sử dụng bản mẫu OpenRouter (openrouter/auto)
+picoclaw-agents onboard --opencode    # Sử dụng bản mẫu OpenCode Zen (8 model miễn phí)
 picoclaw-agents onboard --glm         # Sử dụng bản mẫu GLM-4.5-Flash (zhipu.ai)
 picoclaw-agents onboard --qwen        # Sử dụng bản mẫu Qwen (Alibaba Cloud quốc tế)
 picoclaw-agents onboard --qwen_zh     # Sử dụng bản mẫu Qwen (Alibaba Cloud nội địa Trung Quốc)
@@ -577,6 +657,60 @@ Kỹ năng gốc tiêm các nhân vật AI chuyên biệt trực tiếp vào sys
 
 > **Kỹ năng vs Công cụ:** Kỹ năng tiêm ngữ cảnh vào system prompt (agent *trở thành* vai trò). Công cụ là các hành động có thể gọi (hàm mà LLM có thể gọi). Cấu hình riêng biệt: `"skills"` cho vai trò, `"tools_override"` cho công cụ có thể gọi. Xem [`docs/SKILLS.md`](docs/SKILLS.md) để biết chi tiết.
 
+### 📁 Kỹ năng Workspace (Tùy chỉnh)
+
+Kỹ năng workspace là các kỹ năng dựa trên tệp được lưu trữ trong `~/.picoclaw/workspace/skills/`. Chúng được tự động phát hiện bởi gateway.
+
+**Kỹ năng workspace có sẵn:**
+
+| Kỹ năng | Mô tả |
+|---------|-------|
+| `ui-ux-pro-max` | Trí tuệ thiết kế UI/UX: 84 kiểu, 192 bảng màu, 74 cặp phông chữ, 22 stack |
+
+**Cài đặt kỹ năng tùy chỉnh:**
+
+```bash
+# Tạo thư mục kỹ năng
+mkdir -p ~/.picoclaw/workspace/skills/ky-nang-toi
+
+# Tạo SKILL.md với frontmatter
+cat > ~/.picoclaw/workspace/skills/ky-nang-toi/SKILL.md << 'EOF'
+---
+name: ky-nang-toi
+description: "Mô tả kỹ năng tùy chỉnh của tôi"
+---
+# Nội dung kỹ năng tại đây
+EOF
+
+# Khởi động lại gateway để phát hiện kỹ năng
+sudo systemctl restart picoclaw.service
+```
+
+Xem [`local_work/HOW_TO_ADD_CUSTOM_SKILLS.md`](local_work/HOW_TO_ADD_CUSTOM_SKILLS.md) để biết hướng dẫn chi tiết.
+
+### 🔀 Cascade Model Miễn phí (Cơ chế Sinh tồn)
+
+PicoClaw sử dụng **hệ thống fallback cascade** để giữ bot trực tuyến 24/7. Khi model miễn phí chính thất bại, nó tự động thử model tiếp theo.
+
+**Model miễn phí (không cần thẻ tín dụng):**
+
+| Ưu tiên | Model | Nhà cung cấp |
+|---------|-------|-------------|
+| 1 | `openrouter/free` | OpenRouter (tự động chọn model tốt nhất có sẵn) |
+| 2 | `nvidia/nemotron-3-ultra-550b-a55b:free` | NVIDIA |
+| 3 | `openai/gpt-oss-20b:free` | OpenAI |
+| 4 | `inclusionai/ling-3.0-tiny:free` | InclusionAI |
+| 5 | `meta-llama/llama-3.1-8b-instruct:free` | Meta |
+
+**Fallback có phí (tùy chọn):**
+
+| Model | Nhà cung cấp | Chi phí |
+|-------|-------------|---------|
+| `deepseek/deepseek-v4-flash-0731` | DeepSeek | $0.27/M tokens |
+| `xiaomi/mimo-v2.5` | Xiaomi | $0.10/M tokens |
+
+Xem [`docs/FREE_MODELS_CASCADE_GUIDE.md`](docs/FREE_MODELS_CASCADE_GUIDE.md) để biết cấu hình và xử lý sự cố.
+
 **4. Trò chuyện**
 
 ```bash
@@ -584,6 +718,33 @@ picoclaw-agents agent -m "2+2 bằng mấy?"
 ```
 
 Vậy là xong! Bạn đã có một trợ lý AI hoạt động chỉ trong 2 phút.
+
+---
+
+## 🖥️ Triển khai trên VPS
+
+Chạy PicoClaw-Agents trên VPS đám mây để có sẵn sàng 24/7. Thông số khuyến nghị:
+
+| Thông số | Giá trị |
+|----------|---------|
+| **Nhà cung cấp** | [Vultr](https://www.vultr.com/?ref=9916942) |
+| **Instance** | vc2-1c-2gb |
+| **CPU** | 1 vCPU |
+| **RAM** | 2 GB |
+| **Lưu trữ** | 55 GB |
+| **Giá** | Từ $10/tháng |
+
+> 💡 [**Triển khai trên Vultr**](https://www.vultr.com/?ref=9916942) — Đủ cho PicoClaw-Agents với các model miễn phí OpenRouter.
+
+```bash
+# Cài đặt trên Ubuntu/Debian
+curl -fsSL https://raw.githubusercontent.com/comgunner/picoclaw-agents/main/scripts/install.sh | bash
+
+# Hoặc thủ công
+wget https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents-linux-amd64
+chmod +x picoclaw-agents-linux-amd64
+sudo mv picoclaw-agents-linux-amd64 /usr/local/bin/picoclaw-agents
+```
 
 ---
 
@@ -1695,6 +1856,9 @@ picoclaw-agents agent -m "Xin chào"
 | `picoclaw-agents agent`          | Chế độ trò chuyện tương tác             |
 | `picoclaw-agents gateway`        | Khởi động Gateway                       |
 | `picoclaw-agents status`         | Hiển thị trạng thái                     |
+| `picoclaw-agents auth login --provider <tên>` | Đăng nhập nhà cung cấp |
+| `picoclaw-agents auth models`    | Liệt kê các model có sẵn                |
+| `picoclaw-agents auth logout --provider <tên>` | Đăng xuất |
 | `picoclaw-agents cron list`      | Liệt kê mọi tác vụ đã lên lịch          |
 | `picoclaw-agents cron add ...`   | Thêm một tác vụ đã lên lịch             |
 
@@ -1819,6 +1983,8 @@ Một số nhà cung cấp (như Zhipu) có bộ lọc nội dung. Hãy thử di
 
 
 ## 📢 Tin tức
+
+2026-08-09 🎉 **Tích hợp OpenRouter + OpenCode Zen**: Hệ thống cascade fallback hoàn chỉnh (miễn phí→trả phí) với 15 model đã cấu hình. OpenRouter khuyến nghị với 5+ model miễn phí. OpenCode Zen thêm 8 model miễn phí (MiMo V2.5, DeepSeek V4 Flash, Nemotron 3 Ultra, v.v.). Tạo hình ảnh hoạt động với `krea/krea-2-medium-turbo`. Fix lỗi 401 (strip tiền tố `opencode/`), fix hiển thị model WebUI, `auth models` hiển thị tất cả nhà cung cấp. Thêm phần VPS (referral Vultr). 7 README đã cập nhật, 53 docs đã áp dụng style. Xem [CHANGELOG.md](CHANGELOG.md).
 
 2026-04-05 🎉 **Tích hợp Quản lý Ngữ cảnh + Fix Token Overflow**: Tích hợp interface ContextManager (legacy + seahorse), engine SQLite Seahorse (~6.800 dòng), kiểm tra ngân sách pre-build và system prompt 3 cấp (Tối thiểu/Compact/Đầy đủ). Lỗi 402 WebUI + openrouter-free đã sửa (21K → ~300 tokens). Tất cả template onboard và auth login giờ bao gồm `context_manager: "seahorse"`. Patch upstream đã thích ứng. Hướng dẫn nhà cung cấp free đã xuất bản. Xem [CHANGELOG.md](CHANGELOG.md).
 

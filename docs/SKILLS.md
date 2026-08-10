@@ -1,8 +1,13 @@
 # Native Skills Guide
 
+> Native Skills Guide documentation for PicoClaw-Agents.
+
+
 **Version:** 3.11.1
 **Last Updated:** March 26, 2026
 **Total Native Skills:** 14
+
+---
 
 ## Overview
 
@@ -87,7 +92,7 @@ PicoClaw v3.11.1 includes **14 native skills**:
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### Single Specialized Agent
 
@@ -266,7 +271,7 @@ Use when:
 - Configuring monitoring/alerting
 - Designing disaster recovery
 
-### Security Engineer
+### 🔒 Security Engineer
 Use when:
 - Conducting threat modeling
 - Performing security audits
@@ -374,7 +379,7 @@ Each skill injects ~2,000-4,000 tokens into the system prompt. Consider:
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Skill Not Loading
 

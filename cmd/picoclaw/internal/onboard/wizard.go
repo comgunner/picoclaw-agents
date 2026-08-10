@@ -157,7 +157,7 @@ func (w *Wizard) printSuccess() {
 	fmt.Println()
 
 	// Check if using free tier
-	if w.model == "openrouter/auto" || w.model == "or-auto" {
+	if w.model == "openrouter/auto" || w.model == "or-auto" || w.model == "openrouter/auto-beta" {
 		fmt.Println("🆓 You're using FREE models via OpenRouter!")
 		fmt.Println()
 		fmt.Println("🚀 Try it now:")
@@ -345,13 +345,14 @@ func (w *Wizard) setupEasyFree() error {
 	}
 
 	// Configure free models
-	w.modelName = "or-auto"
-	w.model = "openrouter/auto"
+	w.modelName = "or-free"
+	w.model = "openrouter/free"
 	w.apiKey = apiKey
 
 	fmt.Println()
 	fmt.Println("  ✅ Easy Setup complete! Free model configured:")
-	fmt.Println("     • openrouter/auto → auto-selects best free model with tool support")
+	fmt.Println("     • openrouter/free → auto-selects best free model (default)")
+	fmt.Println("     • openrouter/auto-beta → task-aware routing (also free, faster)")
 	fmt.Println()
 	fmt.Println("  ℹ️  Free models have rate limits. Perfect for personal use.")
 	fmt.Println("  ℹ️  To upgrade later: picoclaw-agents onboard --openrouter")
@@ -558,30 +559,30 @@ func (w *Wizard) saveConfig() error {
 	var modelListJSON string
 
 	// Check if using free tier
-	if w.model == "openrouter/auto" {
+	if w.model == "openrouter/free" || w.model == "openrouter/auto-beta" || w.model == "openrouter/auto" {
 		// Easy Setup: three free models with fallbacks
-		// FIX: Use "openrouter/auto" instead of "openrouter/free" (issue #901)
+		// Default to openrouter/free (supports tool use)
 		modelListJSON = fmt.Sprintf(`[
+    {
+      "model_name": "or-free",
+      "model": "openrouter/free",
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": "%s"
+    },
+    {
+      "model_name": "or-auto-beta",
+      "model": "openrouter/auto-beta",
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": "%s"
+    },
     {
       "model_name": "or-auto",
       "model": "openrouter/auto",
       "api_base": "https://openrouter.ai/api/v1",
       "api_key": "%s"
-    },
-    {
-      "model_name": "or-free-stepfun",
-      "model": "stepfun/step-3.5-flash",
-      "api_base": "https://openrouter.ai/api/v1",
-      "api_key": "%s"
-    },
-    {
-      "model_name": "or-free-deepseek",
-      "model": "deepseek/deepseek-v3.2",
-      "api_base": "https://openrouter.ai/api/v1",
-      "api_key": "%s"
     }
   ]`, w.apiKey, w.apiKey, w.apiKey)
-		w.model = "or-auto" // Use the alias as default
+		w.model = "or-free" // Use the alias as default
 	} else {
 		modelListJSON = fmt.Sprintf(`[
     {

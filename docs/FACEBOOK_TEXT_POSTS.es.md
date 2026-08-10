@@ -1,5 +1,10 @@
 # Facebook Text-Only Posts - PicoClaw
 
+> Facebook Text-Only Posts - PicoClaw documentation for PicoClaw-Agents.
+
+
+---
+
 ## ✅ La herramienta `facebook_post` SÍ soporta texto simple
 
 La herramienta `facebook_post` en PicoClaw soporta **tanto publicaciones con imagen como solo texto**. El parámetro `image_path` es **opcional**.

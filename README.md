@@ -4,7 +4,7 @@
   <h1>PicoClaw-Agents</h1>
   <h3>🤖 Multi-Agent Architecture 🚀 Parallel Subagents</h3>
 
-[中文](README.zh.md) | [Español](README.es.md) | [Français](README.fr.md) | [日本語](README.ja.md)
+[中文](README.zh.md) | [Español](README.es.md) | [Français](README.fr.md) | [日本語](README.ja.md) | [Português](README.pt-br.md) | [Tiếng Việt](README.vi.md)
 
 > **Note:** This project is an independent, hobbyist fork of the original [PicoClaw](https://github.com/sipeed/picoclaw) created by **Sipeed**. It is maintained for experimental and educational purposes. All credit for the original core architecture goes to the Sipeed team.
 
@@ -15,40 +15,112 @@
 | Startup (0.8GHz core) | >500s         | >30s                | <1s                           | <1s             |
 | Cost                  | Mac Mini 599$ | Most Linux SBC ~50$ | Any Linux Board As low as 10$ | Any Linux       |
 
+---
+
+## 📑 Table of Contents
+
+- [🤝 Support This Project](#-support-this-project)
+- [✨ Features](#-features)
+- [🦾 Demonstration](#-demonstration)
+- [📦 Quick Start (2 Minutes)](#-quick-start-2-minutes)
+- [🖥️ Deploy on VPS](#️-deploy-on-vps)
+- [🔄 Migration](#-migration-from-openclaw-or-nanoclaw)
+- [🧠 Native Skills](#-native-skills-optional)
+- [📁 Workspace Skills](#-workspace-skills-custom)
+- [🔀 Free Models Cascade](#-free-models-cascade-survival-mechanism)
+- [⚙️ Configuration](#️-configuration)
+- [📡 Channels](#-channels)
+- [🛠️ Tools](#️-tools)
+- [📚 Documentation](#-documentation)
+- [📝 Changelog](#-changelog)
+- [📄 License](#-license)
+
+---
+
 ## 🤝 Support This Project
 
-This project is developed and maintained with the help of AI tools. All code changes in this repository were implemented using **Qwen Code**, which also offers a generous free tier.
+This project is developed and maintained with the help of AI tools.
 
-**🌟 Qwen Code (Alibaba Cloud)** — AI coding assistant with free tier.
+**🌟 OpenRouter (Free Tier)** — Access 200+ models with generous free tier. Recommended.
 
 ```bash
-./picoclaw-agents auth login --provider qwen
+./picoclaw-agents onboard --openrouter
+# View models: http://localhost:18800/models
+```
+
+🆓 **Free models** (cascade priority):
+- `openrouter/free` — Auto-selects best free model
+- `nvidia/nemotron-3-ultra-550b-a55b:free` — 550B parameters
+- `openai/gpt-oss-20b:free` — Open source GPT
+- `inclusionai/ling-3.0-tiny:free` — Lightweight, fast
+- `meta-llama/llama-3.1-8b-instruct:free` — Llama 3.1 8B
+
+**Paid fallbacks:**
+- `deepseek/deepseek-v4-flash-0731` — DeepSeek V4 Flash
+- `xiaomi/mimo-v2.5` — Xiaomi MiMo V2.5
+
+**Image generation**: `krea/krea-2-medium-turbo`
+
+<p align="center">
+  <img src="assets/robot_arm_cyberpunk.png" alt="Robot Arm Cyberpunk" width="400">
+  <img src="assets/japanese_garden.png" alt="Japanese Garden" width="400">
+</p>
+
+> Generated with OpenRouter `krea/krea-2-medium-turbo` via PicoClaw-Agents
+
+👉 [Join now](https://openrouter.ai/)
+
+**🌟 OpenCode Zen (8 Free Models)** — No credit card needed.
+
+```bash
+./picoclaw-agents onboard --opencode
+```
+
+🆓 **Free models**:
+- `opencode/mimo-v2.5-free` — Xiaomi MiMo V2.5
+- `opencode/deepseek-v4-flash-free` — DeepSeek V4 Flash
+- `opencode/nemotron-3-ultra-free` — NVIDIA 550B
+- `opencode/ling-3.0-tiny-free` — Lightweight, fast
+- `opencode/north-mini-code-free` — Code-focused
+- `opencode/laguna-s-2.1-free` — New
+- `opencode/longcat-2.0-free` — New
+- `opencode/big-pickle` — Free trial
+
+👉 [Get API Key](https://opencode.ai/auth)
+
+**🌟 Zhipu AI (z.ai)** — 100% FREE with `glm-4.5-flash`
+
+```bash
+./picoclaw-agents onboard --zhipu
+```
+
+🚀 You're invited to join the GLM Coding Plan. Full support for Claude Code, Cline, and 20+ top coding tools — just $10/month.
+👉 [Join now](https://z.ai/subscribe?ic=RF2YMCHBHL)
+
+**🌟 Qwen Code (Alibaba Cloud)** — AI coding assistant (paid plans available).
+
+```bash
+./picoclaw-agents onboard --qwen
 # View models: http://localhost:18800/models
 ```
 
 👉 [Get started](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
 
-**🌟 Zhipu AI (z.ai)** — 100% FREE with `glm-4.5-flash`
-
-```bash
-./picoclaw-agents auth login --provider zhipu
-```
-
-
-
-
-**🌟 OpenRouter (Free Tier)** — Access 200+ models with generous free tier.
-
-```bash
-./picoclaw-agents auth login --provider openrouter-free
-```
-
-👉 [Join now](https://openrouter.ai/)
-
-🚀 You've been invited to join the GLM Coding Plan. Full support for Claude Code, Cline, and 20+ top coding tools — starting at just $10/month.
-👉 [Join now](https://z.ai/subscribe?ic=RF2YMCHBHL)
-
-
+> ℹ️ **Note:** Use `onboard` for first-time setup (configures everything automatically). Use `auth` only if you need to add another API key to an existing configuration.
+>
+> **Example:** You already ran `onboard --openrouter` and now want to add OpenCode Zen:
+> ```bash
+> # First time (sets up OpenRouter as default)
+> ./picoclaw-agents onboard --openrouter
+>
+> # Later, add OpenCode Zen as additional provider
+> ./picoclaw-agents auth login --provider opencode
+>
+> # Now you can switch between them
+> /model opencode/mimo-v2.5-free    # Use OpenCode model
+> /model openrouter/free            # Back to OpenRouter
+> ```
+>
 > 💡 Using these links helps support the ongoing development of PicoClaw-Agents. Thank you!
 
 ## ✨ Features
@@ -632,8 +704,9 @@ picoclaw-agents onboard
 picoclaw-agents onboard --free        # Free tier (OpenRouter free models)
 
 # Pre-configured templates:
+picoclaw-agents onboard --openrouter  # Use OpenRouter template (openrouter/free, default)
+picoclaw-agents onboard --opencode    # Use OpenCode Zen template (8 free models)
 picoclaw-agents onboard --openai      # Use OpenAI template (o3-mini)
-picoclaw-agents onboard --openrouter  # Use OpenRouter template (openrouter/auto)
 picoclaw-agents onboard --glm         # Use GLM-4.5-Flash template (zhipu.ai)
 picoclaw-agents onboard --qwen        # Use Qwen template (Alibaba Cloud Intl)
 picoclaw-agents onboard --qwen_zh     # Use Qwen template (Alibaba Cloud China)
@@ -717,14 +790,14 @@ The `--free` flag configures three OpenRouter free-tier models with automatic fa
 
 | Priority | Model | Context | Notes |
 |----------|-------|---------|-------|
-| Primary | `openrouter/auto` | varies | Auto-selects best available free model |
+| Primary | `openrouter/free` | varies | Auto-selects best available free model **(default)** |
 | Fallback 1 | `stepfun/step-3.5-flash` | 256K | High-context reasoning tasks |
 | Fallback 2 | `deepseek/deepseek-v3.2-20251201` | 64K | Fast, reliable fallback |
 
 All three are routed through [OpenRouter](https://openrouter.ai) — a single API key covers all of them.
 
 > [!IMPORTANT]
-> **Model ID Fix:** Earlier versions used `openrouter/free` which is not a valid OpenRouter model ID. This has been fixed to use `openrouter/auto`. If you have an existing config with `openrouter-free` or `openrouter/free`, update it to `openrouter/auto` or re-run `picoclaw-agents onboard --free`.
+> **Model ID Fix:** Earlier versions used `openrouter/free` which was not a valid OpenRouter model ID. This has been fixed — `openrouter/free` is now the recommended default for new installations. If you have an existing config with `openrouter-free`, update it to `openrouter/free` or re-run `picoclaw-agents onboard --free`.
 
 > [!TIP]
 > **OpenAI OAuth on Free Tier:** You can also use OpenAI OAuth authentication (`picoclaw-agents auth login --provider openai --device-code`) which works with free tier plans. No API key required — uses your existing OpenAI/ChatGPT account.
@@ -842,6 +915,60 @@ Native skills inject specialized AI personas directly into the agent's system pr
 
 > **Skills vs Tools:** Skills inject context into the system prompt (the agent *becomes* the role). Tools are callable actions (functions the LLM can invoke). Configure them separately: `"skills"` for roles, `"tools_override"` for callable tools. See [`docs/SKILLS.md`](docs/SKILLS.md) for details.
 
+### 📁 Workspace Skills (Custom)
+
+Workspace skills are file-based skills stored in `~/.picoclaw/workspace/skills/`. They are automatically discovered by the gateway.
+
+**Available workspace skills:**
+
+| Skill | Description |
+|-------|-------------|
+| `ui-ux-pro-max` | UI/UX design intelligence: 84 styles, 192 color palettes, 74 font pairings, 22 stacks |
+
+**Install custom skills:**
+
+```bash
+# Create skill directory
+mkdir -p ~/.picoclaw/workspace/skills/my-skill
+
+# Create SKILL.md with frontmatter
+cat > ~/.picoclaw/workspace/skills/my-skill/SKILL.md << 'EOF'
+---
+name: my-skill
+description: "My custom skill description"
+---
+# Skill content here
+EOF
+
+# Restart gateway to discover skill
+sudo systemctl restart picoclaw.service
+```
+
+See [`local_work/HOW_TO_ADD_CUSTOM_SKILLS.md`](local_work/HOW_TO_ADD_CUSTOM_SKILLS.md) for detailed instructions.
+
+### 🔀 Free Models Cascade (Survival Mechanism)
+
+PicoClaw uses a **cascade fallback system** to keep your bot online 24/7. When the primary free model fails, it automatically tries the next model.
+
+**Free models (no credit card required):**
+
+| Priority | Model | Provider |
+|----------|-------|----------|
+| 1 | `openrouter/free` | OpenRouter (auto-selects best available) |
+| 2 | `nvidia/nemotron-3-ultra-550b-a55b:free` | NVIDIA |
+| 3 | `openai/gpt-oss-20b:free` | OpenAI |
+| 4 | `inclusionai/ling-3.0-tiny:free` | InclusionAI |
+| 5 | `meta-llama/llama-3.1-8b-instruct:free` | Meta |
+
+**Paid fallbacks (optional):**
+
+| Model | Provider | Cost |
+|-------|----------|------|
+| `deepseek/deepseek-v4-flash-0731` | DeepSeek | $0.27/M tokens |
+| `xiaomi/mimo-v2.5` | Xiaomi | $0.10/M tokens |
+
+See [`docs/FREE_MODELS_CASCADE_GUIDE.md`](docs/FREE_MODELS_CASCADE_GUIDE.md) for configuration and troubleshooting.
+
 **4. Chat**
 
 ```bash
@@ -849,6 +976,33 @@ picoclaw-agents agent -m "What is 2+2?"
 ```
 
 That's it! You have a working AI assistant in 2 minutes.
+
+---
+
+## 🖥️ Deploy on VPS
+
+Run PicoClaw-Agents on a cloud VPS for 24/7 availability. Recommended specs:
+
+| Spec | Value |
+|------|-------|
+| **Provider** | [Vultr](https://www.vultr.com/?ref=9916942) |
+| **Instance** | vc2-1c-2gb |
+| **CPU** | 1 vCPU |
+| **RAM** | 2 GB |
+| **Storage** | 55 GB |
+| **Price** | From $10/month |
+
+> 💡 [**Deploy on Vultr**](https://www.vultr.com/?ref=9916942) — Sufficient for PicoClaw-Agents with OpenRouter free models.
+
+```bash
+# Install on Ubuntu/Debian
+curl -fsSL https://raw.githubusercontent.com/comgunner/picoclaw-agents/main/scripts/install.sh | bash
+
+# Or manual
+wget https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents-linux-amd64
+chmod +x picoclaw-agents-linux-amd64
+sudo mv picoclaw-agents-linux-amd64 /usr/local/bin/picoclaw-agents
+```
 
 ---
 
@@ -1989,6 +2143,9 @@ picoclaw-agents agent -m "Hello"
 | `picoclaw-agents agent`      | Interactive chat mode         |
 | `picoclaw-agents gateway`    | Start the gateway             |
 | `picoclaw-agents status`     | Show status                   |
+| `picoclaw-agents auth login --provider <name>` | Login to provider |
+| `picoclaw-agents auth models` | List available models        |
+| `picoclaw-agents auth logout --provider <name>` | Logout from provider |
 | `picoclaw-agents cron list`  | List all scheduled jobs       |
 | `picoclaw-agents cron add ...` | Add a scheduled job           |
 
@@ -2113,6 +2270,8 @@ This happens when another instance of the bot is running. Make sure only one `pi
 | **Cerebras**     | Free tier available | Fast inference (Llama, Qwen, etc.)     |
 
 ## 📢 News
+
+2026-08-09 🎉 **OpenRouter + OpenCode Zen Integration**: Full cascade fallback system (free→paid) with 15 configured models. OpenRouter recommended with 5+ free models. OpenCode Zen added with 8 free models (MiMo V2.5, DeepSeek V4 Flash, Nemotron 3 Ultra, etc.). Image generation working via `krea/krea-2-medium-turbo`. Fixed 401 error (strip `opencode/` prefix), WebUI model display fix, `auth models` shows all providers. VPS deployment section added (Vultr referral). 7 READMEs updated, 53 docs styled. See [CHANGELOG.md](CHANGELOG.md).
 
 2026-04-05 🎉 **Context Management Integration + Token Overflow Fix**: Integrated ContextManager interface (legacy + seahorse), Seahorse SQLite engine (~6,800 lines), budget check pre-build, and 3-level system prompt (Minimal/Compact/Full). WebUI + openrouter-free error 402 fixed (21K → ~300 tokens). All onboard templates and auth logins now include `context_manager: "seahorse"`. Upstream patches adapted. Free tier providers guide published. See [CHANGELOG.md](CHANGELOG.md).
 

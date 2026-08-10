@@ -1,5 +1,8 @@
 # Running PicoClaw-Agents with Local LLMs via Ollama
 
+> Running PicoClaw-Agents with Local LLMs via Ollama documentation for PicoClaw-Agents.
+
+
 Run AI models **100% offline** on your own hardware — no API keys, no cloud, no data leaving your machine.
 
 ---
@@ -533,7 +536,7 @@ For Mac Mini M1 running other workloads, where you want to cap Ollama at **1GB R
 > cd ~/ollama-modelfiles
 > ```
 
-##### Configuration 1: Qwen 2.5:0.5b — Bare Minimum Agent
+##### ⚙️ Configuration 1: Qwen 2.5:0.5b — Bare Minimum Agent
 
 The absolute smallest Qwen model. Runs on virtually nothing:
 
@@ -572,7 +575,7 @@ ollama create picoclaw-qwen25-min -f ~/ollama-modelfiles/Modelfile-qwen25-min
 
 **Expected RAM:** ~500MB | **VRAM:** 0MB | **Speed:** ~5-8 tokens/sec on M1
 
-##### Configuration 2: Qwen 3:0.6b — Tiny but Capable
+##### ⚙️ Configuration 2: Qwen 3:0.6b — Tiny but Capable
 
 Slightly larger than 0.5b but still very lightweight:
 
@@ -610,7 +613,7 @@ ollama create picoclaw-qwen3-tiny -f ~/ollama-modelfiles/Modelfile-qwen3-tiny
 
 **Expected RAM:** ~550MB | **VRAM:** 0MB | **Speed:** ~6-10 tokens/sec on M1
 
-##### Configuration 3: Qwen 2.5-Coder:0.5b — Minimal Coding Assistant
+##### ⚙️ Configuration 3: Qwen 2.5-Coder:0.5b — Minimal Coding Assistant
 
 The smallest model with coding capability:
 
@@ -648,7 +651,7 @@ ollama create picoclaw-coder-tiny -f ~/ollama-modelfiles/Modelfile-coder-tiny
 
 **Expected RAM:** ~500MB | **VRAM:** 0MB | **Speed:** ~5-8 tokens/sec on M1
 
-##### Configuration 4: Gemma 2:2b — Smallest Gemma Available
+##### ⚙️ Configuration 4: Gemma 2:2b — Smallest Gemma Available
 
 The smallest Gemma model available is `gemma2:2b` (~1.7GB model weight). To fit within ~1GB RAM, we use **aggressive limits**:
 
@@ -1101,7 +1104,7 @@ ollama serve
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 **`connection refused` error:**
 ```bash

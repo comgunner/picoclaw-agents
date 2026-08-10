@@ -1,5 +1,8 @@
 # ChatGPT OAuth - Feature Removed
 
+> ChatGPT OAuth - Feature Removed documentation for PicoClaw-Agents.
+
+
 **Date:** March 28, 2026  
 **Status:** ❌ **REMOVED - Not Available**
 

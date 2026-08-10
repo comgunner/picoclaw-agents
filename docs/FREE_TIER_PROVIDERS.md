@@ -1,5 +1,8 @@
 # Free Tier Providers — Zero-Cost AI with PicoClaw-Agents
 
+> Free Tier Providers — Zero-Cost AI with PicoClaw-Agents documentation for PicoClaw-Agents.
+
+
 **Last Updated:** April 5, 2026  
 **Status:** ✅ All providers tested and operational — no credit card required
 
@@ -37,7 +40,7 @@ PicoClaw-Agents supports multiple **100% free** LLM providers. No credit card, n
 ./picoclaw-agents onboard --free
 ```
 
-### Configuration
+### ⚙️ Configuration
 ```json
 {
   "model_list": [

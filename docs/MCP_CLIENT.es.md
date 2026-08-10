@@ -1,5 +1,10 @@
 # Cliente MCP — Integración con Servidores MCP Externos
 
+> Cliente MCP — Integración con Servidores MCP Externos documentation for PicoClaw-Agents.
+
+
+---
+
 ## Descripción General
 
 PicoClaw-Agents ahora puede consumir herramientas de servidores **MCP (Model Context Protocol)** externos. Esto significa que puedes conectarte a cualquier servidor compatible con MCP (GitHub, Filesystem, PostgreSQL, Brave Search, etc.) y sus herramientas aparecerán automáticamente en el registro de herramientas de tu agente.

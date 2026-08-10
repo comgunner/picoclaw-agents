@@ -6,6 +6,8 @@ PicoClaw incluye herramientas nativas para publicar en Facebook, X (Twitter) y D
 >
 > **PicoClaw v3.4.1**: Incluye **Comandos Slash Fast-path** para gestión instantánea de lotes y **Global Tracker** para consistencia multi-agente.
 
+---
+
 ## Herramientas Soportadas
 
 - `facebook_post`: Publica en Facebook Page (solo texto o imagen + texto, comentario opcional)
