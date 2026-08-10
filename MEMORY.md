@@ -822,6 +822,11 @@ Mantener `local_work/divergence_log.md`:
   - **Wrong flow** (what I did): `gh release create v1.2.9 --notes "..."` → release without binaries
 - **Application**: Always use `create-release.sh` script. Never create releases manually with `gh release create`.
 - **Recovery**: If release created without binaries, delete it (`gh release delete v1.2.9 --yes --cleanup-tag`) then use script.
+- **Troubleshooting**:
+  - If `make check` fails (flaky test `TestHandleWebSocketProxyReloadsGatewayTargetFromConfig`): test needs `WSToken` set in config. Add `cfg.Channels.Pico.WSToken = "test-token-for-proxy"` before `SaveConfig` in test
+  - If GoReleaser fails with `pnpm: not found`: workflow needs `pnpm/action-setup@v4` step before GoReleaser
+  - If GoReleaser fails with `git tag was not made against commit`: workflow must create git tag with `git tag -f` + `git push -f origin` before GoReleaser runs
+  - If detect-secrets hooks keep updating baseline: use `--no-verify` on commit, fix pragmas later
 
 ---
 
