@@ -30,6 +30,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Create git tag
+        run: |
+          git tag -f ${{ inputs.tag }}
+          git push -f origin ${{ inputs.tag }}
+
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
