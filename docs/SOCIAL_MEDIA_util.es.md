@@ -6,6 +6,8 @@ Guia operativa rapida para herramientas de redes sociales en PicoClaw.
 >
 > **PicoClaw v3.4.1**: Incluye **Comandos Slash Fast-path** para gestión instantánea de lotes y **Global Tracker** para consistencia multi-agente.
 
+---
+
 ## Ejemplos de Uso
 
 ### Generar Post de Facebook con Imagen (vía social_post_bundle)

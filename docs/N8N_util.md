@@ -1,6 +1,11 @@
 # n8n Utility & Integration Guide
 
+> n8n Utility & Integration Guide documentation for PicoClaw-Agents.
+
+
 Este documento describe cómo integrar PicoClaw con n8n para potenciar las automatizaciones y flujos de trabajo avanzados.
+
+---
 
 ## Arquitectura de Integración
 

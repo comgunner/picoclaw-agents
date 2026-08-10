@@ -1,5 +1,8 @@
 # Native Skills - Lista Completa
 
+> Native Skills - Lista Completa documentation for PicoClaw-Agents.
+
+
 **Versión:** 3.11.1  
 **Última Actualización:** 26 de marzo de 2026  
 **Total Skills Nativas:** 14
@@ -643,7 +646,7 @@ picoclaw-agents skills list
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Skill No Carga
 

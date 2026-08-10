@@ -122,16 +122,25 @@ export function OpenRouterFreeCredentialCard({
               </p>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionBusy}
-                onClick={onAskLogout}
-              >
-                <IconKey className="size-4" />
-                API Key configured
-              </Button>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={actionBusy}
+                  onClick={onAskLogout}
+                >
+                  <IconKey className="size-4" />
+                  API Key configured
+                </Button>
+              </div>
+              <div className="text-muted-foreground space-y-1 text-xs">
+                <p>✅ Cascade fallback enabled:</p>
+                <p className="font-mono text-[10px]">
+                  nvidia/nemotron → openai/gpt-oss → meta-llama
+                </p>
+                <p>🎨 Image gen: krea/krea-2-medium-turbo</p>
+              </div>
             </div>
           )}
         </div>

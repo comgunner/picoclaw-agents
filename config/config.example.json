@@ -2,13 +2,13 @@
   "session": {
     "dm_scope": "per-channel-peer"
   },
-
   "agents": {
     "defaults": {
       "workspace": "~/.picoclaw/workspace",
       "restrict_to_workspace": true,
-      "provider": "",
-      "model": "deepseek-chat",
+      "provider": "openrouter",
+      "model_name": "openrouter-free",
+      "model": "openrouter/free",
       "max_tokens": 8192,
       "max_tool_iterations": 20,
       "context_manager": "seahorse",
@@ -18,6 +18,23 @@
         "leaf_target_tokens": 1200,
         "condensed_target_tokens": 2000,
         "max_compact_iterations": 20
+      },
+      "cascade": {
+        "enabled": true,
+        "text_models": [
+          "opencode/mimo-v2.5-free",
+          "opencode/deepseek-v4-flash-free",
+          "opencode/nemotron-3-ultra-free",
+          "openrouter/free",
+          "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openai/gpt-oss-20b:free",
+          "inclusionai/ling-3.0-tiny:free",
+          "meta-llama/llama-3.1-8b-instruct:free"
+        ],
+        "paid_fallbacks": [
+          "deepseek/deepseek-v4-flash-0731",
+          "xiaomi/mimo-v2.5"
+        ]
       }
     },
     "list": [
@@ -25,8 +42,17 @@
         "id": "engineering_manager",
         "default": true,
         "name": "Engineering Manager (Team Lead)",
-        "model": "deepseek-chat",
-        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free",
+            "openai/gpt-oss-20b:free"
+          ]
+        },
+        "skills": [
+          "fullstack_developer",
+          "agent_team_workflow"
+        ],
         "subagents": {
           "allow_agents": [
             "backend_dev",
@@ -45,72 +71,171 @@
       {
         "id": "backend_dev",
         "name": "Backend Developer",
-        "model": "deepseek-chat",
-        "skills": ["backend_developer"],
-        "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "backend_developer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "edit_file",
+          "exec",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "frontend_dev",
         "name": "Frontend Developer",
-        "model": "deepseek-chat",
-        "skills": ["frontend_developer"],
-        "tools_override": ["read_file", "write_file", "edit_file"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "frontend_developer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "edit_file"
+        ],
         "subagents": {}
       },
       {
         "id": "devops_eng",
         "name": "DevOps Engineer",
-        "model": "deepseek-chat",
-        "skills": ["devops_engineer"],
-        "tools_override": ["read_file", "write_file", "exec"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "devops_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec"
+        ],
         "subagents": {}
       },
       {
         "id": "qa_eng",
         "name": "QA Engineer",
-        "model": "deepseek-chat",
-        "skills": ["qa_engineer"],
-        "tools_override": ["read_file", "write_file", "exec"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "qa_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec"
+        ],
         "subagents": {}
       },
       {
         "id": "security_eng",
         "name": "Security Engineer",
-        "model": "deepseek-chat",
-        "skills": ["security_engineer"],
-        "tools_override": ["read_file", "web_search"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "security_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "data_eng",
         "name": "Data Engineer",
-        "model": "deepseek-chat",
-        "skills": ["data_engineer"],
-        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "data_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "ml_eng",
         "name": "ML Engineer",
-        "model": "deepseek-chat",
-        "skills": ["ml_engineer"],
-        "tools_override": ["read_file", "write_file", "exec", "web_search"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "ml_engineer"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "exec",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "researcher",
         "name": "Researcher",
-        "model": "deepseek-chat",
-        "skills": ["researcher"],
-        "tools_override": ["read_file", "write_file", "web_search"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "researcher"
+        ],
+        "tools_override": [
+          "read_file",
+          "write_file",
+          "web_search"
+        ],
         "subagents": {}
       },
       {
         "id": "project_manager",
         "name": "Project Manager",
-        "model": "deepseek-chat",
-        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "fullstack_developer",
+          "agent_team_workflow"
+        ],
         "subagents": {
           "allow_agents": [
             "*",
@@ -126,8 +251,16 @@
       {
         "id": "senior_dev",
         "name": "Senior Full-Stack Developer",
-        "model": "deepseek-chat",
-        "skills": ["backend_developer", "fullstack_developer"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "backend_developer",
+          "fullstack_developer"
+        ],
         "subagents": {
           "allow_agents": [
             "qa_eng",
@@ -139,82 +272,124 @@
       {
         "id": "qa_specialist",
         "name": "QA Specialist",
-        "model": "deepseek-chat",
-        "skills": ["qa_engineer"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "qa_engineer"
+        ],
         "subagents": {}
       },
       {
         "id": "junior_fixer",
         "name": "Junior Code Fixer",
-        "model": "deepseek-chat",
-        "skills": ["fullstack_developer"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "fullstack_developer"
+        ],
         "subagents": {}
       },
       {
         "id": "general_worker",
         "name": "General Worker",
-        "model": "deepseek-chat",
-        "skills": ["fullstack_developer"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "fullstack_developer"
+        ],
         "subagents": {}
       },
       {
         "id": "odoo_specialist",
         "name": "Odoo Specialist",
-        "model": "deepseek-chat",
-        "skills": ["odoo_developer"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "odoo_developer"
+        ],
         "subagents": {}
       },
       {
         "id": "n8n_automation",
         "name": "n8n Workflow Automation",
-        "model": "deepseek-chat",
-        "skills": ["n8n_workflow"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "n8n_workflow"
+        ],
         "subagents": {}
       },
       {
         "id": "binance_trader",
         "name": "Binance Trading Specialist",
-        "model": "deepseek-chat",
-        "skills": ["binance_mcp"],
+        "model": {
+          "primary": "openrouter/free",
+          "fallbacks": [
+            "nvidia/nemotron-3-ultra-550b-a55b:free"
+          ]
+        },
+        "skills": [
+          "binance_mcp"
+        ],
         "subagents": {}
       }
     ],
     "department_models": {
       "core": {
-        "provider": "openai",
-        "model": "gpt-4",
+        "provider": "openrouter",
+        "model": "openrouter/free",
         "temperature": 0.1,
         "top_p": 0.5,
         "max_tokens": 4096,
         "enable_thinking": false
       },
       "engineering": {
-        "provider": "openai",
-        "model": "gpt-4",
+        "provider": "openrouter",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
         "temperature": 0.1,
         "top_p": 0.5,
         "max_tokens": 8192,
         "enable_thinking": true
       },
       "design": {
-        "provider": "anthropic",
-        "model": "claude-3-sonnet",
+        "provider": "openrouter",
+        "model": "openrouter/free",
         "temperature": 0.8,
         "top_p": 0.95,
         "max_tokens": 4096,
         "enable_thinking": false
       },
       "testing": {
-        "provider": "openai",
-        "model": "gpt-4",
+        "provider": "openrouter",
+        "model": "openrouter/free",
         "temperature": 0.1,
         "top_p": 0.5,
         "max_tokens": 4096,
         "enable_thinking": false
       },
       "project-management": {
-        "provider": "anthropic",
-        "model": "claude-3-haiku",
+        "provider": "openrouter",
+        "model": "inclusionai/ling-3.0-tiny:free",
         "temperature": 0.5,
         "top_p": 0.9,
         "max_tokens": 4096,
@@ -231,8 +406,16 @@
       "id": "backend_dev",
       "name": "Backend Developer",
       "model": "deepseek-chat",
-      "skills": ["backend_developer"],
-      "tools_override": ["read_file", "write_file", "edit_file", "exec", "web_search"],
+      "skills": [
+        "backend_developer"
+      ],
+      "tools_override": [
+        "read_file",
+        "write_file",
+        "edit_file",
+        "exec",
+        "web_search"
+      ],
       "subagents": {}
     },
     "orchestrator_with_specialized_subagents": {
@@ -241,9 +424,21 @@
         "id": "tech_lead",
         "name": "Technical Lead",
         "model": "deepseek-chat",
-        "skills": ["fullstack_developer", "agent_team_workflow"],
+        "skills": [
+          "fullstack_developer",
+          "agent_team_workflow"
+        ],
         "subagents": {
-          "allow_agents": ["backend_dev", "frontend_dev", "devops_eng", "qa_eng", "security_eng", "data_eng", "ml_eng", "researcher"],
+          "allow_agents": [
+            "backend_dev",
+            "frontend_dev",
+            "devops_eng",
+            "qa_eng",
+            "security_eng",
+            "data_eng",
+            "ml_eng",
+            "researcher"
+          ],
           "max_spawn_depth": 2,
           "max_children_per_agent": 3
         }
@@ -253,57 +448,105 @@
           "id": "backend_dev",
           "name": "Backend Developer",
           "model": "deepseek-chat",
-          "skills": ["backend_developer"],
-          "tools_override": ["read_file", "write_file", "edit_file", "exec"]
+          "skills": [
+            "backend_developer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "edit_file",
+            "exec"
+          ]
         },
         {
           "id": "frontend_dev",
           "name": "Frontend Developer",
           "model": "deepseek-chat",
-          "skills": ["frontend_developer"],
-          "tools_override": ["read_file", "write_file", "edit_file"]
+          "skills": [
+            "frontend_developer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "edit_file"
+          ]
         },
         {
           "id": "devops_eng",
           "name": "DevOps Engineer",
           "model": "deepseek-chat",
-          "skills": ["devops_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "devops_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "qa_eng",
           "name": "QA Engineer",
           "model": "deepseek-chat",
-          "skills": ["qa_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "qa_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "security_eng",
           "name": "Security Engineer",
           "model": "deepseek-chat",
-          "skills": ["security_engineer"],
-          "tools_override": ["read_file", "web_search"]
+          "skills": [
+            "security_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "web_search"
+          ]
         },
         {
           "id": "data_eng",
           "name": "Data Engineer",
           "model": "deepseek-chat",
-          "skills": ["data_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "data_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "ml_eng",
           "name": "ML Engineer",
           "model": "deepseek-chat",
-          "skills": ["ml_engineer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "ml_engineer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "researcher",
           "name": "Researcher",
           "model": "deepseek-chat",
-          "skills": ["researcher"],
-          "tools_override": ["read_file", "write_file", "web_search"]
+          "skills": [
+            "researcher"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "web_search"
+          ]
         }
       ]
     },
@@ -314,22 +557,40 @@
           "id": "binance_trader",
           "name": "Binance Trading Specialist",
           "model": "deepseek-chat",
-          "skills": ["binance_mcp"],
-          "tools_override": ["read_file", "write_file", "web_search"]
+          "skills": [
+            "binance_mcp"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "web_search"
+          ]
         },
         {
           "id": "n8n_automation",
           "name": "n8n Workflow Automation",
           "model": "deepseek-chat",
-          "skills": ["n8n_workflow"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "n8n_workflow"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         },
         {
           "id": "odoo_specialist",
           "name": "Odoo Specialist",
           "model": "deepseek-chat",
-          "skills": ["odoo_developer"],
-          "tools_override": ["read_file", "write_file", "exec"]
+          "skills": [
+            "odoo_developer"
+          ],
+          "tools_override": [
+            "read_file",
+            "write_file",
+            "exec"
+          ]
         }
       ]
     }
@@ -480,6 +741,18 @@
     {
       "model_name": "openrouter-auto",
       "model": "openrouter/auto",
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": ""
+    },
+    {
+      "model_name": "openrouter-auto-beta",
+      "model": "openrouter/auto-beta",
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": ""
+    },
+    {
+      "model_name": "openrouter-pareto-code",
+      "model": "openrouter/pareto-code",
       "api_base": "https://openrouter.ai/api/v1",
       "api_key": ""
     },
@@ -697,7 +970,10 @@
         "github": {
           "transport": "stdio",
           "command": "npx",
-          "args": ["-y", "@modelcontextprotocol/server-github"],
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-github"
+          ],
           "env": {
             "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_your_token_here"
           },
@@ -706,15 +982,26 @@
         "filesystem": {
           "transport": "stdio",
           "command": "npx",
-          "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
-          "enabled_tools": ["read_file", "write_file", "list_dir"],
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/home/user/projects"
+          ],
+          "enabled_tools": [
+            "read_file",
+            "write_file",
+            "list_dir"
+          ],
           "timeout": 60,
           "description": "Filesystem access (sandboxed)"
         },
         "notion": {
           "transport": "stdio",
           "command": "picoclaw-agents",
-          "args": ["util", "notion-mcp-server"],
+          "args": [
+            "util",
+            "notion-mcp-server"
+          ],
           "env": {
             "NOTION_API_KEY": "your_notion_api_key"
           },
@@ -723,7 +1010,10 @@
         "google_workspace": {
           "transport": "stdio",
           "command": "picoclaw-agents",
-          "args": ["util", "google-workspace-mcp-server"],
+          "args": [
+            "util",
+            "google-workspace-mcp-server"
+          ],
           "env": {
             "GOOGLE_WORKSPACE_CREDENTIALS": "~/.picoclaw/google-credentials.json"
           },
@@ -747,7 +1037,6 @@
     "preserve_messages": 20,
     "auto_compact_enabled": true
   },
-
   "a2a": {
     "enabled": true,
     "mailbox_capacity": 1000,

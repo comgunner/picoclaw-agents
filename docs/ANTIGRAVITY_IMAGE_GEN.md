@@ -4,6 +4,8 @@ Image generation using Google Antigravity via OAuth with built-in **anti-ban coo
 
 > **💸 FREE — No API key required.** Images generated via Antigravity OAuth use your Google account's free quota through Cloud Code Assist. No billing setup, no credit card, no charges.
 
+---
+
 ## 🚀 Quick Start
 
 ### 1. Login OAuth

@@ -1,6 +1,11 @@
 # OS Service Management
 
+> OS Service Management documentation for PicoClaw-Agents.
+
+
 Install PicoClaw-Agents as a system service that starts automatically on boot.
+
+---
 
 ## Supported Platforms
 
@@ -12,7 +17,7 @@ Install PicoClaw-Agents as a system service that starts automatically on boot.
 
 > **Note:** User-level services start when you log in. For system-level services (start before login), use `sudo` with system-level configuration (not currently supported).
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Install
 
@@ -148,7 +153,7 @@ kill <PID>
 
 **Rule:** Use ONE or the other, never both at the same time.
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Service won't start
 

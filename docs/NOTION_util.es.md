@@ -4,6 +4,8 @@ Guía rápida para usar herramientas de Notion en PicoClaw desde terminal y Tele
 
 > **PicoClaw v3.4.1**: Ahora soporta **Comandos Slash Fast-path** para operaciones instantáneas y **Global Tracker** para consistencia multi-agente.
 
+---
+
 ## Requisitos
 
 Configura tu credencial en `~/.picoclaw/config.json`:

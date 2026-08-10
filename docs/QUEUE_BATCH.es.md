@@ -4,6 +4,8 @@ El sistema de colas y procesamiento batch de PicoClaw permite realizar tareas pe
 
 > **PicoClaw v3.4.2**: Incluye **Skill Nativa Queue/Batch** compilada directamente en el binario para máximo rendimiento y cero dependencias externas.
 
+---
+
 ## Herramientas Incluidas
 
 ### 1. `batch_id`

@@ -1,7 +1,12 @@
 # Adding Native Skills - Developer Guide
 
+> Adding Native Skills - Developer Guide documentation for PicoClaw-Agents.
+
+
 **Version:** 3.6.0  
 **Last Updated:** March 26, 2026
+
+---
 
 ## Overview
 
@@ -281,7 +286,7 @@ const API_KEY = process.env.API_KEY
 ` + bt + bt + bt + `
 ```
 
-#### Examples Section (1,000-2,000 tokens)
+#### 📝 Examples Section (1,000-2,000 tokens)
 
 Include:
 - 3-5 realistic scenarios
@@ -571,7 +576,7 @@ go test ./pkg/skills/data_analyst_test.go ./pkg/skills/*.go -v
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Skill Not Appearing in List
 
@@ -636,7 +641,7 @@ go test ./pkg/skills/data_analyst_test.go ./pkg/skills/*.go -v
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 To contribute your skill to the main repository:
 

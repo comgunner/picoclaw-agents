@@ -4,6 +4,8 @@ Guía rápida para usar herramientas de Binance en PicoClaw desde terminal y Tel
 
 > **PicoClaw v3.4.1**: Ahora soporta **Comandos Slash Fast-path** para operaciones de trading instantáneas y **Global Tracker** para consistencia multi-agente.
 
+---
+
 ## Requisitos
 
 Configura tus credenciales en `~/.picoclaw/config.json`:

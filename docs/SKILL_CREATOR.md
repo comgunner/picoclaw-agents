@@ -1,9 +1,14 @@
 # Skill Creator Tutorial
 
+> Skill Creator Tutorial documentation for PicoClaw-Agents.
+
+
 **Skill ID:** `skill_creator`  
 **Type:** Native (compiled into binary)  
 **Version:** 1.0.0  
 **Last Updated:** April 12, 2026
+
+---
 
 ---
 
@@ -30,7 +35,7 @@ The Skill Creator teaches the agent how to:
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 Simply ask the agent to create a skill:
 
@@ -116,7 +121,7 @@ Brief description of what it does.
 - Case 1: when the user asks to...
 - Case 2: when you need to...
 
-## Usage
+## 💡 Usage
 
 ```bash
 python scripts/myscript.py arg1 arg2
@@ -222,7 +227,7 @@ Rotate pages in PDF files using Python.
 pip install pypdf
 ```
 
-## Usage
+## 💡 Usage
 
 ```bash
 python scripts/rotate_pdf.py input.pdf 90
@@ -381,7 +386,7 @@ API_KEY = os.environ.get("MY_API_KEY")  # pragma: allowlist secret
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Skill not recognized
 

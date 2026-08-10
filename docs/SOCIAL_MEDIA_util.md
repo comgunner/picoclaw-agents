@@ -6,7 +6,9 @@ Quick operational guide for PicoClaw social media tools.
 >
 > **PicoClaw v3.4.1**: Features **Fast-path Slash Commands** for instant bundle management and **Global Tracker** for multi-agent consistency.
 
-## Usage Examples
+---
+
+## 💡 Usage Examples
 
 ### Generate Facebook Post with Image (via social_post_bundle)
 

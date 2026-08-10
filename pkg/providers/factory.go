@@ -26,10 +26,10 @@ var getCredential = auth.GetCredential
 func NormalizeModelName(model string) string {
 	lowerModel := strings.ToLower(model)
 
-	// OpenRouter free tier aliases → openrouter/auto
+	// OpenRouter free tier aliases → openrouter/free (supports tool use)
 	if lowerModel == "openrouter-free" || lowerModel == "free" || lowerModel == "or-free" ||
 		lowerModel == "openrouter/free" {
-		return "openrouter/auto"
+		return "openrouter/free"
 	}
 
 	// Kilo free tier aliases → kilo-auto/free

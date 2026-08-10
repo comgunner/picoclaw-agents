@@ -17,6 +17,20 @@
         "leaf_target_tokens": 1200,
         "condensed_target_tokens": 2000,
         "max_compact_iterations": 20
+      },
+      "cascade": {
+        "enabled": true,
+        "text_models": [
+          "openrouter/free",
+          "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openai/gpt-oss-20b:free",
+          "inclusionai/ling-3.0-tiny:free",
+          "meta-llama/llama-3.1-8b-instruct:free"
+        ],
+        "paid_fallbacks": [
+          "deepseek/deepseek-v4-flash-0731",
+          "xiaomi/mimo-v2.5"
+        ]
       }
     },
     "list": [

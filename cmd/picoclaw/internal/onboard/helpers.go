@@ -100,7 +100,7 @@ func onboard(template string, force bool) {
 	case "free":
 		fmt.Println("     - API key already saved ✅")
 		fmt.Println("     - Platform: https://openrouter.ai/")
-		fmt.Println("     - Model: openrouter/auto (routes to best free model with tool support)")
+		fmt.Println("     - Model: openrouter/auto-beta (task-aware routing, free, fast)")
 	default:
 		fmt.Println("     Recommended:")
 		fmt.Println("     - OpenRouter: https://openrouter.ai/keys (access 100+ models)")

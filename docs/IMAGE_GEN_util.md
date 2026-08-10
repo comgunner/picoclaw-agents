@@ -15,6 +15,8 @@ Quick guide to use image generation tools in PicoClaw from terminal and Telegram
 
 ---
 
+---
+
 ## 💸 Free Image Generation with Antigravity OAuth
 
 **Images generated via Antigravity OAuth do NOT require an API key and do NOT cost you a cent.** They use your Google account's free quota through the Cloud Code Assist service. No billing setup, no credit card, no charges.
@@ -50,7 +52,7 @@ This automatically configures:
 
 ---
 
-## Configuration Options
+## ⚙️ Configuration Options
 
 ### Option A: Antigravity OAuth (Default — Recommended — FREE)
 
@@ -151,7 +153,7 @@ Use if you have an Ideogram API key. **Requires paid Ideogram plan.**
 
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Example 1: Generate an image (FREE via OAuth)
 
@@ -217,7 +219,7 @@ Script-to-image workflow. Generates a text script first, then creates a matching
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### "No Antigravity OAuth credentials"
 

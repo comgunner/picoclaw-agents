@@ -4,6 +4,8 @@ Este documento describe el mapa técnico de cómo viajan los datos y cómo los a
 
 > **PicoClaw v3.4.1**: Incluye **Comandos Rápidos (Fast-path Slash Commands)** para operaciones instantáneas y **Rastreador Global (Global Tracker)** para consistencia multi-agente.
 
+---
+
 ## 1. Entrada de Datos (Usuario ➔ Canal)
 
 Cuando envías un mensaje (ej. a través de Telegram), el flujo comienza en la capa de **Canales**.

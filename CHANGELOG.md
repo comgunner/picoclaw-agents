@@ -6,6 +6,104 @@ All notable changes to the PicoClaw project will be documented in this file.
 
 ---
 
+## 2026-08-09
+
+### 🚀 OpenRouter New Models Integration — auto-beta, pareto-code
+
+Integration of `openrouter/auto-beta` (task-aware routing, free) and `openrouter/pareto-code` (fastest for coding, free) into the project codebase.
+
+#### Feature Additions
+
+- **New Models Added:** `openrouter/auto-beta` and `openrouter/pareto-code` added to project code, config examples, onboard wizard, and auth helpers.
+- **Free Tier Detection:** Both models recognized as free in `validator.go`, `provider.go`, and `instance.go` — no token cost.
+- **NormalizeModel:** Both models preserved as routing aliases in `provider.go` (not stripped).
+- **Lazy Loading:** `openrouter/auto-beta` and `openrouter/pareto-code` trigger lazy loading for skills/tools.
+- **Auth Models List:** Both models shown in `picoclaw auth models` output.
+- **AddOpenRouterModels():** Both models included when auto-configuring OpenRouter.
+- **Onboard Wizard:** Easy Setup now lists both models as free options.
+
+#### Files Modified
+
+- `pkg/config/validator.go` — `isFreeModel()` updated
+- `pkg/providers/openai_compat/provider.go` — free tier detection + normalizeModel
+- `pkg/agent/instance.go` — lazy loading detection
+- `cmd/picoclaw/internal/auth/helpers.go` — model list + `AddOpenRouterModels()`
+- `cmd/picoclaw/internal/onboard/wizard.go` — wizard display + saveConfig
+- `cmd/picoclaw/internal/onboard/command.go` — help text
+- `cmd/picoclaw/internal/onboard/helpers.go` — display text
+- `pkg/providers/factory.go` — free tier alias normalization
+- `config/config.example.json` — new models in model_list
+
+#### Performance (Speed Test)
+
+| Model | Time (s) | Tool Use | Cost |
+|-------|----------|----------|------|
+| `openrouter/pareto-code` | ~1.97s | ✅ | $0 |
+| `openrouter/free` | ~2.85s | ❌ | $0 |
+| `openrouter/auto-beta` | ~3.41s | ❌ | $0 |
+| `openrouter/auto` | ~3.50s | ✅ | $0 |
+
+#### Known Limitations
+
+- `openrouter/auto-beta` and `openrouter/free` do **not** support tool use (edit_file, exec, etc.) — OpenRouter routes to models without function calling support.
+- `openrouter/auto` and `openrouter/pareto-code` **do** support tool use.
+- Default for new installations: `nvidia/nemotron-3-ultra-550b-a55b:free` (supports tool use).
+
+### 🚀 OpenRouter Cascade Integration — Free Tier by Default
+
+Full integration of OpenRouter as default LLM and image generation provider with automatic cascade fallback (free → paid).
+
+#### Feature Additions
+
+- **OpenRouter Image Gen:** Added OpenRouter as image generation provider with `krea/krea-2-medium-turbo` as default model.
+- **Cascade Fallback System:** Automatic model fallback on 429 rate limits: `nvidia/nemotron-3-ultra-550b-a55b:free` → `openai/gpt-oss-20b:free` → `meta-llama/llama-3.1-8b-instruct`.
+- **CLI Auth:** Added `picoclaw auth login --provider openrouter` for API key authentication.
+- **Config Migration:** Existing configs (gemini/ideogram/antigravity) preserved. New OpenRouter fields added with defaults.
+- **Model Listing:** `auth models` command now shows OpenRouter free models alongside Antigravity.
+- **WebUI:** OpenRouter credential card shows cascade status when configured.
+
+#### Why This Matters
+
+- Antigravity OAuth limits drastically increased — unusable for agentic work
+- DeepSeek price increase announced (Aug 6, 2026)
+- OpenRouter provides 200+ models with free tier as fallback
+
+### 🆕 OpenCode Zen Provider Integration
+
+Added OpenCode Zen as alternative LLM provider with 8 free models and 50+ paid models.
+
+#### Feature Additions
+
+- **OpenCode Zen Provider:** Added `opencode` as new provider with API endpoint `https://opencode.ai/zen/v1` (OpenAI-compatible).
+- **8 Free Models:** `mimo-v2.5-free`, `deepseek-v4-flash-free`, `nemotron-3-ultra-free`, `ling-3.0-tiny-free`, `north-mini-code-free`, `laguna-s-2.1-free`, `longcat-2.0-free`, `big-pickle`.
+- **CLI Auth:** Added `picoclaw-agents onboard --opencode` for first-time setup.
+- **Auth Models:** `auth models` command now shows OpenCode Zen models alongside OpenRouter and Antigravity.
+- **50+ Paid Models:** GPT 5.x, Claude, Gemini, DeepSeek, Qwen, Kimi, GLM, Grok available via pay-as-you-go.
+
+#### Bug Fixes
+
+- **401 "Model not supported":** Fixed by stripping `opencode/` prefix in `factory_provider.go`. API expects `mimo-v2.5-free`, not `opencode/mimo-v2.5-free`.
+- **WebUI not showing OpenCode models:** Fixed by adding API key to each model in `config.json → model_list` AND `config.json → providers.opencode`.
+- **Auth store vs Config:** Fixed by adding key to both `auth.json` AND `config.json → providers`.
+
+#### Documentation
+
+- **7 READMEs Updated:** OpenRouter first (recommended), OpenCode second, Zhipu third, Qwen last (paid).
+- **docs/OPENCODE_ZEN_MODELS.md:** Created with all 50+ models listed with pricing.
+- **docs/FREE_MODELS_CASCADE_GUIDE.md:** Updated with OpenCode Zen models.
+- **local_work/CHANGELOG_2026-08-09.md:** Full day's changes documented.
+- **local_work/problemas_encontrados.md:** Issue tracking for fixes.
+- **VPS Section:** Vultr referral added to all 7 READMEs.
+
+#### Image Generation
+
+- **Working on remote server:** 2 test images generated via OpenRouter API.
+- **robot_arm_cyberpunk.png:** 1.3 MB (cyberpunk robot arm).
+- **japanese_garden.png:** 1.6 MB (serene Japanese garden with koi fish).
+- **Model:** `krea/krea-2-medium-turbo` via OpenRouter.
+
+---
+
 ## 2026-04-26
 
 ### 🚀 DeepSeek V4 & Kilo AI Integration + Critical Routing Fixes

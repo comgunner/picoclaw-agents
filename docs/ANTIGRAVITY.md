@@ -1,5 +1,8 @@
 # Antigravity Provider Guide
 
+> Antigravity Provider Guide documentation for PicoClaw-Agents.
+
+
 **Last Updated:** March 30, 2026  
 **Status:** ✅ Production Ready (v1.3.0-alpha)  
 **New Feature:** 🎉 Auto-Config on Login - All 15 models added automatically!
@@ -14,7 +17,7 @@
 
 ---
 
-## Quick Start (NEW!)
+## 🚀 Quick Start (NEW!)
 
 ### One-Command Setup
 
@@ -158,7 +161,7 @@ Try it: picoclaw-agents agent -m "Hello world" --model gemini-3-flash
 
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Command Line
 
@@ -197,7 +200,7 @@ Try it: picoclaw-agents agent -m "Hello world" --model gemini-3-flash
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### Automatic Config (v1.3.0-alpha+)
 
@@ -288,7 +291,7 @@ If you need to manually add models:
 | `imagen-4.0-generate-001` | `gemini/` | Imagen 4 |
 | `imagen-4.0-ultra-generate-001` | `gemini/` | Imagen 4 Ultra |
 
-### Configuration
+### ⚙️ Configuration
 
 Add to `~/.picoclaw/config.json`:
 
@@ -316,7 +319,7 @@ Add to `~/.picoclaw/config.json`:
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### Default Configuration (DeepSeek)
 
@@ -405,7 +408,7 @@ cp config/config.example_antigravity.json ~/.picoclaw/config.json
 
 PicoClaw uses a 3-step pipeline:
 
-### Configuration Fields
+### ⚙️ Configuration Fields
 - **`model_name`**: Internal alias — the friendly name you use (e.g., `antigravity-gemini-3-flash`)
 - **`model`**: Routing instruction — must contain `provider/model-id` (e.g., `antigravity/gemini-3-flash`)
 
@@ -446,7 +449,7 @@ scp ~/.picoclaw/auth.json user@your-server:~/.picoclaw/
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 | Error | Cause | Solution |
 |-------|-------|----------|

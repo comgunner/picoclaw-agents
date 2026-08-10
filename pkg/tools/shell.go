@@ -111,12 +111,19 @@ func NewExecToolWithConfig(workingDir string, restrict bool, config *config.Conf
 		resolvedWD = abs
 	}
 
+	// Read allowRemote from config
+	allowRemote := false
+	if config != nil {
+		allowRemote = config.Tools.Exec.AllowRemote
+	}
+
 	return &ExecTool{
 		workingDir:          resolvedWD,
 		timeout:             60 * time.Second,
 		denyPatterns:        denyPatterns,
 		allowPatterns:       nil,
 		restrictToWorkspace: restrict,
+		allowRemote:         allowRemote,
 	}, nil
 }
 
@@ -360,27 +367,31 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 			raw := cmd[match[0]:match[1]]
 
 			// Skip URL path components (e.g., https://github.com, ftp://...)
-			// Only skip if the // is actually part of a web URL scheme, not a standalone path
+			// If raw starts with "//", check broader context for URL scheme
 			if strings.HasPrefix(raw, "//") {
-				// Check if this is truly part of a web URL by examining broader context
-				// Look back up to 20 characters for http:, https:, ftp:, ws:, wss: schemes
-				contextStart := match[0] - 20
+				contextStart := match[0] - 30
 				if contextStart < 0 {
 					contextStart = 0
 				}
 				precedingContext := strings.ToLower(cmd[contextStart:match[0]])
-
-				// Only skip if directly preceded by a web URL scheme
-				isWebURL := strings.HasSuffix(precedingContext, "http://") ||
-					strings.HasSuffix(precedingContext, "https://") ||
-					strings.HasSuffix(precedingContext, "ftp://") ||
-					strings.HasSuffix(precedingContext, "ws://") ||
-					strings.HasSuffix(precedingContext, "wss://")
-
-				if isWebURL {
+				// Skip if preceded by any URL scheme (http:, https:, ftp:, ws:, wss:)
+				if strings.HasSuffix(precedingContext, "http:") ||
+					strings.HasSuffix(precedingContext, "https:") ||
+					strings.HasSuffix(precedingContext, "ftp:") ||
+					strings.HasSuffix(precedingContext, "ws:") ||
+					strings.HasSuffix(precedingContext, "wss:") {
 					continue
 				}
-				// If not a web URL, treat // as a potential filesystem path and validate it
+			} else {
+				// For paths starting with "/" (not "//"), check if preceded by "://"
+				contextStart := match[0] - 30
+				if contextStart < 0 {
+					contextStart = 0
+				}
+				precedingContext := strings.ToLower(cmd[contextStart:match[0]])
+				if strings.Contains(precedingContext, "://") {
+					continue
+				}
 			}
 
 			// Handle file:// URIs - extract the actual path and check it

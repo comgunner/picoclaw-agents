@@ -4,6 +4,8 @@ Este documento describe el flujo **dinámico y en tiempo real** de cómo PicoCla
 
 > **PicoClaw v3.4.1**: Ahora incluye **Comandos Slash Fast-path** para operaciones instantáneas y **Global Tracker** para consistencia multi-agente perfecta.
 
+---
+
 ## Flujo Dinámico de Interacción
 
 ### 1. Entrada: El Disparador (Telegram)

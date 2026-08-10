@@ -416,7 +416,7 @@ func registerSharedTools(
 		imageGenTracker = antigravityTool.GetTracker()
 	}
 
-	// FALLBACK: Always create Gemini/Ideogram API key tools as fallback.
+	// FALLBACK: Always create Gemini/Ideogram/OpenRouter API key tools as fallback.
 	imageGenTool := tools.NewImageGenCreateToolFromConfig(
 		imageProvider,
 		geminiImageAPIKey,
@@ -429,6 +429,9 @@ func registerSharedTools(
 		cfg.Tools.ImageGen.ImageScriptPath,
 		cfg.Tools.ImageGen.ImageGenScriptPath,
 		workspace,
+		cfg.Tools.ImageGen.OpenRouterAPIKey,
+		cfg.Tools.ImageGen.OpenRouterImageModel,
+		cfg.Tools.ImageGen.OpenRouterTextModel,
 	)
 	// Use Antigravity tracker if available, otherwise Gemini tracker.
 	if imageGenTracker == nil {
@@ -1222,67 +1225,16 @@ func (al *AgentLoop) runLLMIteration(
 			})
 
 		// Build tool definitions
-		// For low-context models (OpenRouter free tier), use only essential tools
-		// (5 vs 60+) to save ~10,000+ tokens in tool definitions.
-		// Check ALL possible sources because the model may change at runtime via WebUI:
-		//   1. Client-specified model in request metadata (WebUI model selector)
-		//   2. The resolved model alias from client input
-		//   3. IsLowContextModel flag (set at agent creation)
-		//   4. Resolved model candidates
-		//   5. The primary model in agent.Model itself
+		// Use ToolsManager for tiered tool selection based on context window.
+		// This replaces the old binary approach (essential vs all) with a
+		// three-tier system: essential, common, specialized.
 		var providerToolDefs []providers.ToolDefinition
-		isLowContext := false
 
-		// Check client-specified model first (WebUI model selector)
-		if clientModel, ok := opts.Metadata["model_name"]; ok && clientModel != "" {
-			// Also resolve the alias in case it's "openrouter-free" -> "openrouter/free"
-			resolved := resolveModelAlias(clientModel, al.cfg.ModelList)
-			for _, m := range []string{clientModel, resolved} {
-				cm := strings.ToLower(m)
-				isORFree := strings.HasPrefix(cm, "openrouter/free") ||
-					strings.HasPrefix(cm, "openrouter-free") ||
-					strings.HasPrefix(cm, "openrouter/auto") ||
-					cm == "openrouter-free" || cm == "openrouter/auto"
-				if isORFree {
-					isLowContext = true
-					break
-				}
-			}
-			// Log for debugging
-			logger.DebugCF("agent", "Client model check", map[string]any{
-				"client_model": clientModel,
-				"resolved":     resolved,
-				"is_low_ctx":   isLowContext,
-			})
-		}
-
-		// Fall back to agent-level indicators if client model didn't match
-		if !isLowContext {
-			isLowContext = agent.IsLowContextModel
-		}
-		if !isLowContext {
-			for _, c := range agent.Candidates {
-				lc := strings.ToLower(c.Model)
-				if strings.HasPrefix(lc, "openrouter/free") ||
-					strings.HasPrefix(lc, "openrouter-free") ||
-					strings.HasPrefix(lc, "openrouter/auto") ||
-					lc == "openrouter-free" || lc == "openrouter/auto" {
-					isLowContext = true
-					break
-				}
-			}
-		}
-		if !isLowContext {
-			lm := strings.ToLower(agent.Model)
-			if strings.HasPrefix(lm, "openrouter/free") ||
-				strings.HasPrefix(lm, "openrouter-free") ||
-				strings.HasPrefix(lm, "openrouter/auto") ||
-				lm == "openrouter-free" || lm == "openrouter/auto" {
-				isLowContext = true
-			}
-		}
-
-		if isLowContext {
+		if agent.ToolsManager != nil {
+			// Use ToolsManager for intelligent tool selection
+			providerToolDefs = agent.ToolsManager.SelectToolsForContext(agent.ContextWindow)
+		} else if agent.IsLowContextModel {
+			// Fallback to old approach if ToolsManager not available
 			providerToolDefs = agent.Tools.ToProviderDefsEssential()
 		} else {
 			providerToolDefs = agent.Tools.ToProviderDefs()
@@ -1290,7 +1242,7 @@ func (al *AgentLoop) runLLMIteration(
 
 		logger.DebugCF("agent", "Tool definitions built", map[string]any{
 			"count":          len(providerToolDefs),
-			"is_low_context": isLowContext,
+			"context_window": agent.ContextWindow,
 		})
 
 		// Log LLM request details
@@ -1371,12 +1323,55 @@ func (al *AgentLoop) runLLMIteration(
 					)
 				}
 
-				// Client specified a model — use it directly without fallbacks.
-				return providerToUse.Chat(ctx, prunedMessages, providerToolDefs, modelID, map[string]any{
+				// Try client-specified model first
+				var resp *providers.LLMResponse
+				resp, err = providerToUse.Chat(ctx, prunedMessages, providerToolDefs, modelID, map[string]any{
 					"max_tokens":       agent.MaxTokens,
 					"temperature":      agent.Temperature,
 					"prompt_cache_key": agent.ID,
 				})
+				// If client model fails, fall back to agent's configured fallbacks
+				if err != nil {
+					logger.WarnCF("agent", "Client model failed, trying fallbacks", map[string]any{
+						"model":    modelToUse,
+						"error":    err.Error(),
+						"agent_id": agent.ID,
+					})
+
+					candidates := agent.Candidates
+					if len(candidates) > 1 && al.fallback != nil {
+						fbResult, fbErr := al.fallback.Execute(ctx, candidates,
+							func(ctx context.Context, pName, mName string) (*providers.LLMResponse, error) {
+								p, mid, errCand := al.GetProvider(mName)
+								if errCand != nil {
+									p = agent.Provider
+									mid = mName
+								}
+								if p == nil {
+									return nil, fmt.Errorf("no provider available for fallback model %q", mName)
+								}
+								return p.Chat(ctx, prunedMessages, providerToolDefs, mid, map[string]any{
+									"max_tokens":       agent.MaxTokens,
+									"temperature":      agent.Temperature,
+									"prompt_cache_key": agent.ID,
+								})
+							},
+						)
+						if fbErr != nil {
+							return nil, fbErr
+						}
+						if fbResult.Provider != "" && len(fbResult.Attempts) > 0 {
+							logger.InfoCF("agent", fmt.Sprintf("Fallback: succeeded with %s/%s after %d attempts",
+								fbResult.Provider, fbResult.Model, len(fbResult.Attempts)+1),
+								map[string]any{"agent_id": agent.ID, "iteration": iteration})
+						}
+						return fbResult.Response, nil
+					}
+
+					return nil, err
+				}
+
+				return resp, nil
 			}
 
 			// No client model specified — use agent's configured fallbacks.
@@ -1464,19 +1459,23 @@ func (al *AgentLoop) runLLMIteration(
 		safetyLimit := int(float64(agent.ContextWindow) * 0.9)
 
 		if totalEstimated > safetyLimit {
-			// If tool definitions alone are consuming too much budget, switch to essential tools
-			if toolTokens > int(float64(agent.ContextWindow)*0.3) && !isLowContext {
+			// If tool definitions alone are consuming too much budget, downgrade tool tier
+			if toolTokens > int(float64(agent.ContextWindow)*0.3) {
 				logger.WarnCF(
 					"agent",
-					"Tool definitions exceed budget threshold, switching to essential tools",
+					"Tool definitions exceed budget threshold, downgrading tool tier",
 					map[string]any{
 						"agent_id":       agent.ID,
 						"tool_tokens":    toolTokens,
 						"context_window": agent.ContextWindow,
 					},
 				)
-				isLowContext = true
-				providerToolDefs = agent.Tools.ToProviderDefsEssential()
+				// Downgrade to essential tools only
+				if agent.ToolsManager != nil {
+					providerToolDefs = agent.ToolsManager.SelectTools(tools.TierEssential)
+				} else {
+					providerToolDefs = agent.Tools.ToProviderDefsEssential()
+				}
 				toolTokens = tokenizer.EstimateToolDefsTokens(providerToolDefs)
 				totalEstimated = msgTokens + toolTokens
 			}

@@ -470,6 +470,7 @@ type ProvidersConfig struct {
 	Anthropic     ProviderConfig       `json:"anthropic"`
 	OpenAI        OpenAIProviderConfig `json:"openai"`
 	OpenRouter    ProviderConfig       `json:"openrouter"`
+	OpenCode      ProviderConfig       `json:"opencode"`
 	Groq          ProviderConfig       `json:"groq"`
 	Zhipu         ProviderConfig       `json:"zhipu"`
 	VLLM          ProviderConfig       `json:"vllm"`
@@ -494,6 +495,7 @@ func (p ProvidersConfig) IsEmpty() bool {
 	return p.Anthropic.APIKey == "" && p.Anthropic.APIBase == "" &&
 		p.OpenAI.APIKey == "" && p.OpenAI.APIBase == "" &&
 		p.OpenRouter.APIKey == "" && p.OpenRouter.APIBase == "" &&
+		p.OpenCode.APIKey == "" && p.OpenCode.APIBase == "" &&
 		p.Groq.APIKey == "" && p.Groq.APIBase == "" &&
 		p.Zhipu.APIKey == "" && p.Zhipu.APIBase == "" &&
 		p.VLLM.APIKey == "" && p.VLLM.APIBase == "" &&
@@ -747,8 +749,14 @@ type NotionToolsConfig struct {
 	APIKey string `json:"api_key" env:"PICOCLAW_TOOLS_NOTION_API_KEY"`
 }
 
+type CascadeConfig struct {
+	TextModels  []string `json:"text_models"`
+	ImageModels []string `json:"image_models"`
+	Enabled     bool     `json:"enabled"`
+}
+
 type ImageGenToolsConfig struct {
-	// Provider selection: "antigravity" (OAuth), "gemini" (API key), or "ideogram" (API key)
+	// Provider selection: "antigravity" (OAuth), "gemini" (API key), "ideogram" (API key), or "openrouter" (API key)
 	Provider string `json:"provider" env:"PICOCLAW_TOOLS_IMAGE_GEN_PROVIDER"`
 
 	// Antigravity (OAuth-based, default)
@@ -769,6 +777,14 @@ type ImageGenToolsConfig struct {
 	IdeogramStyleType      string `json:"ideogram_style_type"      env:"PICOCLAW_TOOLS_IMAGE_GEN_IDEOGRAM_STYLE_TYPE"`
 	IdeogramNumImages      int    `json:"ideogram_num_images"      env:"PICOCLAW_TOOLS_IMAGE_GEN_IDEOGRAM_NUM_IMAGES"`
 	IdeogramNegativePrompt string `json:"ideogram_negative_prompt" env:"PICOCLAW_TOOLS_IMAGE_GEN_IDEOGRAM_NEGATIVE_PROMPT"`
+
+	// OpenRouter (image generation via krea/krea-2-medium-turbo)
+	OpenRouterAPIKey     string `json:"openrouter_api_key,omitempty"     env:"PICOCLAW_TOOLS_IMAGE_GEN_OPENROUTER_API_KEY"`
+	OpenRouterImageModel string `json:"openrouter_image_model,omitempty" env:"PICOCLAW_TOOLS_IMAGE_GEN_OPENROUTER_IMAGE_MODEL"`
+	OpenRouterTextModel  string `json:"openrouter_text_model,omitempty"  env:"PICOCLAW_TOOLS_IMAGE_GEN_OPENROUTER_TEXT_MODEL"`
+
+	// Cascade fallback (free → paid)
+	Cascade CascadeConfig `json:"cascade,omitempty"`
 
 	// Global aspect ratio (format: "4:5", "16:9", "1:1", etc.)
 	AspectRatio string `json:"aspect_ratio" env:"PICOCLAW_TOOLS_IMAGE_GEN_ASPECT_RATIO"`
@@ -943,6 +959,28 @@ func LoadConfig(path string) (*Config, error) {
 			"max_compact_iterations":  20,
 		}
 	}
+
+	// Runtime defaults for OpenRouter (new in vNext)
+	if cfg.Tools.ImageGen.Provider == "" {
+		cfg.Tools.ImageGen.Provider = "openrouter"
+	}
+	if cfg.Tools.ImageGen.OpenRouterImageModel == "" {
+		cfg.Tools.ImageGen.OpenRouterImageModel = "krea/krea-2-medium-turbo"
+	}
+	if cfg.Tools.ImageGen.OpenRouterTextModel == "" {
+		cfg.Tools.ImageGen.OpenRouterTextModel = "openrouter/free"
+	}
+	if len(cfg.Tools.ImageGen.Cascade.TextModels) == 0 {
+		cfg.Tools.ImageGen.Cascade.TextModels = []string{
+			"nvidia/nemotron-3-ultra-550b-a55b:free",
+			"openai/gpt-oss-20b:free",
+			"meta-llama/llama-3.1-8b-instruct",
+		}
+	}
+	if len(cfg.Tools.ImageGen.Cascade.ImageModels) == 0 {
+		cfg.Tools.ImageGen.Cascade.ImageModels = []string{"krea/krea-2-medium-turbo"}
+	}
+	cfg.Tools.ImageGen.Cascade.Enabled = true
 
 	// Store path so it can be used for runtime config updates
 	cfg.SetConfigPath(path)

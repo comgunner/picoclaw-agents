@@ -1,5 +1,8 @@
 # OpenRouter Free Tier with PicoClaw-Agents
 
+> OpenRouter Free Tier with PicoClaw-Agents documentation for PicoClaw-Agents.
+
+
 **Last Updated:** March 28, 2026
 **Version:** v1.3.0-alpha-fix901
 
@@ -55,15 +58,59 @@ OpenRouter offers several free models. PicoClaw configures them automatically:
 
 | Priority | Model | Context | Recommended Use |
 |----------|-------|---------|-----------------|
-| **1** | `openrouter/auto` | Variable | Auto-selects best free model |
-| **2** | `stepfun/step-3.5-flash` | 256K | Long context, reasoning |
-| **3** | `deepseek/deepseek-v3.2-20251201` | 64K | Fast inference |
+| **1** | `openrouter/free` | Variable | Auto-selects best free model |
+| **2** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 128K | 550B parameters, complex reasoning |
+| **3** | `openai/gpt-oss-20b:free` | 32K | GPT Open Source 20B |
+| **4** | `inclusionai/ling-3.0-tiny:free` | 8K | Lightweight, fast response |
+| **5** | `meta-llama/llama-3.1-8b-instruct:free` | 8K | Llama 3.1 8B |
 
-### What is `openrouter/auto`?
+### Paid Models (Available as Fallback)
+
+| Model | Pricing | Use Case |
+|-------|---------|----------|
+| `deepseek/deepseek-v4-flash-0731` | $0.27/M input, $1.10/M output | DeepSeek V4 Flash, excellent for code |
+| `xiaomi/mimo-v2.5` | $0.15/M input, $0.60/M output | Xiaomi MiMo V2.5, balanced performance |
+
+### What is `openrouter/free`?
 
 - **Auto-selection:** OpenRouter automatically chooses the best available free model
 - **Automatic fallback:** If one model fails, uses the next one
 - **No configuration:** No need to specify individual models
+
+---
+
+## 🖼️ Image Generation
+
+PicoClaw supports image generation via OpenRouter:
+
+| Model | Description | Cost |
+|-------|-------------|------|
+| `krea/krea-2-medium-turbo` | High-quality image generation | Free tier available |
+| `bytedance-seed/seedream-4.5` | Alternative image model | Free tier available |
+
+### ⚙️ Configuration
+
+```json
+{
+  "tools": {
+    "image_gen": {
+      "provider": "openrouter",
+      "openrouter_api_key": "sk-or-v1-YOUR_KEY", // pragma: allowlist secret
+      "openrouter_image_model": "krea/krea-2-medium-turbo",
+      "cascade": {
+        "enabled": true,
+        "text_models": [
+          "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openai/gpt-oss-20b:free",
+          "inclusionai/ling-3.0-tiny:free",
+          "meta-llama/llama-3.1-8b-instruct:free"
+        ],
+        "image_models": ["krea/krea-2-medium-turbo", "bytedance-seed/seedream-4.5"]
+      }
+    }
+  }
+}
+```
 
 ---
 

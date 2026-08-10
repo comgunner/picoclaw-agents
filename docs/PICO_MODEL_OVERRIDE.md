@@ -1,5 +1,8 @@
 # Pico Model Override Protocol
 
+> Pico Model Override Protocol documentation for PicoClaw-Agents.
+
+
 **Version:** 1.0.0  
 **Created:** March 30, 2026  
 **Component:** Web UI → Pico Channel → Agent Loop

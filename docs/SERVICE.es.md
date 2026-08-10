@@ -1,6 +1,11 @@
 # Gestión de Servicio del Sistema Operativo
 
+> Gestión de Servicio del Sistema Operativo documentation for PicoClaw-Agents.
+
+
 Instala PicoClaw-Agents como un servicio del sistema que se inicia automáticamente al arrancar.
+
+---
 
 ## Plataformas Compatibles
 

@@ -19,25 +19,106 @@
 
 本项目在 AI 工具的帮助下进行开发和维护。此仓库中的所有代码变更均使用 **Qwen Code** 实现，它也提供慷慨的免费计划。
 
-**🌟 Qwen Code (Alibaba Cloud)** — 带免费计划的 AI 编码助手。
+**🌟 OpenRouter（免费层级）** — 200+ 模型，级联故障转移。推荐。
 
 ```bash
-./picoclaw-agents auth login --provider qwen
+./picoclaw-agents onboard --openrouter
 # 查看模型: http://localhost:18800/models
 ```
 
-👉 [开始使用](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+🆓 **免费模型**（级联优先级）：
+- `openrouter/free` — 自动选择最佳免费模型
+- `nvidia/nemotron-3-ultra-550b-a55b:free` — 550B 参数
+- `openai/gpt-oss-20b:free` — 开源 GPT
+- `inclusionai/ling-3.0-tiny:free` — 轻量快速
+- `meta-llama/llama-3.1-8b-instruct:free` — Llama 3.1 8B
+
+**付费回退：**
+- `deepseek/deepseek-v4-flash-0731` — DeepSeek V4 Flash
+- `xiaomi/mimo-v2.5` — 小米 MiMo V2.5
+
+**图像生成**: `krea/krea-2-medium-turbo`
+
+👉 [立即加入](https://openrouter.ai/)
+
+**🌟 OpenCode Zen（8 个免费模型）** — 无需信用卡
+
+```bash
+./picoclaw-agents onboard --opencode
+```
+
+🆓 **免费模型**：
+- `opencode/mimo-v2.5-free` — 小米 MiMo V2.5
+- `opencode/deepseek-v4-flash-free` — DeepSeek V4 Flash
+- `opencode/nemotron-3-ultra-free` — NVIDIA 550B
+- `opencode/ling-3.0-tiny-free` — 轻量快速
+- `opencode/north-mini-code-free` — 专注代码
+- `opencode/laguna-s-2.1-free` — 新模型
+- `opencode/longcat-2.0-free` — 新模型
+- `opencode/big-pickle` — 免费试用
+
+👉 [获取 API Key](https://opencode.ai/auth)
 
 **🌟 智谱 AI (z.ai)** — 使用 `glm-4.5-flash` 100% 免费
 
 ```bash
-./picoclaw-agents auth login --provider zhipu
+./picoclaw-agents onboard --zhipu
 ```
 
 🚀 您已受邀加入 GLM Coding Plan。全面支持 Claude Code、Cline 和 20 多个顶级编码工具 — 每月仅需 $10。
 👉 [立即加入](https://z.ai/subscribe?ic=RF2YMCHBHL)
 
+**🌟 Qwen Code (Alibaba Cloud)** — AI 编码助手（有付费计划）。
+
+```bash
+./picoclaw-agents onboard --qwen
+# 查看模型: http://localhost:18800/models
+```
+
+👉 [开始使用](https://www.alibabacloud.com/campaign/benefits?referral_code=A924LX)
+
+> ℹ️ **注意:** 首次设置使用 `onboard`（自动配置所有内容）。仅在需要向现有配置添加其他 API 密钥时使用 `auth`。
+>
+> **示例:** 您已经运行了 `onboard --openrouter`，现在想添加 OpenCode Zen：
+> ```bash
+> # 首次运行（将 OpenRouter 设为默认）
+> ./picoclaw-agents onboard --openrouter
+>
+> # 之后，添加 OpenCode Zen
+> ./picoclaw-agents auth login --provider opencode
+>
+> # 现在可以在两者之间切换
+> /model opencode/mimo-v2.5-free    # 使用 OpenCode 模型
+> /model openrouter/free            # 切回 OpenRouter
+> ```
+>
 > 💡 使用这些链接有助于支持 PicoClaw-Agents 的持续开发。谢谢！
+```
+
+👉 [立即加入](https://openrouter.ai/)
+
+> 💡 使用这些链接有助于支持 PicoClaw-Agents 的持续开发。谢谢！
+
+---
+
+## 📑 目录
+
+- [🤝 支持本项目](#-支持本项目)
+- [✨ 特性](#-特性)
+- [🦾 演示](#-演示)
+- [🚀 启动器](#-启动器)
+- [🖥️ 操作系统服务管理](#️-操作系统服务管理)
+- [📦 安装](#-安装)
+- [🐳 Docker Compose](#-docker-compose)
+- [🖥️ 在 VPS 上部署](#-在-vps-上部署)
+- [🔄 从 OpenClaw 或 NanoClaw 迁移](#-从-openclaw-或-nanoclaw-迁移)
+- [💬 聊天应用](#-聊天应用)
+- [⚙️ 配置](#-配置)
+- [📝 参考](#-参考)
+- [🤝 贡献与路线图](#-贡献与路线图)
+- [📄 许可证](#-许可证)
+
+---
 
 ## ✨ 特性
 
@@ -618,6 +699,60 @@ picoclaw-agents onboard --gemini      # 使用 Gemini 模板 (gemini-2.5-flash)
 
 > **技能 vs 工具：** 技能将上下文注入系统提示（Agent *成为* 该角色）。工具是可调用的动作（LLM 可以调用的函数）。分别配置：`"skills"` 用于角色，`"tools_override"` 用于可调用工具。详见 [`docs/SKILLS.md`](docs/SKILLS.md)。
 
+### 📁 工作区技能（自定义）
+
+工作区技能是存储在 `~/.picoclaw/workspace/skills/` 中的基于文件的技能。它们会被网关自动发现。
+
+**可用的工作区技能：**
+
+| 技能 | 描述 |
+|------|------|
+| `ui-ux-pro-max` | UI/UX 设计智能：84 种样式、192 种调色板、74 种字体组合、22 种技术栈 |
+
+**安装自定义技能：**
+
+```bash
+# 创建技能目录
+mkdir -p ~/.picoclaw/workspace/skills/my-skill
+
+# 创建带 frontmatter 的 SKILL.md
+cat > ~/.picoclaw/workspace/skills/my-skill/SKILL.md << 'EOF'
+---
+name: my-skill
+description: "我的自定义技能描述"
+---
+# 技能内容
+EOF
+
+# 重启网关以发现技能
+sudo systemctl restart picoclaw.service
+```
+
+详见 [`local_work/HOW_TO_ADD_CUSTOM_SKILLS.md`](local_work/HOW_TO_ADD_CUSTOM_SKILLS.md)。
+
+### 🔀 免费模型级联（生存机制）
+
+PicoClaw 使用 **级联回退系统** 保持机器人 24/7 在线。当主免费模型失败时，它会自动尝试下一个模型。
+
+**免费模型（无需信用卡）：**
+
+| 优先级 | 模型 | 提供商 |
+|--------|------|--------|
+| 1 | `openrouter/free` | OpenRouter（自动选择最佳可用模型） |
+| 2 | `nvidia/nemotron-3-ultra-550b-a55b:free` | NVIDIA |
+| 3 | `openai/gpt-oss-20b:free` | OpenAI |
+| 4 | `inclusionai/ling-3.0-tiny:free` | InclusionAI |
+| 5 | `meta-llama/llama-3.1-8b-instruct:free` | Meta |
+
+**付费回退（可选）：**
+
+| 模型 | 提供商 | 费用 |
+|------|--------|------|
+| `deepseek/deepseek-v4-flash-0731` | DeepSeek | $0.27/M tokens |
+| `xiaomi/mimo-v2.5` | Xiaomi | $0.10/M tokens |
+
+配置和故障排除详见 [`docs/FREE_MODELS_CASCADE_GUIDE.md`](docs/FREE_MODELS_CASCADE_GUIDE.md)。
+
 **4. 对话**
 
 ```bash
@@ -625,6 +760,33 @@ picoclaw-agents agent -m "2+2等于几？"
 ```
 
 这就完成了！您在 2 分钟内就拥有了一个可以工作的 AI 助手。
+
+---
+
+## 🖥️ 在 VPS 上部署
+
+在云 VPS 上运行 PicoClaw-Agents 以实现 24/7 可用。推荐配置:
+
+| 配置 | 值 |
+|------|-----|
+| **提供商** | [Vultr](https://www.vultr.com/?ref=9916942) |
+| **实例** | vc2-1c-2gb |
+| **CPU** | 1 vCPU |
+| **内存** | 2 GB |
+| **存储** | 55 GB |
+| **价格** | 每月 $10 起 |
+
+> 💡 [**在 Vultr 上部署**](https://www.vultr.com/?ref=9916942) — 足够运行 PicoClaw-Agents 和 OpenRouter 免费模型。
+
+```bash
+# 在 Ubuntu/Debian 上安装
+curl -fsSL https://raw.githubusercontent.com/comgunner/picoclaw-agents/main/scripts/install.sh | bash
+
+# 或手动安装
+wget https://github.com/comgunner/picoclaw-agents/releases/latest/download/picoclaw-agents-linux-amd64
+chmod +x picoclaw-agents-linux-amd64
+sudo mv picoclaw-agents-linux-amd64 /usr/local/bin/picoclaw-agents
+```
 
 ---
 
@@ -1369,8 +1531,22 @@ picoclaw-agents agent --model openrouter-free -m "第二条消息"
 **🌟 OpenRouter (免费层级)** — 通过慷慨的免费层级访问 200 多个模型。
 
 ```bash
-./picoclaw-agents auth login --provider openrouter-free
+./picoclaw-agents auth login --provider openrouter
+# 查看模型: http://localhost:18800/models
 ```
+
+**免费模型** (cascade priority):
+- `openrouter/free` — 自动选择最佳免费模型
+- `nvidia/nemotron-3-ultra-550b-a55b:free` — 550B 参数
+- `openai/gpt-oss-20b:free` — GPT Open Source 20B
+- `inclusionai/ling-3.0-tiny:free` — 轻量快速
+- `meta-llama/llama-3.1-8b-instruct:free` — Llama 3.1 8B
+
+**付费模型** (可用作备用):
+- `deepseek/deepseek-v4-flash-0731` — DeepSeek V4 Flash
+- `xiaomi/mimo-v2.5` — Xiaomi MiMo V2.5
+
+**图像生成**: `krea/krea-2-medium-turbo`
 
 👉 [立即加入](https://openrouter.ai/)
    3. antigravity/gemini-3-flash (OAuth)
@@ -1745,6 +1921,9 @@ picoclaw-agents agent -m "Hello"
 | `picoclaw-agents agent`          | 交互式对话模式     |
 | `picoclaw-agents gateway`        | 启动网关 (Gateway) |
 | `picoclaw-agents status`         | 查看状态           |
+| `picoclaw-agents auth login --provider <名称>` | 登录提供商 |
+| `picoclaw-agents auth models`    | 列出可用模型       |
+| `picoclaw-agents auth logout --provider <名称>` | 登出 |
 | `picoclaw-agents cron list`      | 列出所有定时任务   |
 | `picoclaw-agents cron add ...`   | 添加定时任务       |
 
@@ -1869,6 +2048,8 @@ picoclaw-agents util binance-mcp-server
 
 
 ## 📢 新闻
+
+2026-08-09 🎉 **OpenRouter + OpenCode Zen 集成**: 完整的级联回退系统（免费→付费），配置了15个模型。推荐OpenRouter（5个以上免费模型）。新增OpenCode Zen（8个免费模型：MiMo V2.5、DeepSeek V4 Flash、Nemotron 3 Ultra等）。通过`krea/krea-2-medium-turbo`实现图像生成。修复401错误（去除`opencode/`前缀），修复WebUI模型显示，`auth models`显示所有提供商。新增VPS部分（Vultr推荐）。更新了7个README，应用了53个文档样式。参见[CHANGELOG.md](CHANGELOG.md)。
 
 2026-04-05 🎉 **上下文管理集成 + 令牌溢出修复**: 集成了 ContextManager 接口（legacy + seahorse）、SQLite Seahorse 引擎（约 6,800 行）、构建前预算检查和 3 级系统提示词（Minimal/Compact/Full）。修复了 WebUI + openrouter-free 的 402 错误（21K → ~300 令牌）。所有 onboard 模板和 auth 登录现在都包含 `context_manager: "seahorse"`。上游补丁已适配。免费提供商指南已发布。参见 [CHANGELOG.md](CHANGELOG.md)。
 

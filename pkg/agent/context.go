@@ -37,6 +37,8 @@ const (
 type ContextBuilder struct {
 	workspace          string
 	skillsLoader       *skills.SkillsLoader
+	skillsManager      *skills.SkillsManager
+	lazyLoadSkills     bool
 	memory             *MemoryStore
 	lazyLoader         *pcontext.LazyLoader
 	systemPromptMutex  sync.RWMutex
@@ -57,13 +59,16 @@ func NewContextBuilder(workspace string) *ContextBuilder {
 	globalSkillsDir := filepath.Join(globalDir, "skills")
 	builtinSkillsDir := filepath.Join(globalDir, "picoclaw", "skills")
 
+	loader := skills.NewSkillsLoader(
+		workspace,
+		globalSkillsDir,
+		builtinSkillsDir,
+	)
+
 	return &ContextBuilder{
-		workspace: workspace,
-		skillsLoader: skills.NewSkillsLoader(
-			workspace,
-			globalSkillsDir,
-			builtinSkillsDir,
-		),
+		workspace:      workspace,
+		skillsLoader:   loader,
+		skillsManager:  skills.NewSkillsManager(loader),
 		memory:         NewMemoryStore(workspace),
 		lazyLoader:     pcontext.NewLazyLoader(workspace),
 		existedAtCache: make(map[string]bool),
@@ -83,6 +88,14 @@ func (cb *ContextBuilder) SetLowContextModel(v bool) {
 	cb.InvalidateCache()
 }
 
+// SetLazyLoadSkills enables lazy loading of skills.
+// When enabled, only skill names are included in system prompt,
+// not full descriptions. Skills are loaded on demand.
+func (cb *ContextBuilder) SetLazyLoadSkills(enabled bool) {
+	cb.lazyLoadSkills = enabled
+	cb.InvalidateCache()
+}
+
 // SetPromptLevel sets the condensation level for the system prompt.
 func (cb *ContextBuilder) SetPromptLevel(level PromptLevel) {
 	cb.promptLevel = level
@@ -94,12 +107,23 @@ func (cb *ContextBuilder) getIdentity() string {
 
 	switch cb.promptLevel {
 	case PromptLevelMinimal:
-		// ~100 tokens — bare essentials for models < 8K context
+		// ~150 tokens — bare essentials for models < 8K context
 		return fmt.Sprintf("You are PicoClaw 🦞, a helpful assistant.\n" +
 			"Priority: execute actions, not just talk. Be concise.\n" +
 			"NEVER introduce yourself proactively unless asked.\n" +
 			"For social media posts, ALWAYS show draft to user first with approval buttons.\n" +
-			"NEVER post directly unless user says 'direct' or 'without approval'.",
+			"NEVER post directly unless user says 'direct' or 'without approval'.\n" +
+			"\n" +
+			"## Available Tools\n" +
+			"- exec: Execute shell commands (e.g., systemctl status, ps aux, df -h)\n" +
+			"- read_file: Read file contents\n" +
+			"- write_file: Create or overwrite files\n" +
+			"- edit_file: Edit file contents\n" +
+			"- list_dir: List directory contents\n" +
+			"- message: Send messages to chat\n" +
+			"- spawn: Run background tasks\n" +
+			"\n" +
+			"When user asks for system info, USE exec tool to get it.",
 		)
 
 	case PromptLevelCompact:
@@ -299,11 +323,17 @@ func (cb *ContextBuilder) BuildSystemPrompt() string {
 	}
 
 	// 3. Skills (only summary for Compact, full for Full)
-	parts = append(parts, cb.skillsLoader.BuildSkillsSummary())
+	if cb.lazyLoadSkills && cb.skillsManager != nil {
+		// Lazy loading: only include skill names, not full descriptions
+		cb.skillsManager.Init()
+		parts = append(parts, cb.skillsManager.GetSkillsSummary())
+	} else {
+		parts = append(parts, cb.skillsLoader.BuildSkillsSummary())
+	}
 
 	// Add native Queue/Batch Skill section from Go implementation
-	// Skip for Compact level to save tokens
-	if cb.promptLevel != PromptLevelCompact {
+	// Skip for Compact level to save tokens, also skip for lazy loading
+	if cb.promptLevel != PromptLevelCompact && !cb.lazyLoadSkills {
 		queueBatchSection := cb.skillsLoader.LoadNativeQueueBatchSkill()
 		if queueBatchSection != "" {
 			parts = append(parts, queueBatchSection)
@@ -311,20 +341,26 @@ func (cb *ContextBuilder) BuildSystemPrompt() string {
 	}
 
 	// Add native Binance MCP Skill section from Go implementation
-	binanceMCPSection := cb.skillsLoader.LoadNativeBinanceMCPSkill()
-	if binanceMCPSection != "" {
-		parts = append(parts, binanceMCPSection)
+	// Skip for lazy loading to save tokens
+	if !cb.lazyLoadSkills {
+		binanceMCPSection := cb.skillsLoader.LoadNativeBinanceMCPSkill()
+		if binanceMCPSection != "" {
+			parts = append(parts, binanceMCPSection)
+		}
 	}
 
 	// Add native Full-Stack Developer Skill section from Go implementation
-	fullstackDevSection := cb.skillsLoader.LoadNativeFullStackDeveloperSkill()
-	if fullstackDevSection != "" {
-		parts = append(parts, fullstackDevSection)
+	// Skip for lazy loading to save tokens
+	if !cb.lazyLoadSkills {
+		fullstackDevSection := cb.skillsLoader.LoadNativeFullStackDeveloperSkill()
+		if fullstackDevSection != "" {
+			parts = append(parts, fullstackDevSection)
+		}
 	}
 
 	// Add native n8n Workflow Skill section from Go implementation
-	// Skip for Compact level to save tokens
-	if cb.promptLevel != PromptLevelCompact {
+	// Skip for Compact level to save tokens, also skip for lazy loading
+	if cb.promptLevel != PromptLevelCompact && !cb.lazyLoadSkills {
 		n8nWorkflowSection := cb.skillsLoader.LoadNativeN8NWorkflowSkill()
 		if n8nWorkflowSection != "" {
 			parts = append(parts, n8nWorkflowSection)
@@ -332,8 +368,8 @@ func (cb *ContextBuilder) BuildSystemPrompt() string {
 	}
 
 	// Add native Agent Team Workflow Skill section from Go implementation
-	// Skip for Compact level to save tokens
-	if cb.promptLevel != PromptLevelCompact {
+	// Skip for Compact level to save tokens, also skip for lazy loading
+	if cb.promptLevel != PromptLevelCompact && !cb.lazyLoadSkills {
 		agentTeamWorkflowSection := cb.skillsLoader.LoadNativeAgentTeamWorkflowSkill()
 		if agentTeamWorkflowSection != "" {
 			parts = append(parts, agentTeamWorkflowSection)
@@ -341,8 +377,8 @@ func (cb *ContextBuilder) BuildSystemPrompt() string {
 	}
 
 	// Add native Skill Creator Skill section from Go implementation
-	// Skip for Compact level to save tokens
-	if cb.promptLevel != PromptLevelCompact {
+	// Skip for Compact level to save tokens, also skip for lazy loading
+	if cb.promptLevel != PromptLevelCompact && !cb.lazyLoadSkills {
 		skillCreatorSection := cb.skillsLoader.LoadNativeSkillCreatorSkill()
 		if skillCreatorSection != "" {
 			parts = append(parts, skillCreatorSection)

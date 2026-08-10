@@ -1,6 +1,11 @@
 # 企业微信自建应用 (WeCom App) 配置指南
 
+> 企业微信自建应用 (WeCom App) 配置指南 documentation for PicoClaw-Agents.
+
+
 本文档介绍如何在 PicoClaw 中配置企业微信自建应用 (wecom-app) 通道。
+
+---
 
 ## 功能特性
 

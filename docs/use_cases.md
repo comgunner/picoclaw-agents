@@ -4,6 +4,8 @@ This document describes the **dynamic, real-time flow** of how PicoClaw processe
 
 > **PicoClaw v3.4.1**: Now includes **Fast-path Slash Commands** for instant operations and **Global Tracker** for perfect multi-agent consistency.
 
+---
+
 ## Dynamic Interaction Flow
 
 ### 1. Input: The Trigger (Telegram)

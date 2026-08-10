@@ -211,8 +211,11 @@ func (p *Provider) Chat(
 		isFreeTier := strings.HasPrefix(lowerModel, "openrouter/free") ||
 			strings.HasPrefix(lowerModel, "openrouter-free") ||
 			strings.HasPrefix(lowerModel, "openrouter/auto") ||
+			strings.HasPrefix(lowerModel, "openrouter/auto-beta") ||
+			strings.HasPrefix(lowerModel, "openrouter/pareto-code") ||
 			strings.HasPrefix(lowerModel, "kilo-auto/free") ||
 			lowerModel == "openrouter-free" || lowerModel == "openrouter/auto" ||
+			lowerModel == "openrouter/auto-beta" || lowerModel == "openrouter/pareto-code" ||
 			lowerModel == "kilo-free" || lowerModel == "kilo-auto/free"
 
 		if isFreeTier && maxTokens > 1000 {
@@ -419,9 +422,10 @@ func normalizeModel(model, apiBase string) string {
 		return model
 	}
 
-	// ALWAYS keep "openrouter/auto" and "openrouter/free" as they are special routing aliases
+	// ALWAYS keep "openrouter/auto", "openrouter/auto-beta", "openrouter/free", and "openrouter/pareto-code" as they are special routing aliases
 	lowerModel := strings.ToLower(model)
-	if lowerModel == "openrouter/auto" || lowerModel == "openrouter/free" {
+	if lowerModel == "openrouter/auto" || lowerModel == "openrouter/free" || lowerModel == "openrouter/auto-beta" ||
+		lowerModel == "openrouter/pareto-code" {
 		return lowerModel
 	}
 

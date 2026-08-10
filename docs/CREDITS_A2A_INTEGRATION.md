@@ -1,4 +1,7 @@
 # Créditos - Integración A2A Orchestrator
+
+> Créditos - Integración A2A Orchestrator documentation for PicoClaw-Agents.
+
 **Integración selectiva de tecnología del fork de icueth**
 
 **Fecha de Implementación**: 31 de Marzo de 2026  

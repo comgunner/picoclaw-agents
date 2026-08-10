@@ -1,5 +1,10 @@
 # MCP Client — External MCP Server Integration
 
+> MCP Client — External MCP Server Integration documentation for PicoClaw-Agents.
+
+
+---
+
 ## Overview
 
 PicoClaw-Agents can now consume tools from external **MCP (Model Context Protocol)** servers. This means you can connect to any MCP-compatible server (GitHub, Filesystem, PostgreSQL, Brave Search, etc.) and their tools will automatically appear in your agent's tool registry.
@@ -7,7 +12,7 @@ PicoClaw-Agents can now consume tools from external **MCP (Model Context Protoco
 **Protocol version:** MCP 2024-11-05  
 **Supported transports:** stdio, SSE, HTTP
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Install an MCP Server
 
@@ -53,7 +58,7 @@ Edit `~/.picoclaw/config.json` and add your MCP server configuration:
 
 The agent will automatically connect to the MCP server and register all available tools.
 
-## Configuration
+## ⚙️ Configuration
 
 ### Full Configuration Reference
 
@@ -107,7 +112,7 @@ The agent will automatically connect to the MCP server and register all availabl
 }
 ```
 
-### Configuration Options
+### ⚙️ Configuration Options
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -157,7 +162,7 @@ picoclaw-agents mcp remove <name>
 
 Find more servers at the [MCP Server Registry](https://github.com/modelcontextprotocol/servers).
 
-## Security
+## 🔒 Security
 
 ### Command Whitelist
 
@@ -191,7 +196,7 @@ If an MCP server fails to connect, the agent **continues with the remaining serv
 
 MCP tools that access the filesystem are subject to the same workspace restrictions as native tools (`restrict_to_workspace: true` by default).
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### "Server failed to connect"
 

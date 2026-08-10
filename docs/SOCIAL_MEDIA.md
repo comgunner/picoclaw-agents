@@ -6,6 +6,8 @@ PicoClaw includes native tools for Facebook, X (Twitter), and Discord posting.
 >
 > **PicoClaw v3.4.1**: Features **Fast-path Slash Commands** for instant bundle management and **Global Tracker** for multi-agent consistency.
 
+---
+
 ## Supported Tools
 
 - `facebook_post`: Publish to Facebook Page (text-only or image + text, optional comment)
@@ -30,7 +32,7 @@ PicoClaw supports two Facebook modes:
   - `app_secret`
   - `user_token`
 
-## Configuration
+## ⚙️ Configuration
 
 Update `~/.picoclaw/config.json`:
 
@@ -142,7 +144,7 @@ export PICOCLAW_TOOLS_SOCIAL_X_ACCESS_TOKEN_SECRET="your_access_token_secret"
 export DISCORD_WEBHOOK_URL="your_webhook_url"
 ```
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Generate Facebook Post with Image (via social_post_bundle)
 

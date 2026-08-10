@@ -59,7 +59,7 @@ func NewOnboardCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&glm, "glm", false, "Use GLM-4.5-Flash template (z.ai)")
 	cmd.Flags().BoolVar(&qwen, "qwen", false, "Use Qwen template (Alibaba Cloud Intl)")
 	cmd.Flags().BoolVar(&qwenZh, "qwen_zh", false, "Use Qwen template (Alibaba Cloud China)")
-	cmd.Flags().BoolVar(&openrouter, "openrouter", false, "Use OpenRouter template (openrouter/auto)")
+	cmd.Flags().BoolVar(&openrouter, "openrouter", false, "Use OpenRouter template (openrouter/auto-beta)")
 	cmd.Flags().BoolVar(&openai, "openai", false, "Use OpenAI template (o3-mini)")
 	cmd.Flags().BoolVar(&gemini, "gemini", false, "Use Gemini template (gemini-2.5-flash)")
 	cmd.Flags().
