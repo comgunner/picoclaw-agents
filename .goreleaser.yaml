@@ -110,25 +110,7 @@ builds:
       - goos: freebsd
         goarch: arm
 
-dockers_v2:
-  - id: picoclaw
-    dockerfile: Dockerfile.goreleaser
-    ids:
-      - picoclaw
-    images:
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/picoclaw"
-      - "docker.io/{{ .Env.DOCKERHUB_IMAGE_NAME }}"
-    tags:
-      - "{{ .Tag }}"
-      - "latest"
-    platforms:
-      - linux/amd64
-      - linux/arm64
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--platform=linux/amd64,linux/arm64"
-      - "--build-arg=GOVERSION={{ .Env.GOVERSION }}"
+dockers_v2: []
 
 archives:
   - formats: [tar.gz]
