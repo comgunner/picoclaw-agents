@@ -302,3 +302,15 @@ Before running `./scripts/create-release.sh`:
 | GoReleaser timeout on large builds | Normal — multi-platform builds take 10-15 minutes |
 | `make lint` warnings (non-blocking) | Safe to ignore for release; fix separately |
 | `GOPROXY=off` causes build failure | Remove it — Go needs proxy access for cross-compile targets |
+
+### [2026-08-10] CRITICAL: Never Upload Root MEMORY.md to Git
+- **Context**: Accidentally committed root-level MEMORY.md to GitHub
+- **Learning**:
+  - Root `MEMORY.md` (`/picoclaw-agents/MEMORY.md`) is **LOCAL ONLY** — contains dev notes, secrets context, server IPs, auth patterns
+  - `workspace/MEMORY.md` is the **public** version — safe for repo
+  - **Mistake**: Used `git add -f MEMORY.md` which overrode .gitignore, exposing 836 lines of internal dev notes
+  - **Fix**: `git filter-repo --invert-paths --path MEMORY.md --force` + `git push origin main --force`
+  - `.gitignore` must have `/MEMORY.md` (root) but NOT `workspace/MEMORY.md`
+  - Same applies to `local_work/` — always gitignored, never committed
+- **Rule**: Root MEMORY.md = LOCAL. workspace/MEMORY.md = REPO. Never mix them.
+- **Application**: Before any `git add`, check .gitignore. Never use `git add -f` on MEMORY.md or local_work/
